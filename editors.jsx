@@ -238,6 +238,9 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
   const changeStep = (s) => {
     setStep(s);
     if (onStepChange) onStepChange(s);
+    if (s === "edit") {
+      document.querySelector(".editor__body")?.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const activeData = data[activeId] || (defaults && defaults[activeId]) || {};
@@ -267,8 +270,7 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
             {groups.map(({ cat, kind, key }) => (
               <React.Fragment key={key}>
                 <div className="social-grid__group-head">
-                  <span>{catLabel[cat] || cat}</span>
-                  <span className="social-grid__group-kind">{kind}</span>
+                  {catLabel[cat] || cat} · {kind}
                 </div>
                 {templates.filter(t => (t.category || "square") === cat && (t.kind || "Single") === kind).map(t => {
                   const tileData = data[t.id] || (defaults && defaults[t.id]) || {};

@@ -152,6 +152,42 @@ const DEFAULT_SOCIAL = {
     date: "May · 2026",
     ctaText: "Get early access",
   },
+  mistakes: {
+    kicker: "Hard Lessons",
+    subtitle: "So you don't have to learn them the hard way.",
+    mistakes: "Underpricing your work — I thought low rates would win clients. They attracted bad ones.\nNot writing things down — Verbal agreements disappear. Every project needs a brief.\nTaking every project — Busyness isn't the same as success. Pick your work carefully.",
+  },
+  miniguide: {
+    kicker: "Mini Guide",
+    topic: "Ship Faster",
+    intro: "",
+    steps: "Write the goal first — Before you open any tool, write the end state in one sentence.\nMap your constraints — List every real limitation: time, budget, scope, and patience.\nDesign the smallest version — Resist over-engineering on the first pass.\nShip and learn — Real feedback beats internal debate every time.",
+  },
+  breaking: {
+    category: "Industry",
+    date: "May · 2026",
+    kicker: "Breaking",
+    headline: "Freelance rates hit a 10-year high.",
+    subline: "And clients are still paying.",
+    body: "New data from the Freelance Forward index shows median project rates up 18% year-on-year.",
+  },
+  digest: {
+    period: "This Week In",
+    topic: "Design",
+    items: "The freelance market grew by 12% this quarter.\nAI tools cut design revision cycles by up to 40%.\nRemote-first studios now outbid agencies on 3 of 4 new projects.",
+  },
+  photopost: {
+    image: "",
+    tag: "Field Notes",
+    caption: "The desk at 6am is the best version of the desk.",
+  },
+  showcase: {
+    image: "",
+    client: "Atlas & Bell",
+    projectType: "Brand",
+    year: "2026",
+    tagline: "A new identity for a platform that finally looks like it belongs.",
+  },
   // --- Vertical (TikTok / Threads) ---
   hottake: {
     kicker: "Hot Take",

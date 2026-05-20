@@ -613,6 +613,278 @@ const CarouselCTA = ({ brand, data }) => (
   </div>
 );
 
+/* ============================================== */
+/* 13. MISTAKES MADE (Carousel)                    */
+/* ============================================== */
+const T_Mistakes = ({ data, brand }) => {
+  const items = (data.mistakes ||
+    "Underpricing your work — I thought low rates would win clients. They attracted bad ones.\nNot writing things down — Verbal agreements disappear. Every project needs a brief.\nTaking every project — Busyness isn't the same as success. Pick your work carefully."
+  ).split("\n").filter(Boolean);
+
+  const bgPalette  = ["var(--vc-cream)", "var(--vc-blue)", "var(--vc-lime)", "var(--vc-ink)"];
+  const fgPalette  = ["var(--vc-ink)",   "#fff",           "var(--vc-ink)",  "var(--vc-cream)"];
+  const borderOp   = ["rgba(14,14,14,0.15)", "rgba(255,255,255,0.2)", "rgba(14,14,14,0.15)", "rgba(236,230,214,0.2)"];
+
+  const cover = (
+    <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <VLabel text={data.kicker || "Hard Lessons"} color="var(--vc-cream)" style={{ opacity: 0.7 }} />
+        <XMark size={56} color="var(--vc-red)" />
+      </div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+        <div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 148, lineHeight: 0.95, letterSpacing: "-0.03em" }}>
+            {items.length} mistakes
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 116, lineHeight: 1, color: "var(--vc-red)", marginTop: 4, letterSpacing: "-0.02em" }}>
+            I made for you.
+          </div>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, opacity: 0.55, lineHeight: 1.4, maxWidth: 720 }}>
+            {data.subtitle || "So you don't have to learn them the hard way."}
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.5 }}>Swipe →</span>
+        <Asterisk size={56} color="var(--vc-red)" />
+      </div>
+    </div>
+  );
+
+  const mistakeSlides = items.map((item, i) => {
+    const dash = item.indexOf("—");
+    const title  = dash > -1 ? item.slice(0, dash).trim() : item;
+    const lesson = dash > -1 ? item.slice(dash + 1).trim() : "";
+    const bg = bgPalette[i % bgPalette.length];
+    const fg = fgPalette[i % fgPalette.length];
+    return (
+      <div className="social-frame" key={i} style={{ background: bg, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <VLabel num={i + 1} text={`of ${items.length}`} color={fg} style={{ opacity: 0.7 }} />
+          <XMark size={48} color="var(--vc-red)" />
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 96, lineHeight: 1.02, letterSpacing: "-0.02em" }}>
+            {title}.
+          </div>
+          {lesson && (
+            <div style={{ marginTop: 32, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 48, lineHeight: 1.35, opacity: 0.6 }}>
+              {lesson}
+            </div>
+          )}
+        </div>
+        <VFooter brand={brand} color={fg} borderColor={borderOp[i % borderOp.length]} />
+      </div>
+    );
+  });
+
+  const slides = [cover, ...mistakeSlides];
+  if (data.ctaText) slides.push(<CarouselCTA brand={brand} data={data} />);
+  return slides;
+};
+
+/* ============================================== */
+/* 14. MINI GUIDE (Carousel)                       */
+/* ============================================== */
+const T_MiniGuide = ({ data, brand }) => {
+  const steps = (data.steps ||
+    "Write the goal first — Before you open any tool, write the end state in one sentence.\nMap your constraints — List every real limitation: time, budget, scope, and patience.\nDesign the smallest version — Resist over-engineering on the first pass.\nShip and learn — Real feedback beats internal debate every time."
+  ).split("\n").filter(Boolean);
+
+  const intro = data.intro || `A practical guide in ${steps.length} step${steps.length === 1 ? "" : "s"}.`;
+
+  const cover = (
+    <div className="social-frame" style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <VLabel text={data.kicker || "Mini Guide"} />
+        <Chevron color="var(--vc-ink)" />
+      </div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+        <div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 22, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.6, marginBottom: 12 }}>
+            How to
+          </div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 136, lineHeight: 0.94, letterSpacing: "-0.03em" }}>
+            {data.topic || "Ship Faster"}.
+          </div>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, opacity: 0.65, lineHeight: 1.4, maxWidth: 720 }}>
+            {intro}
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "14px 28px", background: "var(--vc-ink)", color: "var(--vc-cream)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+          {steps.length} steps →
+        </span>
+        <Asterisk size={64} color="var(--vc-ink)" />
+      </div>
+    </div>
+  );
+
+  const stepSlides = steps.map((s, i) => {
+    const dash = s.indexOf("—");
+    const title  = dash > -1 ? s.slice(0, dash).trim() : s;
+    const detail = dash > -1 ? s.slice(dash + 1).trim() : "";
+    const dark = i % 2 === 1;
+    return (
+      <div className="social-frame" key={i} style={{ background: dark ? "var(--vc-ink)" : "var(--vc-cream)", color: dark ? "var(--vc-cream)" : "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <VLabel text={`Step ${i + 1} of ${steps.length}`} color="currentColor" style={{ opacity: 0.7 }} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.4 }}>{data.topic || "Guide"}</span>
+        </div>
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "auto 1fr", gap: 40, alignItems: "center" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 320, lineHeight: 0.88, color: "var(--vc-lime)", letterSpacing: "-0.04em" }}>
+            {String(i + 1).padStart(2, "0")}
+          </div>
+          <div>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 72, lineHeight: 1.05, letterSpacing: "-0.015em" }}>
+              {title}.
+            </div>
+            {detail && (
+              <div style={{ marginTop: 20, fontFamily: "var(--font-helvetica)", fontSize: 28, lineHeight: 1.4, opacity: 0.55 }}>
+                {detail}
+              </div>
+            )}
+          </div>
+        </div>
+        <VFooter brand={brand} color="currentColor" borderColor={dark ? "rgba(236,230,214,0.2)" : "rgba(14,14,14,0.2)"} />
+      </div>
+    );
+  });
+
+  const slides = [cover, ...stepSlides];
+  if (data.ctaText) slides.push(<CarouselCTA brand={brand} data={data} />);
+  return slides;
+};
+
+/* ============================================== */
+/* 15. BREAKING POST (News)                        */
+/* ============================================== */
+const T_BreakingPost = ({ data, brand }) => (
+  <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 0, display: "flex", flexDirection: "column" }}>
+    <div style={{ background: "var(--vc-red)", color: "#fff", padding: "30px 80px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.18em", textTransform: "uppercase" }}>
+        {data.category || "Industry"}
+      </span>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+        {data.date || "May · 2026"}
+      </span>
+    </div>
+    <div style={{ flex: 1, padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--vc-mute)", marginBottom: 24 }}>
+        {data.kicker || "Breaking"}
+      </div>
+      <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 108, lineHeight: 0.96, color: "var(--vc-ink)", letterSpacing: "-0.02em" }}>
+        {data.headline || "Something big just changed."}
+      </div>
+      {data.subline && (
+        <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 52, color: "var(--vc-red)", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
+          {data.subline}
+        </div>
+      )}
+      <div style={{ flex: 1 }} />
+      {data.body && (
+        <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", lineHeight: 1.5, maxWidth: 820, marginBottom: 40 }}>
+          {data.body}
+        </div>
+      )}
+      <VFooter brand={brand} color="var(--vc-ink)" />
+    </div>
+  </div>
+);
+
+/* ============================================== */
+/* 16. WEEKLY DIGEST (News)                        */
+/* ============================================== */
+const T_WeeklyDigest = ({ data, brand }) => {
+  const items = (data.items ||
+    "The freelance market grew by 12% this quarter.\nAI tools cut design revision time by 40%.\nRemote clients now account for 67% of studio revenue."
+  ).split("\n").filter(Boolean);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.18em", textTransform: "uppercase", opacity: 0.45, marginBottom: 10 }}>
+            {data.period || "This Week In"}
+          </div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 100, lineHeight: 0.94, letterSpacing: "-0.025em" }}>
+            {data.topic || "Design"}.
+          </div>
+        </div>
+        <Asterisk size={80} color="var(--vc-blue)" />
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        {items.map((item, i) => (
+          <div key={i} style={{ padding: "28px 0", borderBottom: "1px solid rgba(236,230,214,0.1)", display: "flex", gap: 28, alignItems: "flex-start" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, color: "var(--vc-blue)", flexShrink: 0, marginTop: 4 }}>
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 32, lineHeight: 1.35, fontWeight: 500 }}>
+              {item}
+            </span>
+          </div>
+        ))}
+      </div>
+      <VFooter brand={brand} color="var(--vc-cream)" borderColor="rgba(236,230,214,0.2)" />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 17. PHOTO POST (Photo)                          */
+/* ============================================== */
+const T_PhotoPost = ({ data, brand }) => (
+  <div className="social-frame" style={{ background: "var(--vc-ink)", padding: 0, position: "relative", display: "flex", flexDirection: "column" }}>
+    <div style={{ flex: 1, overflow: "hidden" }}>
+      {data.image
+        ? <img src={data.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        : <PhotoSlot style={{ width: "100%", height: "100%" }} />
+      }
+    </div>
+    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "120px 80px 72px", background: "linear-gradient(to bottom, rgba(14,14,14,0) 0%, rgba(14,14,14,0.88) 100%)" }}>
+      {data.tag && (
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(236,230,214,0.55)", marginBottom: 14 }}>
+          {data.tag}
+        </div>
+      )}
+      <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 72, lineHeight: 1.04, color: "#fff", letterSpacing: "-0.015em" }}>
+        {data.caption || "Caption goes here."}
+      </div>
+      <div style={{ marginTop: 24, fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(236,230,214,0.5)" }}>
+        {brand.handle || "@studio"}
+      </div>
+    </div>
+  </div>
+);
+
+/* ============================================== */
+/* 18. WORK SHOWCASE (Photo)                       */
+/* ============================================== */
+const T_WorkShowcase = ({ data, brand }) => (
+  <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 0, display: "flex", flexDirection: "column" }}>
+    <div style={{ height: 648, background: "var(--vc-ink)", position: "relative", overflow: "hidden", flexShrink: 0 }}>
+      {data.image
+        ? <img src={data.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        : <PhotoSlot style={{ width: "100%", height: "100%" }} />
+      }
+      <div style={{ position: "absolute", top: 32, right: 40, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>
+        {data.projectType || "Brand"} · {data.year || "2026"}
+      </div>
+    </div>
+    <div style={{ flex: 1, padding: "44px 80px 56px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--vc-mute)", marginBottom: 14 }}>
+          {data.client || "Client name"}
+        </div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 88, lineHeight: 0.98, color: "var(--vc-ink)", letterSpacing: "-0.02em" }}>
+          {data.tagline || "A project worth sharing."}
+        </div>
+      </div>
+      <VFooter brand={brand} color="var(--vc-ink)" />
+    </div>
+  </div>
+);
+
 /* ============ Template registry ============ */
 const f = (key, label, opts = {}) => ({ key, label, type: opts.type || "text", placeholder: opts.placeholder, hint: opts.hint });
 const fA = (key, label, opts = {}) => f(key, label, { type: "textarea", ...opts });
@@ -721,6 +993,62 @@ const SocialTemplates = [
       fA("tagline", "Tagline"),
       f("date", "Launch date"),
       f("ctaText", "CTA text"),
+    ] },
+
+  /* --- Carousel (new) --- */
+  { id: "mistakes",    name: "Mistakes Made",      kind: "Carousel",
+    slides: (p) => T_Mistakes(p),
+    fields: [
+      f("kicker", "Kicker", { placeholder: "Hard Lessons" }),
+      fA("subtitle", "Cover subtitle"),
+      fA("mistakes", "Mistakes — 'Title — Lesson', one per line", { hint: "No limit. Title is bold; lesson appears as italic note." }),
+      f("ctaText", "Closing CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
+    ] },
+  { id: "miniguide",   name: "Mini Guide",          kind: "Carousel",
+    slides: (p) => T_MiniGuide(p),
+    fields: [
+      f("kicker", "Kicker", { placeholder: "Mini Guide" }),
+      f("topic", "Topic / title", { placeholder: "Ship Faster" }),
+      f("intro", "Cover intro line", { hint: "Leave empty to auto-generate from step count." }),
+      fA("steps", "Steps — 'Name — detail', one per line", { hint: "Detail is optional. No slide limit." }),
+      f("ctaText", "Closing CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
+    ] },
+
+  /* --- News --- */
+  { id: "breaking",    name: "Breaking Post",       kind: "News",
+    slides: (p) => [<T_BreakingPost {...p} />],
+    fields: [
+      f("category", "Top-bar category", { placeholder: "Industry" }),
+      f("date", "Date", { placeholder: "May · 2026" }),
+      f("kicker", "Kicker label", { placeholder: "Breaking" }),
+      f("headline", "Headline"),
+      f("subline", "Subline · italic (optional)"),
+      fA("body", "Body copy (optional)"),
+    ] },
+  { id: "digest",      name: "Weekly Digest",       kind: "News",
+    slides: (p) => [<T_WeeklyDigest {...p} />],
+    fields: [
+      f("period", "Period label", { placeholder: "This Week In" }),
+      f("topic", "Topic", { placeholder: "Design" }),
+      fA("items", "Items (one per line)", { hint: "3–5 items works best." }),
+    ] },
+
+  /* --- Photo --- */
+  { id: "photopost",   name: "Photo Post",          kind: "Photo",
+    slides: (p) => [<T_PhotoPost {...p} />],
+    fields: [
+      { key: "image", label: "Photo", type: "image" },
+      f("tag", "Tag / category label (optional)"),
+      fA("caption", "Caption"),
+    ] },
+  { id: "showcase",    name: "Work Showcase",       kind: "Photo",
+    slides: (p) => [<T_WorkShowcase {...p} />],
+    fields: [
+      { key: "image", label: "Project photo", type: "image" },
+      f("client", "Client name"),
+      f("projectType", "Project type", { placeholder: "Brand" }),
+      f("year", "Year", { placeholder: "2026" }),
+      fA("tagline", "Project tagline"),
     ] },
 ];
 

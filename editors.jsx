@@ -250,10 +250,12 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
   const groups = [];
   const seen = new Set();
   templates.forEach(t => {
-    const key = t.category || "square";
-    if (!seen.has(key)) { groups.push(key); seen.add(key); }
+    const cat = t.category || "square";
+    const kind = t.kind || "Single";
+    const key = `${cat}·${kind}`;
+    if (!seen.has(key)) { groups.push({ cat, kind, key }); seen.add(key); }
   });
-  const groupLabel = { square: "Instagram · 1:1", vertical: "TikTok / Threads · 9:16" };
+  const catLabel = { square: "Instagram 1:1", vertical: "TikTok / Threads" };
 
   return (
     <div className="social-flow" data-step={step}>
@@ -262,10 +264,13 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
         {/* Panel 1: Pick */}
         <div className="social-flow__panel">
           <div className="social-grid">
-            {groups.map(g => (
-              <React.Fragment key={g}>
-                <div className="social-grid__group-head">{groupLabel[g] || g}</div>
-                {templates.filter(t => (t.category || "square") === g).map(t => {
+            {groups.map(({ cat, kind, key }) => (
+              <React.Fragment key={key}>
+                <div className="social-grid__group-head">
+                  <span>{catLabel[cat] || cat}</span>
+                  <span className="social-grid__group-kind">{kind}</span>
+                </div>
+                {templates.filter(t => (t.category || "square") === cat && (t.kind || "Single") === kind).map(t => {
                   const tileData = data[t.id] || (defaults && defaults[t.id]) || {};
                   const firstSlide = t.slides({ data: tileData, brand: window.__brand || {} })[0];
                   const tplW = t.width || 1080;
@@ -274,7 +279,7 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
                   return (
                     <button
                       key={t.id}
-                      className={"social-grid__tile " + (g === "vertical" ? "social-grid__tile--vertical " : "") + (t.id === activeId ? "social-grid__tile--active" : "")}
+                      className={"social-grid__tile " + (cat === "vertical" ? "social-grid__tile--vertical " : "") + (t.id === activeId ? "social-grid__tile--active" : "")}
                       style={{ aspectRatio: `${tplW} / ${tplH}` }}
                       onClick={() => { setActiveId(t.id); changeStep("edit"); }}
                       title={t.name}

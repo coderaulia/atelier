@@ -881,6 +881,16 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .social-grid__group-head::after {
   content: ""; flex: 1; height: 1px; background: var(--shell-rule);
 }
+.social-grid__group-kind {
+  background: var(--shell-bg-3);
+  border: 1px solid var(--shell-rule);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--shell-muted);
+  text-transform: uppercase;
+}
 .social-grid__tile {
   border: 1px solid var(--shell-rule);
   border-radius: 8px;

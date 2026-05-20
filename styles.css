@@ -426,6 +426,7 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .paper {
   width: var(--paper-w);
   min-height: var(--paper-h);
+  overflow: visible;
   background: var(--paper);
   color: var(--paper-ink);
   box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 20px 60px -20px rgba(0,0,0,0.35), 0 4px 16px -8px rgba(0,0,0,0.15);
@@ -437,6 +438,10 @@ input, textarea, select { font-family: inherit; color: inherit; }
 }
 .paper--a4 { --paper-w: 8.27in; --paper-h: 11.69in; }
 .paper--letter { --paper-w: 8.5in; --paper-h: 11in; }
+
+.print-export-root {
+  display: none;
+}
 
 /* (carousel set styles deprecated — slides are now rendered individually by SocialPreview) */
 
@@ -1121,20 +1126,48 @@ input, textarea, select { font-family: inherit; color: inherit; }
 
 /* Print rules */
 @media print {
-  @page {
-    size: auto;
-    margin: 0;
+  html,
+  body {
+    width: auto !important;
+    height: auto !important;
+    background: var(--print-paper, var(--paper)) !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  html, body { background: white !important; height: auto !important; overflow: visible !important; }
-  body * { visibility: hidden !important; }
-  #print-target, #print-target * { visibility: visible !important; }
+  body.is-printing .app,
+  body.is-printing .modal-overlay,
+  body.is-printing .tweaks-panel {
+    display: none !important;
+  }
+  body.is-printing .print-export-root {
+    display: block !important;
+    width: max-content;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--print-paper, var(--paper)) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   #print-target {
-    position: absolute;
-    left: 0; top: 0;
+    display: block !important;
+    position: static !important;
+    width: var(--paper-w) !important;
+    min-height: var(--paper-h) !important;
+    margin: 0 !important;
+    background: var(--print-paper, var(--paper)) !important;
     transform: none !important;
     box-shadow: none !important;
+    overflow: visible !important;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    break-after: auto;
+    page-break-after: auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .paper { box-shadow: none !important; }
-  .social-card--carousel-set { display: block !important; }
-  .social-card--carousel-set > .social-card { page-break-after: always; }
+  #print-target * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }

@@ -79,22 +79,51 @@ const fmt = {
 
 /* ---------- Export helpers ---------- */
 function exportPrint(targetSelector) {
-  // Add print-target id to selected node, print, remove
   const node = document.querySelector(targetSelector);
   if (!node) return;
-  const old = node.id;
-  node.id = "print-target";
-  // remove transform during print
-  const wrap = node.closest(".paper-wrap, .social-card");
-  const oldTransform = wrap ? wrap.style.transform : null;
-  if (wrap) wrap.style.transform = "none";
-  setTimeout(() => {
+
+  document.querySelectorAll(".print-export-root").forEach(root => root.remove());
+  document.getElementById("print-page-style")?.remove();
+
+  const clone = node.cloneNode(true);
+  clone.id = "print-target";
+  clone.removeAttribute("style");
+
+  const printRoot = document.createElement("div");
+  printRoot.className = "print-export-root";
+  printRoot.appendChild(clone);
+
+  const pageStyle = document.createElement("style");
+  pageStyle.id = "print-page-style";
+  const pageSize = clone.classList.contains("paper--a4") ? "A4" : "letter";
+  const paperColor = getComputedStyle(node).backgroundColor || "#ffffff";
+  pageStyle.textContent = `
+    @page {
+      size: ${pageSize};
+      margin: 0;
+      background: ${paperColor};
+    }
+    body.is-printing {
+      --print-paper: ${paperColor};
+    }
+  `;
+
+  const cleanup = () => {
+    document.body.classList.remove("is-printing");
+    printRoot.remove();
+    pageStyle.remove();
+    window.removeEventListener("afterprint", cleanup);
+  };
+
+  document.head.appendChild(pageStyle);
+  document.body.appendChild(printRoot);
+  document.body.classList.add("is-printing");
+  window.addEventListener("afterprint", cleanup);
+
+  requestAnimationFrame(() => {
     window.print();
-    setTimeout(() => {
-      node.id = old || "";
-      if (wrap && oldTransform !== null) wrap.style.transform = oldTransform;
-    }, 100);
-  }, 50);
+    setTimeout(cleanup, 30000);
+  });
 }
 
 async function exportImage(targetSelector, filename = "export", format = "png") {

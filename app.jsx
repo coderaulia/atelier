@@ -76,6 +76,71 @@ const DEFAULT_PRD = {
   risks: "- Risk: paths feel too narrow. *Mitigation:* let users skip to a blank state at any point.\n- Open: do we localise sample data on day one, or follow with EN-only?\n- Open: does the existing event pipeline have the resolution we need for the new metrics?",
 };
 
+const DEFAULT_RETAINER = {
+  clientName: "Atlas & Bell, Inc.",
+  studioName: "North & Quill",
+  monthlyFee: 4500,
+  currency: "USD",
+  scope: "Monthly design retainer covering: UI design sprints, marketing assets, ad creative, and one brand refresh touchpoint per quarter.",
+  revisionLimit: "2 revision rounds per deliverable",
+  paymentDueDay: "1st of each month",
+  startDate: "2026-06-01",
+  contractDuration: "3 months, auto-renewing",
+  governingLaw: "New York, USA",
+};
+
+const DEFAULT_RECEIPT = {
+  receiptNo: "REC-2026-001",
+  clientName: "Atlas & Bell, Inc.",
+  paymentDate: "2026-05-20",
+  itemDescription: "Brand identity — Phase 01 deposit",
+  amount: 9600,
+  currency: "USD",
+  paymentMethod: "Bank transfer",
+  notes: "Thank you for your payment. This receipt confirms funds received in full.",
+};
+
+const DEFAULT_ONBOARDING = {
+  clientName: "Atlas & Bell, Inc.",
+  projectName: "Brand Identity",
+  startDate: "2026-06-01",
+  deliverables: "Primary logo & monogram\nType system\nColor palette\nBrand guidelines PDF\nStationery set",
+  assetsNeeded: "Brand brief / positioning deck\nExisting logo files (if any)\nFont licenses in use\nHigh-res photography",
+  communicationChannel: "Slack (shared workspace)",
+  meetingSchedule: "Weekly check-ins, Tuesdays 10am EST",
+  pointOfContact: "Maren Aksel — hello@northquill.studio",
+};
+
+const DEFAULT_SCOPEGUARD = {
+  projectName: "Brand Identity",
+  clientName: "Atlas & Bell, Inc.",
+  includedRevisions: "2",
+  whatIsRevision: "A revision is a set of consolidated feedback on the same deliverable, submitted in a single round. Minor text and colour adjustments within the same creative direction are included.",
+  whatIsOutOfScope: "A new creative direction after one has been approved\nChanges to deliverables not listed in the original agreement\nAdditional file formats not specified at project start\nFeedback submitted after the review window closes",
+  additionalRevisionRate: 180,
+  currency: "USD",
+};
+
+const DEFAULT_HANDOVER = {
+  projectName: "Brand Identity",
+  clientName: "Atlas & Bell, Inc.",
+  handoverDate: "2026-07-15",
+  deliverablesList: "Logo suite (primary, monogram, wordmark)\nColor palette & type system\nBrand guidelines PDF\nStationery files (business card, letterhead)\nSocial media templates (10 Figma files)",
+  fileLocations: "**Figma:** figma.com/file/XXXXXXXXX\n**Google Drive:** drive.google.com/XXXXXXXXX\nFinal exports: /Final Assets folder",
+  credentialsHandedOver: "**Figma:** file ownership transferred to client workspace\n**Font licenses:** certificates in /Licenses folder",
+  nextStepsForClient: "Download all assets from the shared Drive folder\nTransfer Figma file to your team workspace\nReview brand guidelines with your marketing team\nReach out with questions within 30 days",
+  studioSignOffName: "Maren Aksel",
+};
+
+const DEFAULT_QUOTE = {
+  serviceDescription: "Brand Identity Design",
+  hours: 40,
+  hourlyRate: 180,
+  currency: "USD",
+  discountPct: 0,
+  taxPct: 0,
+};
+
 const DEFAULT_SOCIAL = {
   quote: {
     label: "A Better Future",
@@ -264,15 +329,46 @@ const DEFAULT_SOCIAL = {
     titleItalic: "calm week.",
     items: "MON — Client calls + check-ins\nTUE — Deep work block 1\nWED — Deep work block 2\nTHU — Reviews + revisions\nFRI — Ship + invoice\nSAT — Read + walk\nSUN — Plan the week",
   },
+  // New social templates
+  pricing: {
+    packageName: "Brand Starter",
+    price: 1500,
+    currency: "USD",
+    features: "Logo + brand mark\nColor palette & type system\nBrand guidelines (12 pages)\n2 revision rounds\nSource files included",
+    ctaText: "DM to get started →",
+    bg: "",
+  },
+  testimonial: {
+    quote: "Working with this studio changed how I think about proposals entirely. We closed our next deal the same week.",
+    clientName: "Priya Bell",
+    clientTitle: "Co-Founder · Atlas & Bell",
+    clientPhoto: "",
+  },
+  casestudycarousel: {
+    projectName: "Brand Identity",
+    clientName: "Atlas & Bell",
+    problem: "Their existing mark read as a 2019 SaaS startup — not the 2026 platform they'd become.",
+    image1: "",
+    solution: "A full identity system: logo, type, colour, and a 32-page guidelines document the team can extend without us.",
+    image2: "",
+    result: "Closed their Series B within 90 days of launch. The new brand was cited in three investor decks.",
+    image3: "",
+  },
 };
 
 /* ---------- Doc type registry ---------- */
 const DOC_TYPES = [
-  { id: "agreement", name: "Agreement",  icon: Icon.doc,      Editor: AgreementEditor, defaults: DEFAULT_AGREEMENT, hasVariants: true },
-  { id: "invoice",   name: "Invoice",    icon: Icon.receipt,  Editor: InvoiceEditor,   defaults: DEFAULT_INVOICE,   hasVariants: true },
-  { id: "proposal",  name: "Proposal",   icon: Icon.proposal, Editor: ProposalEditor,  defaults: DEFAULT_PROPOSAL,  hasVariants: true },
-  { id: "prd",       name: "PRD",        icon: Icon.prd,      Editor: PRDEditor,       defaults: DEFAULT_PRD,       hasVariants: true },
-  { id: "social",    name: "Social",     icon: Icon.social,   Editor: SocialEditor,    defaults: DEFAULT_SOCIAL,    hasVariants: false },
+  { id: "agreement",  name: "Agreement",  icon: Icon.doc,      Editor: AgreementEditor,  defaults: DEFAULT_AGREEMENT,  hasVariants: true },
+  { id: "invoice",    name: "Invoice",    icon: Icon.receipt,  Editor: InvoiceEditor,    defaults: DEFAULT_INVOICE,    hasVariants: true },
+  { id: "proposal",   name: "Proposal",  icon: Icon.proposal, Editor: ProposalEditor,   defaults: DEFAULT_PROPOSAL,   hasVariants: true },
+  { id: "prd",        name: "PRD",        icon: Icon.prd,      Editor: PRDEditor,        defaults: DEFAULT_PRD,        hasVariants: true },
+  { id: "retainer",   name: "Retainer",  icon: Icon.doc,      Editor: RetainerEditor,   defaults: DEFAULT_RETAINER,   hasVariants: true },
+  { id: "receipt",    name: "Receipt",   icon: Icon.receipt,  Editor: ReceiptEditor,    defaults: DEFAULT_RECEIPT,    hasVariants: true },
+  { id: "onboarding", name: "Onboarding",icon: Icon.proposal, Editor: OnboardingEditor, defaults: DEFAULT_ONBOARDING, hasVariants: true },
+  { id: "scopeguard", name: "Scope Guard",icon: Icon.prd,     Editor: ScopeGuardEditor, defaults: DEFAULT_SCOPEGUARD, hasVariants: true },
+  { id: "handover",   name: "Handover",  icon: Icon.doc,      Editor: HandoverEditor,   defaults: DEFAULT_HANDOVER,   hasVariants: true },
+  { id: "social",     name: "Social",    icon: Icon.social,   Editor: SocialEditor,     defaults: DEFAULT_SOCIAL,     hasVariants: false },
+  { id: "quote",      name: "Calculator",icon: Icon.calc,     Editor: QuoteCalculatorPanel, defaults: DEFAULT_QUOTE,  hasVariants: false, isTool: true },
 ];
 
 const VARIANTS = [
@@ -320,11 +416,17 @@ function App() {
   const [docType, setDocType] = useLocalStorage("dg.docType.v2", "agreement");
   const [variant, setVariant] = useLocalStorage("dg.variant.v2", "classic");
   const [docData, setDocData] = useLocalStorage("dg.data.v2", {
-    agreement: DEFAULT_AGREEMENT,
-    invoice: DEFAULT_INVOICE,
-    proposal: DEFAULT_PROPOSAL,
-    prd: DEFAULT_PRD,
-    social: DEFAULT_SOCIAL,
+    agreement:  DEFAULT_AGREEMENT,
+    invoice:    DEFAULT_INVOICE,
+    proposal:   DEFAULT_PROPOSAL,
+    prd:        DEFAULT_PRD,
+    retainer:   DEFAULT_RETAINER,
+    receipt:    DEFAULT_RECEIPT,
+    onboarding: DEFAULT_ONBOARDING,
+    scopeguard: DEFAULT_SCOPEGUARD,
+    handover:   DEFAULT_HANDOVER,
+    social:     DEFAULT_SOCIAL,
+    quote:      DEFAULT_QUOTE,
   });
   const [socialTemplateId, setSocialTemplateId] = useLocalStorage("dg.socialTemplateId.v2", "quote");
   const [brand, setBrand] = useLocalStorage("dg.brand.v2", DEFAULT_BRAND);
@@ -381,14 +483,20 @@ function App() {
   // Compute target node for export (single post)
   const exportTarget = docType === "social" ? "#social-target-0" : "#paper-target";
 
+  const isToolMode = cfg && cfg.isTool;
+
   // Calc filename
   const filename = useMemo(() => {
-    if (docType === "invoice") return `${(data.invoiceNo || "invoice").replace(/\s+/g, "-")}`;
+    if (docType === "invoice")   return `${(data.invoiceNo  || "invoice").replace(/\s+/g, "-")}`;
+    if (docType === "receipt")   return `${(data.receiptNo  || "receipt").replace(/\s+/g, "-")}`;
+    if (docType === "quote")     return "quick-quote";
     if (docType === "social") {
       const tpl = SocialTemplates.find(s => s.id === socialTemplateId);
       return `${(tpl?.name || "social").toLowerCase().replace(/\s+/g, "-")}`;
     }
-    return `${docType}-${(data.title || data.refNo || "doc").toLowerCase().replace(/\s+/g, "-").slice(0, 40)}`;
+    const slug = (data.title || data.projectName || data.clientName || data.refNo || "doc")
+      .toLowerCase().replace(/\s+/g, "-").slice(0, 40);
+    return `${docType}-${slug}`;
   }, [docType, data, socialTemplateId]);
 
   const handlePrint = () => exportPrint(exportTarget);
@@ -415,7 +523,7 @@ function App() {
 
         <div className="sidebar__group">
           <div className="sidebar__heading">Documents</div>
-          {DOC_TYPES.filter(d => d.id !== "social").map(d => (
+          {DOC_TYPES.filter(d => d.id !== "social" && !d.isTool).map(d => (
             <button
               key={d.id}
               className={"sidebar__item " + (docType === d.id ? "sidebar__item--active" : "")}
@@ -423,7 +531,7 @@ function App() {
             >
               <span className="sidebar__item-icon">{d.icon}</span>
               <span>{d.name}</span>
-              <span className="sidebar__item-count">03</span>
+              {d.hasVariants && <span className="sidebar__item-count">03</span>}
             </button>
           ))}
         </div>
@@ -438,6 +546,20 @@ function App() {
             <span>Social media</span>
             <span className="sidebar__item-count">{AllSocialTemplates.length}</span>
           </button>
+        </div>
+
+        <div className="sidebar__group">
+          <div className="sidebar__heading">Tools</div>
+          {DOC_TYPES.filter(d => d.isTool).map(d => (
+            <button
+              key={d.id}
+              className={"sidebar__item " + (docType === d.id ? "sidebar__item--active" : "")}
+              onClick={() => setDocType(d.id)}
+            >
+              <span className="sidebar__item-icon">{d.icon}</span>
+              <span>{d.name}</span>
+            </button>
+          ))}
         </div>
 
         <div className="sidebar__footer">
@@ -461,14 +583,18 @@ function App() {
           <div className="editor__crumb">
             {docType === "social"
               ? (socialStep === "pick" ? "Social · Browse" : `Social · ${ActiveSocial?.kind || "Single"}`)
+              : cfg.isTool
+              ? "Tools"
               : `${cfg.name} · ${VARIANTS.find(v => v.id === variant)?.name}`}
           </div>
           <h1 className="editor__title">
             {docType === "social"
               ? (socialStep === "pick" ? "Choose a template" : (ActiveSocial?.name || "Template"))
-              : (data.title || cfg.name)}
+              : cfg.isTool
+              ? cfg.name
+              : (data.title || data.projectName || data.clientName || cfg.name)}
           </h1>
-          {cfg.hasVariants && (
+          {cfg.hasVariants && !cfg.isTool && (
             <div className="editor__variants">
               {VARIANTS.map(v => (
                 <button
@@ -481,10 +607,16 @@ function App() {
           )}
         </div>
         <div className="editor__body">
-          {docType === "agreement" && <AgreementEditor data={data} onChange={setData} />}
-          {docType === "invoice"   && <InvoiceEditor   data={data} onChange={setData} />}
-          {docType === "proposal"  && <ProposalEditor  data={data} onChange={setData} />}
-          {docType === "prd"       && <PRDEditor       data={data} onChange={setData} />}
+          {docType === "agreement"  && <AgreementEditor  data={data} onChange={setData} />}
+          {docType === "invoice"    && <InvoiceEditor    data={data} onChange={setData} />}
+          {docType === "proposal"   && <ProposalEditor   data={data} onChange={setData} />}
+          {docType === "prd"        && <PRDEditor        data={data} onChange={setData} />}
+          {docType === "retainer"   && <RetainerEditor   data={data} onChange={setData} />}
+          {docType === "receipt"    && <ReceiptEditor    data={data} onChange={setData} />}
+          {docType === "onboarding" && <OnboardingEditor data={data} onChange={setData} />}
+          {docType === "scopeguard" && <ScopeGuardEditor data={data} onChange={setData} />}
+          {docType === "handover"   && <HandoverEditor   data={data} onChange={setData} />}
+          {docType === "quote"      && <QuoteCalculatorPanel data={data} onChange={setData} />}
           {docType === "social"    && (
             <SocialEditor
               data={data}
@@ -504,19 +636,23 @@ function App() {
         <div className="preview__bar">
           <span className="preview__bar-title">Preview</span>
           <span className="preview__bar-meta">
-            {docType === "social"
+            {isToolMode
+              ? "Quick estimate"
+              : docType === "social"
               ? `${ActiveSocial?.width || 1080} × ${ActiveSocial?.height || 1080} · ${ActiveSocial?.kind}`
               : `${t.paper === "a4" ? "A4" : "Letter"} · 8.5×11 in`}
           </span>
           <div className="preview__bar-spacer"></div>
 
-          <div className="zoom-group">
-            <button className="zoom-btn" onClick={() => setZoom(z => Math.max(0.2, z - 0.1))}>{Icon.zoomOut}</button>
-            <span className="zoom-value">{Math.round(zoom * 100)}%</span>
-            <button className="zoom-btn" onClick={() => setZoom(z => Math.min(1.4, z + 0.1))}>{Icon.zoomIn}</button>
-          </div>
+          {!isToolMode && (
+            <div className="zoom-group">
+              <button className="zoom-btn" onClick={() => setZoom(z => Math.max(0.2, z - 0.1))}>{Icon.zoomOut}</button>
+              <span className="zoom-value">{Math.round(zoom * 100)}%</span>
+              <button className="zoom-btn" onClick={() => setZoom(z => Math.min(1.4, z + 0.1))}>{Icon.zoomIn}</button>
+            </div>
+          )}
 
-          {docType !== "social" ? (
+          {isToolMode ? null : docType !== "social" ? (
             <button className="export-btn" onClick={handlePrint}>{Icon.print} Export PDF</button>
           ) : socialSlides.length > 1 ? (
             <>
@@ -535,7 +671,11 @@ function App() {
         </div>
 
         <div className="preview__stage" ref={stageRef}>
-          {docType !== "social" ? (
+          {isToolMode ? (
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 40, width: "100%", height: "100%" }}>
+              <QuotePreview data={data} />
+            </div>
+          ) : docType !== "social" ? (
             <div className="paper-wrap" style={{ transform: `scale(${zoom})` }}>
               <div id="paper-target" className={paperClass}>
                 {TplComponent && <TplComponent data={data} brand={brand} />}

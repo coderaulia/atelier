@@ -22,6 +22,8 @@ const Icon = {
   image: <I d={<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-11 11"/></>} size={16} />,
   zoomIn: <I d={<><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></>} size={14} />,
   zoomOut: <I d={<><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></>} size={14} />,
+  calc: <I d={<><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 7h8M8 11h8M8 15h4M14 19h2"/></>} />,
+  copy: <I d={<><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>} size={14} />,
 };
 
 /* ---------- localStorage hook ---------- */
@@ -56,6 +58,7 @@ const fmt = {
   money: (n, currency = "USD") => {
     const num = Number(n) || 0;
     try {
+      if (currency === "IDR") return "Rp " + new Intl.NumberFormat("id-ID").format(Math.round(num));
       return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(num);
     } catch (e) {
       return "$" + num.toFixed(2);

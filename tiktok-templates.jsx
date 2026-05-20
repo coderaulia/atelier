@@ -117,29 +117,33 @@ const V_Question = ({ data, brand }) => (
 /* ============================================== */
 /* 4. STAT HERO VERTICAL                            */
 /* ============================================== */
-const V_StatVertical = ({ data, brand }) => (
-  <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <VLabel text={data.kicker || "By the Numbers"} />
-      <Chevron color="var(--vc-ink)" />
+const V_StatVertical = ({ data, brand }) => {
+  const stat = String(data.stat || "73%");
+  const statSize = stat.length <= 3 ? 520 : stat.length <= 5 ? 430 : 340;
+  return (
+    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <VLabel text={data.kicker || "By the Numbers"} />
+        <Chevron color="var(--vc-ink)" />
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 64, color: "var(--vc-mute)", marginBottom: 14 }}>
+          {data.italicLead || "An uncomfortable truth"}
+        </div>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: statSize, lineHeight: 0.86, color: "var(--vc-red)", letterSpacing: "-0.055em", whiteSpace: "nowrap", maxWidth: "100%" }}>
+          {stat}
+        </div>
+        <div style={{ marginTop: 48, fontFamily: "var(--font-helvetica)", fontSize: 52, lineHeight: 1.15, color: "var(--vc-ink)", maxWidth: 880, letterSpacing: "-0.005em" }}>
+          {data.statLabel || "of solo freelancers undercharge by at least 30%."}
+        </div>
+        <div style={{ marginTop: 24, fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--vc-mute)" }}>
+          {data.source || "Survey of 1,200 — 2026"}
+        </div>
+      </div>
+      <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
     </div>
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 64, color: "var(--vc-mute)", marginBottom: 8 }}>
-        {data.italicLead || "An uncomfortable truth"}
-      </div>
-      <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 620, lineHeight: 0.84, color: "var(--vc-red)", letterSpacing: "-0.05em" }}>
-        {data.stat || "73%"}
-      </div>
-      <div style={{ marginTop: 48, fontFamily: "var(--font-helvetica)", fontSize: 52, lineHeight: 1.15, color: "var(--vc-ink)", maxWidth: 880, letterSpacing: "-0.005em" }}>
-        {data.statLabel || "of solo freelancers undercharge by at least 30%."}
-      </div>
-      <div style={{ marginTop: 24, fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--vc-mute)" }}>
-        {data.source || "Survey of 1,200 — 2026"}
-      </div>
-    </div>
-    <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 5. THREADS REPLY — Threads-post style mock      */
@@ -417,6 +421,67 @@ const tI = (key, label, opts = {}) => tf(key, label, { type: "image", ...opts })
 
 const VERTICAL = { width: 1080, height: 1920, category: "vertical" };
 
+/* ============================================== */
+/* 11. PORTFOLIO CASE STUDY — 3-slide carousel     */
+/* ============================================== */
+const V_CaseStudyCarousel = ({ data, brand }) => {
+  const palette = [
+    { bg: "var(--vc-cream)", fg: "var(--vc-ink)", border: "rgba(14,14,14,0.15)" },
+    { bg: "var(--vc-blue)",  fg: "#fff",           border: "rgba(255,255,255,0.2)" },
+    { bg: "var(--vc-lime)",  fg: "var(--vc-ink)",  border: "rgba(14,14,14,0.15)" },
+  ];
+  const slideContent = [
+    { num: "01", label: "Problem",  content: data.problem  || "What challenge did the client face?", image: data.image1 },
+    { num: "02", label: "Solution", content: data.solution || "What did we build or design?",        image: data.image2 },
+    { num: "03", label: "Result",   content: data.result   || "What was the outcome?",               image: data.image3 },
+  ];
+  return slideContent.map((s, i) => {
+    const { bg, fg, border } = palette[i];
+    return (
+      <div key={i} {...VFRAME} style={{ background: bg, color: fg, padding: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "44px 80px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${border}` }}>
+          <VLabel text={`${s.num} / 03 · ${s.label}`} color={fg} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.55 }}>
+            {data.projectName || "Case Study"}
+          </span>
+        </div>
+        {s.image ? (
+          <>
+            <div style={{ flex: "0 0 660px", overflow: "hidden", position: "relative", background: "#111" }}>
+              <img src={s.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            <div style={{ flex: 1, padding: "52px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.5, marginBottom: 20 }}>
+                  {data.clientName || "Client"}
+                </div>
+                <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 68, lineHeight: 1.08, letterSpacing: "-0.01em" }}>
+                  {s.content}
+                </div>
+              </div>
+              <VFooter brand={brand} color={fg} borderColor={border} />
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ flex: 1, padding: "64px 80px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.45, marginBottom: 36 }}>
+                {data.clientName || "Client"}
+              </div>
+              <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 110, lineHeight: 1.04, letterSpacing: "-0.015em" }}>
+                {s.content}
+              </div>
+            </div>
+            <div style={{ padding: "0 80px 64px" }}>
+              <VFooter brand={brand} color={fg} borderColor={border} />
+            </div>
+          </>
+        )}
+      </div>
+    );
+  });
+};
+
 const TikTokTemplates = [
   { id: "hottake", name: "Hot Take", kind: "Single", ...VERTICAL,
     slides: (p) => [<V_HotTake {...p} />],
@@ -512,6 +577,18 @@ const TikTokTemplates = [
       tf("title", "Title · roman"),
       tf("titleItalic", "Title · italic"),
       tA("items", "Items — 'DAY — body', one per line"),
+    ] },
+  { id: "casestudycarousel", name: "Case Study Carousel", kind: "Carousel", ...VERTICAL,
+    slides: (p) => V_CaseStudyCarousel(p),
+    fields: [
+      tf("projectName", "Project name", { placeholder: "Brand Identity" }),
+      tf("clientName", "Client name", { placeholder: "Atlas & Bell" }),
+      tA("problem", "Slide 1 — Problem", { hint: "What challenge did the client face?" }),
+      tI("image1", "Slide 1 — image (optional)"),
+      tA("solution", "Slide 2 — Solution", { hint: "What did you build or design?" }),
+      tI("image2", "Slide 2 — image (optional)"),
+      tA("result", "Slide 3 — Result", { hint: "What was the measurable outcome?" }),
+      tI("image3", "Slide 3 — image (optional)"),
     ] },
 ];
 

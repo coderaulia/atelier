@@ -885,6 +885,203 @@ const T_WorkShowcase = ({ data, brand }) => (
   </div>
 );
 
+/* ============================================== */
+/* 19. PRICING / PACKAGE CARD (single)             */
+/* ============================================== */
+const T_PricingCard = ({ data, brand }) => {
+  const features = (data.features || "Logo + brand mark\nColor palette & type system\nBrand guidelines (12 pages)\n2 revision rounds\nSource files included").split("\n").filter(Boolean).slice(0, 6);
+  const useAccent = data.bg === "accent";
+  const bg = useAccent ? "var(--accent)" : "var(--vc-cream)";
+  const fg = useAccent ? "var(--accent-ink)" : "var(--vc-ink)";
+  const muted = useAccent ? "rgba(0,0,0,0.52)" : "var(--vc-mute)";
+  const rule = useAccent ? "rgba(0,0,0,0.18)" : "rgba(14,14,14,0.15)";
+  const price = fmt.money(Number(data.price) || 0, data.currency || "USD");
+  return (
+    <div className="social-frame" style={{ background: bg, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <VLabel text={data.packageName || "Package"} color={fg} />
+        {brand.logo && brand.logoEnabled !== false
+          ? <img src={brand.logo} alt="" style={{ height: 28, width: "auto", maxWidth: 100, objectFit: "contain" }} />
+          : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.5 }}>{brand.studioName || "Studio"}</span>
+        }
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 152, lineHeight: 0.9, letterSpacing: "-0.04em" }}>
+          {fmt.money(Number(data.price) || 0, data.currency || "USD")}
+        </div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, marginTop: 12 }}>
+          per month
+        </div>
+        <div style={{ marginTop: 52, display: "flex", flexDirection: "column", gap: 20 }}>
+          {features.map((feat, i) => (
+            <div key={i} style={{ display: "flex", gap: 18, alignItems: "center" }}>
+              <span style={{ color: "var(--vc-red)", fontFamily: "var(--font-mono)", fontSize: 20, flexShrink: 0, lineHeight: 1 }}>→</span>
+              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 30, lineHeight: 1.3 }}>{feat}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ borderTop: `1.5px solid ${rule}`, paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          {data.ctaText || "DM to get started →"}
+        </span>
+        <Asterisk size={52} color={fg} />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 20. TESTIMONIAL CARD (single)                   */
+/* ============================================== */
+const T_Testimonial = ({ data, brand }) => (
+  <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 220, lineHeight: 0.68, color: "var(--vc-red)", marginTop: -16 }}>"</div>
+      <div style={{ alignSelf: "flex-start", marginTop: 8 }}>
+        {brand.logo && brand.logoEnabled !== false
+          ? <img src={brand.logo} alt="" style={{ height: 30, width: "auto", maxWidth: 110, objectFit: "contain" }} />
+          : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.45 }}>{brand.studioName || "Studio"}</span>
+        }
+      </div>
+    </div>
+    <div style={{ flex: 1, display: "flex", alignItems: "center", marginTop: -20 }}>
+      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 76, lineHeight: 1.1, color: "var(--vc-ink)", letterSpacing: "-0.01em" }}>
+        {data.quote || "Working with this studio changed how I think about client communication entirely."}
+      </div>
+    </div>
+    <div style={{ display: "flex", gap: 28, alignItems: "center", paddingTop: 32, borderTop: "1.5px solid rgba(14,14,14,0.18)" }}>
+      {data.clientPhoto
+        ? <img src={data.clientPhoto} alt="" style={{ width: 88, height: 88, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+        : <div style={{ width: 88, height: 88, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 32, flexShrink: 0 }}>
+            {((data.clientName || "?")[0] || "?").toUpperCase()}
+          </div>
+      }
+      <div>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 32, color: "var(--vc-ink)", letterSpacing: "-0.005em" }}>
+          {data.clientName || "Client Name"}
+        </div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.1em", color: "var(--vc-mute)", textTransform: "uppercase", marginTop: 6 }}>
+          {data.clientTitle || "Founder · Atlas & Bell"}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const T_PricingEditorial = ({ data, brand }) => {
+  const features = (data.features || "Logo + brand mark\nColor palette & type system\nBrand guidelines (12 pages)\n2 revision rounds\nSource files included").split("\n").filter(Boolean).slice(0, 6);
+  const useAccent = data.bg === "accent";
+  const bg = useAccent ? "var(--accent)" : "var(--vc-cream)";
+  const fg = useAccent ? "var(--accent-ink)" : "var(--vc-ink)";
+  const muted = useAccent ? "rgba(0,0,0,0.52)" : "var(--vc-mute)";
+  const rule = useAccent ? "rgba(0,0,0,0.18)" : "rgba(14,14,14,0.15)";
+  const price = fmt.money(Number(data.price) || 0, data.currency || "USD");
+  return (
+    <div className="social-frame" style={{ background: bg, color: fg, padding: 72, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 34, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", right: -72, top: 210, width: 320, height: 320, border: `1.5px solid ${rule}`, borderRadius: "50%" }} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "start", gap: 28 }}>
+        <div>
+          <VLabel text="Proposal No. 01" color={fg} />
+          <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 84, lineHeight: 0.95, letterSpacing: "-0.015em" }}>
+            {data.packageName || "Brand Starter"}
+          </div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          {brand.logo && brand.logoEnabled !== false
+            ? <img src={brand.logo} alt="" style={{ height: 30, width: "auto", maxWidth: 120, objectFit: "contain" }} />
+            : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.55 }}>{brand.studioName || "Studio"}</span>
+          }
+          <div style={{ marginTop: 18, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.16em", textTransform: "uppercase", color: muted }}>
+            Available now
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 54, alignItems: "end", minHeight: 0 }}>
+        <div style={{ alignSelf: "center" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.16em", textTransform: "uppercase", color: muted, marginBottom: 20 }}>
+            Included in the engagement
+          </div>
+          <div style={{ display: "grid", gap: 14 }}>
+            {features.map((feat, i) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "38px 1fr", alignItems: "baseline", gap: 16, paddingBottom: 14, borderBottom: `1px solid ${rule}` }}>
+                <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", color: "var(--vc-red)", fontSize: 34, lineHeight: 0.8 }}>{String(i + 1).padStart(2, "0")}</span>
+                <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, lineHeight: 1.18, letterSpacing: "-0.005em" }}>{feat}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ alignSelf: "stretch", borderLeft: `1.5px solid ${rule}`, paddingLeft: 36, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.16em", textTransform: "uppercase", color: muted, marginBottom: 20 }}>
+              Starting at
+            </div>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 800, fontSize: price.length > 10 ? 72 : 88, lineHeight: 0.9, letterSpacing: "-0.05em" }}>
+              {price}
+            </div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.14em", textTransform: "uppercase", color: muted, marginTop: 14 }}>
+              Flat fee
+            </div>
+          </div>
+          <Asterisk size={86} color="var(--vc-red)" />
+        </div>
+      </div>
+      <div style={{ borderTop: `1.5px solid ${rule}`, paddingTop: 26, display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 24 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 17, letterSpacing: "0.13em", textTransform: "uppercase" }}>
+          {data.ctaText || "DM to get started ->"}
+        </span>
+        <ArrowOut size={60} color={fg} />
+      </div>
+    </div>
+  );
+};
+
+const T_TestimonialEditorial = ({ data, brand }) => {
+  const quote = data.quote || "Working with this studio changed how I think about proposals entirely. We closed our next deal the same week.";
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 0, display: "grid", gridTemplateRows: "170px 1fr 190px", overflow: "hidden", position: "relative" }}>
+      <div style={{ position: "absolute", inset: "28px 28px auto auto", width: 174, height: 174, border: "1.5px solid rgba(244,238,222,0.24)", borderRadius: "50%" }} />
+      <div style={{ padding: "64px 72px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
+        <VLabel text="Client proof" color="var(--vc-cream)" />
+        {brand.logo && brand.logoEnabled !== false
+          ? <img src={brand.logo} alt="" style={{ height: 30, width: "auto", maxWidth: 120, objectFit: "contain", filter: "invert(1)" }} />
+          : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.58 }}>{brand.studioName || "Studio"}</span>
+        }
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "250px 1fr", gap: 46, alignItems: "center", padding: "0 72px", position: "relative", zIndex: 1 }}>
+        <div style={{ alignSelf: "stretch", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1.5px solid rgba(244,238,222,0.18)", paddingRight: 42 }}>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 240, lineHeight: 0.7, color: "var(--vc-red)", marginTop: 16 }}>"</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 22px)", gap: 8, marginBottom: 16 }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <span key={i} style={{ width: 22, height: 22, borderRadius: "50%", background: i < 4 ? "var(--vc-red)" : "var(--vc-cream)", display: "block" }} />
+            ))}
+          </div>
+        </div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: quote.length > 150 ? 62 : 74, lineHeight: 1.06, letterSpacing: "-0.01em" }}>
+          {quote}
+        </div>
+      </div>
+      <div style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: "38px 72px", display: "grid", gridTemplateColumns: "112px 1fr auto", gap: 28, alignItems: "center" }}>
+        {data.clientPhoto
+          ? <img src={data.clientPhoto} alt="" style={{ width: 112, height: 112, objectFit: "cover", flexShrink: 0 }} />
+          : <div style={{ width: 112, height: 112, background: "var(--vc-red)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 42, flexShrink: 0 }}>
+              {((data.clientName || "?")[0] || "?").toUpperCase()}
+            </div>
+        }
+        <div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 34, letterSpacing: "-0.01em" }}>
+            {data.clientName || "Client Name"}
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.12em", color: "var(--vc-mute)", textTransform: "uppercase", marginTop: 8 }}>
+            {data.clientTitle || "Founder - Atlas & Bell"}
+          </div>
+        </div>
+        <ArrowOut size={62} color="var(--vc-ink)" />
+      </div>
+    </div>
+  );
+};
+
 /* ============ Template registry ============ */
 const f = (key, label, opts = {}) => ({ key, label, type: opts.type || "text", placeholder: opts.placeholder, hint: opts.hint });
 const fA = (key, label, opts = {}) => f(key, label, { type: "textarea", ...opts });
@@ -1049,6 +1246,26 @@ const SocialTemplates = [
       f("projectType", "Project type", { placeholder: "Brand" }),
       f("year", "Year", { placeholder: "2026" }),
       fA("tagline", "Project tagline"),
+    ] },
+
+  /* --- Pricing & Social Proof --- */
+  { id: "pricing",     name: "Pricing Card",        kind: "Pricing",
+    slides: (p) => [<T_PricingEditorial {...p} />],
+    fields: [
+      f("packageName", "Package name", { placeholder: "Brand Starter" }),
+      f("price", "Price (number only)", { placeholder: "1500" }),
+      { key: "currency", label: "Currency", type: "select", options: [{ value: "USD", label: "USD ($)" }, { value: "IDR", label: "IDR (Rp)" }, { value: "EUR", label: "EUR (€)" }, { value: "GBP", label: "GBP (£)" }] },
+      fA("features", "Features (one per line, 4–6 lines)"),
+      f("ctaText", "CTA text", { placeholder: "DM to get started →" }),
+      { key: "bg", label: "Background", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "accent", label: "Accent color" }] },
+    ] },
+  { id: "testimonial", name: "Testimonial Card",    kind: "Social Proof",
+    slides: (p) => [<T_TestimonialEditorial {...p} />],
+    fields: [
+      fA("quote", "Quote"),
+      f("clientName", "Client name"),
+      f("clientTitle", "Client title / company", { placeholder: "Founder · Atlas & Bell" }),
+      { key: "clientPhoto", label: "Client photo (optional)", type: "image" },
     ] },
 ];
 

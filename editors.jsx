@@ -315,6 +315,12 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
             <React.Fragment key={f.key}>
               {f.type === "image" ? (
                 <ImageField label={f.label} hint={f.hint} value={activeData[f.key]} onChange={v => set(f.key, v)} />
+              ) : f.type === "select" ? (
+                <Field label={f.label} hint={f.hint}>
+                  <select className="field__select" value={activeData[f.key] || ""} onChange={e => set(f.key, e.target.value)}>
+                    {(f.options || []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </Field>
               ) : (
                 <Field label={f.label} hint={f.hint}>
                   {f.type === "textarea"
@@ -331,6 +337,210 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
   );
 }
 
+/* ---------- RETAINER ---------- */
+function RetainerEditor({ data, onChange }) {
+  const set = (k, v) => onChange({ ...data, [k]: v });
+  return (
+    <>
+      <SectionTitle>Parties</SectionTitle>
+      <Field label="Client name">
+        <TextInput value={data.clientName} onChange={v => set("clientName", v)} placeholder="Atlas & Bell, Inc." />
+      </Field>
+      <Field label="Studio name">
+        <TextInput value={data.studioName} onChange={v => set("studioName", v)} placeholder="North & Quill" />
+      </Field>
+      <div className="field__row">
+        <Field label="Currency">
+          <select className="field__select" value={data.currency || "USD"} onChange={e => set("currency", e.target.value)}>
+            <option>USD</option><option>IDR</option><option>EUR</option><option>GBP</option><option>SGD</option>
+          </select>
+        </Field>
+        <Field label="Monthly fee">
+          <TextInput type="number" value={data.monthlyFee} onChange={v => set("monthlyFee", v)} placeholder="4500" />
+        </Field>
+      </div>
+
+      <SectionTitle>Terms</SectionTitle>
+      <Field label="Scope of work (markdown)">
+        <Textarea value={data.scope} onChange={v => set("scope", v)} />
+      </Field>
+      <Field label="Revision limit">
+        <TextInput value={data.revisionLimit} onChange={v => set("revisionLimit", v)} placeholder="2 revision rounds per deliverable" />
+      </Field>
+      <Field label="Payment due day">
+        <TextInput value={data.paymentDueDay} onChange={v => set("paymentDueDay", v)} placeholder="1st of each month" />
+      </Field>
+      <div className="field__row">
+        <Field label="Start date">
+          <TextInput type="date" value={data.startDate} onChange={v => set("startDate", v)} />
+        </Field>
+        <Field label="Contract duration">
+          <TextInput value={data.contractDuration} onChange={v => set("contractDuration", v)} placeholder="3 months, auto-renewing" />
+        </Field>
+      </div>
+      <Field label="Governing law">
+        <TextInput value={data.governingLaw} onChange={v => set("governingLaw", v)} placeholder="New York, USA" />
+      </Field>
+    </>
+  );
+}
+
+/* ---------- RECEIPT ---------- */
+function ReceiptEditor({ data, onChange }) {
+  const set = (k, v) => onChange({ ...data, [k]: v });
+  return (
+    <>
+      <SectionTitle>Receipt details</SectionTitle>
+      <div className="field__row">
+        <Field label="Receipt no.">
+          <TextInput value={data.receiptNo} onChange={v => set("receiptNo", v)} placeholder="REC-2026-001" />
+        </Field>
+        <Field label="Payment date">
+          <TextInput type="date" value={data.paymentDate} onChange={v => set("paymentDate", v)} />
+        </Field>
+      </div>
+      <Field label="Client name">
+        <TextInput value={data.clientName} onChange={v => set("clientName", v)} placeholder="Atlas & Bell, Inc." />
+      </Field>
+      <Field label="Item description">
+        <TextInput value={data.itemDescription} onChange={v => set("itemDescription", v)} placeholder="Brand identity — Phase 01 deposit" />
+      </Field>
+      <div className="field__row">
+        <Field label="Currency">
+          <select className="field__select" value={data.currency || "USD"} onChange={e => set("currency", e.target.value)}>
+            <option>USD</option><option>IDR</option><option>EUR</option><option>GBP</option><option>SGD</option>
+          </select>
+        </Field>
+        <Field label="Amount">
+          <TextInput type="number" value={data.amount} onChange={v => set("amount", v)} placeholder="9600" />
+        </Field>
+      </div>
+      <Field label="Payment method">
+        <TextInput value={data.paymentMethod} onChange={v => set("paymentMethod", v)} placeholder="Bank transfer / Wise" />
+      </Field>
+
+      <SectionTitle>Notes</SectionTitle>
+      <Field label="Notes (markdown)">
+        <Textarea value={data.notes} onChange={v => set("notes", v)} />
+      </Field>
+    </>
+  );
+}
+
+/* ---------- ONBOARDING ---------- */
+function OnboardingEditor({ data, onChange }) {
+  const set = (k, v) => onChange({ ...data, [k]: v });
+  return (
+    <>
+      <SectionTitle>Project info</SectionTitle>
+      <Field label="Client name">
+        <TextInput value={data.clientName} onChange={v => set("clientName", v)} placeholder="Atlas & Bell, Inc." />
+      </Field>
+      <Field label="Project name">
+        <TextInput value={data.projectName} onChange={v => set("projectName", v)} placeholder="Brand Identity" />
+      </Field>
+      <Field label="Start date">
+        <TextInput type="date" value={data.startDate} onChange={v => set("startDate", v)} />
+      </Field>
+
+      <SectionTitle>Checklist content</SectionTitle>
+      <Field label="Deliverables" hint="One item per line — renders as a printable checklist.">
+        <Textarea value={data.deliverables} onChange={v => set("deliverables", v)} />
+      </Field>
+      <Field label="Assets needed from client" hint="One item per line.">
+        <Textarea value={data.assetsNeeded} onChange={v => set("assetsNeeded", v)} />
+      </Field>
+
+      <SectionTitle>Communication</SectionTitle>
+      <Field label="Communication channel">
+        <TextInput value={data.communicationChannel} onChange={v => set("communicationChannel", v)} placeholder="Slack / WhatsApp / Email" />
+      </Field>
+      <Field label="Meeting schedule">
+        <TextInput value={data.meetingSchedule} onChange={v => set("meetingSchedule", v)} placeholder="Weekly on Tuesdays, 10am EST" />
+      </Field>
+      <Field label="Point of contact">
+        <TextInput value={data.pointOfContact} onChange={v => set("pointOfContact", v)} placeholder="Maren Aksel — hello@studio.com" />
+      </Field>
+    </>
+  );
+}
+
+/* ---------- SCOPE GUARD ---------- */
+function ScopeGuardEditor({ data, onChange }) {
+  const set = (k, v) => onChange({ ...data, [k]: v });
+  return (
+    <>
+      <SectionTitle>Project</SectionTitle>
+      <Field label="Project name">
+        <TextInput value={data.projectName} onChange={v => set("projectName", v)} placeholder="Brand Identity" />
+      </Field>
+      <Field label="Client name">
+        <TextInput value={data.clientName} onChange={v => set("clientName", v)} placeholder="Atlas & Bell, Inc." />
+      </Field>
+
+      <SectionTitle>Revision terms</SectionTitle>
+      <Field label="Included revisions">
+        <TextInput type="number" value={data.includedRevisions} onChange={v => set("includedRevisions", v)} placeholder="2" />
+      </Field>
+      <Field label="What counts as a revision (markdown)">
+        <Textarea value={data.whatIsRevision} onChange={v => set("whatIsRevision", v)} />
+      </Field>
+      <Field label="What is out of scope" hint="One item per line — renders as a list.">
+        <Textarea value={data.whatIsOutOfScope} onChange={v => set("whatIsOutOfScope", v)} />
+      </Field>
+      <div className="field__row">
+        <Field label="Currency">
+          <select className="field__select" value={data.currency || "USD"} onChange={e => set("currency", e.target.value)}>
+            <option>USD</option><option>IDR</option><option>EUR</option><option>GBP</option><option>SGD</option>
+          </select>
+        </Field>
+        <Field label="Additional revision rate">
+          <TextInput type="number" value={data.additionalRevisionRate} onChange={v => set("additionalRevisionRate", v)} placeholder="180" />
+        </Field>
+      </div>
+    </>
+  );
+}
+
+/* ---------- HANDOVER ---------- */
+function HandoverEditor({ data, onChange }) {
+  const set = (k, v) => onChange({ ...data, [k]: v });
+  return (
+    <>
+      <SectionTitle>Project info</SectionTitle>
+      <Field label="Project name">
+        <TextInput value={data.projectName} onChange={v => set("projectName", v)} placeholder="Brand Identity" />
+      </Field>
+      <Field label="Client name">
+        <TextInput value={data.clientName} onChange={v => set("clientName", v)} placeholder="Atlas & Bell, Inc." />
+      </Field>
+      <Field label="Handover date">
+        <TextInput type="date" value={data.handoverDate} onChange={v => set("handoverDate", v)} />
+      </Field>
+
+      <SectionTitle>Handover content</SectionTitle>
+      <Field label="Deliverables list" hint="One item per line — renders as a checklist.">
+        <Textarea value={data.deliverablesList} onChange={v => set("deliverablesList", v)} />
+      </Field>
+      <Field label="File locations / links (markdown)">
+        <Textarea value={data.fileLocations} onChange={v => set("fileLocations", v)} />
+      </Field>
+      <Field label="Credentials handed over (markdown)">
+        <Textarea value={data.credentialsHandedOver} onChange={v => set("credentialsHandedOver", v)} />
+      </Field>
+      <Field label="Next steps for client" hint="One item per line — renders as a checklist.">
+        <Textarea value={data.nextStepsForClient} onChange={v => set("nextStepsForClient", v)} />
+      </Field>
+
+      <SectionTitle>Sign-off</SectionTitle>
+      <Field label="Studio sign-off name">
+        <TextInput value={data.studioSignOffName} onChange={v => set("studioSignOffName", v)} placeholder="Maren Aksel" />
+      </Field>
+    </>
+  );
+}
+
 Object.assign(window, {
   AgreementEditor, InvoiceEditor, ProposalEditor, PRDEditor, SocialEditor,
+  RetainerEditor, ReceiptEditor, OnboardingEditor, ScopeGuardEditor, HandoverEditor,
 });

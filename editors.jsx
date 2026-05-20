@@ -234,6 +234,8 @@ function PRDEditor({ data, onChange }) {
 /* ---------- SOCIAL ---------- */
 function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaults, onStepChange }) {
   const [step, setStep] = _useState("pick");
+  const [search, setSearch] = _useState("");
+  const [filterKey, setFilterKey] = _useState("all");
 
   const changeStep = (s) => {
     setStep(s);
@@ -250,15 +252,63 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
   const fields = active ? active.fields : [];
 
   const TILE_W = 162;
-  const groups = [];
-  const seen = new Set();
+  const catLabel = { square: "Instagram 1:1", vertical: "TikTok / Threads" };
+
+  // All groups (for filter pills)
+  const allGroups = [];
+  const seenAll = new Set();
   templates.forEach(t => {
     const cat = t.category || "square";
     const kind = t.kind || "Single";
     const key = `${cat}·${kind}`;
-    if (!seen.has(key)) { groups.push({ cat, kind, key }); seen.add(key); }
+    if (!seenAll.has(key)) { allGroups.push({ cat, kind, key }); seenAll.add(key); }
   });
-  const catLabel = { square: "Instagram 1:1", vertical: "TikTok / Threads" };
+
+  // Filtered templates
+  const q = search.trim().toLowerCase();
+  const filtered = templates.filter(t => {
+    const matchSearch = !q || t.name.toLowerCase().includes(q);
+    const matchFilter = filterKey === "all" || `${t.category || "square"}·${t.kind || "Single"}` === filterKey;
+    return matchSearch && matchFilter;
+  });
+
+  // Groups present in filtered results
+  const filteredGroups = [];
+  const seenFiltered = new Set();
+  filtered.forEach(t => {
+    const cat = t.category || "square";
+    const kind = t.kind || "Single";
+    const key = `${cat}·${kind}`;
+    if (!seenFiltered.has(key)) { filteredGroups.push({ cat, kind, key }); seenFiltered.add(key); }
+  });
+
+  const showGroupHeads = filteredGroups.length > 1;
+
+  const renderTile = (t) => {
+    const cat = t.category || "square";
+    const tileData = data[t.id] || (defaults && defaults[t.id]) || {};
+    const firstSlide = t.slides({ data: tileData, brand: window.__brand || {} })[0];
+    const tplW = t.width || 1080;
+    const tplH = t.height || 1080;
+    const scale = TILE_W / tplW;
+    return (
+      <button
+        key={t.id}
+        className={"social-grid__tile " + (cat === "vertical" ? "social-grid__tile--vertical " : "") + (t.id === activeId ? "social-grid__tile--active" : "")}
+        style={{ aspectRatio: `${tplW} / ${tplH}` }}
+        onClick={() => { setActiveId(t.id); changeStep("edit"); }}
+        title={t.name}
+      >
+        <div className="social-grid__tile-thumb" style={{ width: tplW, height: tplH, transform: `scale(${scale})` }}>
+          {firstSlide}
+        </div>
+        <div className="social-grid__tile-label">
+          <span>{t.name}</span>
+          <span style={{ opacity: 0.6 }}>{t.kind}</span>
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="social-flow" data-step={step}>
@@ -266,36 +316,49 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
 
         {/* Panel 1: Pick */}
         <div className="social-flow__panel">
+          <div className="social-search">
+            <div className="social-search__input-wrap">
+              <svg className="social-search__icon" width="13" height="13" viewBox="0 0 16 16" fill="none">
+                <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <input
+                className="social-search__input"
+                type="text"
+                placeholder="Search templates…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              {search && (
+                <button className="social-search__clear" onClick={() => setSearch("")}>×</button>
+              )}
+            </div>
+            <div className="social-search__filters">
+              <button
+                className={"social-search__pill" + (filterKey === "all" ? " social-search__pill--active" : "")}
+                onClick={() => setFilterKey("all")}
+              >All</button>
+              {allGroups.map(g => (
+                <button
+                  key={g.key}
+                  className={"social-search__pill" + (filterKey === g.key ? " social-search__pill--active" : "")}
+                  onClick={() => setFilterKey(filterKey === g.key ? "all" : g.key)}
+                >{catLabel[g.cat] || g.cat} · {g.kind}</button>
+              ))}
+            </div>
+          </div>
+
           <div className="social-grid">
-            {groups.map(({ cat, kind, key }) => (
+            {filtered.length === 0 ? (
+              <div className="social-grid__empty">No templates match "{search}"</div>
+            ) : filteredGroups.map(({ cat, kind, key }) => (
               <React.Fragment key={key}>
-                <div className="social-grid__group-head">
-                  {catLabel[cat] || cat} · {kind}
-                </div>
-                {templates.filter(t => (t.category || "square") === cat && (t.kind || "Single") === kind).map(t => {
-                  const tileData = data[t.id] || (defaults && defaults[t.id]) || {};
-                  const firstSlide = t.slides({ data: tileData, brand: window.__brand || {} })[0];
-                  const tplW = t.width || 1080;
-                  const tplH = t.height || 1080;
-                  const scale = TILE_W / tplW;
-                  return (
-                    <button
-                      key={t.id}
-                      className={"social-grid__tile " + (cat === "vertical" ? "social-grid__tile--vertical " : "") + (t.id === activeId ? "social-grid__tile--active" : "")}
-                      style={{ aspectRatio: `${tplW} / ${tplH}` }}
-                      onClick={() => { setActiveId(t.id); changeStep("edit"); }}
-                      title={t.name}
-                    >
-                      <div className="social-grid__tile-thumb" style={{ width: tplW, height: tplH, transform: `scale(${scale})` }}>
-                        {firstSlide}
-                      </div>
-                      <div className="social-grid__tile-label">
-                        <span>{t.name}</span>
-                        <span style={{ opacity: 0.6 }}>{t.kind}</span>
-                      </div>
-                    </button>
-                  );
-                })}
+                {showGroupHeads && (
+                  <div className="social-grid__group-head">
+                    {catLabel[cat] || cat} · {kind}
+                  </div>
+                )}
+                {filtered.filter(t => (t.category || "square") === cat && (t.kind || "Single") === kind).map(renderTile)}
               </React.Fragment>
             ))}
           </div>

@@ -864,6 +864,86 @@ input, textarea, select { font-family: inherit; color: inherit; }
   align-items: center; justify-content: center;
 }
 
+/* Social template search + filter */
+.social-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.social-search__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.social-search__icon {
+  position: absolute;
+  left: 9px;
+  color: var(--shell-muted);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.social-search__input {
+  width: 100%;
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  border-radius: 6px;
+  padding: 6px 28px 6px 28px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--shell-ink);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.social-search__input::placeholder { color: var(--shell-muted); }
+.social-search__input:focus { border-color: var(--accent); }
+.social-search__clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--shell-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.social-search__clear:hover { color: var(--shell-ink); }
+.social-search__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.social-search__pill {
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--shell-muted);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.social-search__pill:hover { color: var(--shell-ink); border-color: var(--shell-bg-3); }
+.social-search__pill--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.social-grid__empty {
+  grid-column: 1 / -1;
+  padding: 32px 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--shell-muted);
+}
+
 /* Social grid (template chooser) — uses a smaller render */
 .social-grid {
   display: grid;

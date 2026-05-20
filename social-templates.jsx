@@ -88,21 +88,30 @@ const VLabel = ({ num, text, color, style }) => (
 );
 
 /* Bottom-bar branding strip shared by many templates */
-const VFooter = ({ brand, color = "var(--vc-ink)", borderColor }) => (
-  <div style={{
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-    paddingTop: 22, borderTop: borderColor ? `1.5px solid ${borderColor}` : "1.5px solid currentColor",
-    color,
-  }}>
-    {brand.logo && brand.logoEnabled !== false
-      ? <img src={brand.logo} alt={brand.studioName || "logo"} style={{ height: 28, width: "auto", maxWidth: 120, objectFit: "contain" }} />
-      : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase" }}>{brand.studioName || "Studio"}</span>
-    }
-    <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>
-      {brand.handle || "@studio"}
-    </span>
-  </div>
-);
+const VFooter = ({ brand, color = "var(--vc-ink)", borderColor, useLightLogo }) => {
+  const isLightText = useLightLogo || (
+    color === "var(--vc-cream)" ||
+    color === "#fff" ||
+    color === "#ffffff" ||
+    (color === "currentColor" && borderColor?.includes("rgba(236,230,214"))
+  );
+  const logoSrc = (isLightText && brand.logoLight) ? brand.logoLight : brand.logo;
+  return (
+    <div style={{
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      paddingTop: 22, borderTop: borderColor ? `1.5px solid ${borderColor}` : "1.5px solid currentColor",
+      color,
+    }}>
+      {logoSrc && brand.logoEnabled !== false
+        ? <img src={logoSrc} alt={brand.studioName || "logo"} style={{ height: 28, width: "auto", maxWidth: 120, objectFit: "contain" }} />
+        : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase" }}>{brand.studioName || "Studio"}</span>
+      }
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>
+        {brand.handle || "@studio"}
+      </span>
+    </div>
+  );
+};
 
 /* ============================================== */
 /* 1. PULL QUOTE (single)                          */
@@ -474,7 +483,9 @@ const T_Tips = ({ data, brand }) => {
 
 const Wordmark = ({ brand, color }) => {
   if (brand.logo && brand.logoEnabled !== false) {
-    return <img src={brand.logo} alt={brand.studioName || "logo"} style={{ height: 36, width: "auto", maxWidth: 140, objectFit: "contain" }} />;
+    const isLightText = color === "var(--vc-cream)" || color === "#fff" || color === "#ffffff" || color === "var(--vc-lime)";
+    const logoSrc = (isLightText && brand.logoLight) ? brand.logoLight : brand.logo;
+    return <img src={logoSrc} alt={brand.studioName || "logo"} style={{ height: 36, width: "auto", maxWidth: 140, objectFit: "contain" }} />;
   }
   return (
     <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: color || "currentColor", letterSpacing: "-0.01em" }}>
@@ -590,7 +601,7 @@ const CarouselCTA = ({ brand, data }) => (
     </div>
     <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
       {brand.logo && brand.logoEnabled !== false
-        ? <img src={brand.logo} alt="" style={{ height: 80, width: "auto", maxWidth: 220, objectFit: "contain", marginBottom: 36 }} />
+        ? <img src={brand.logoLight || brand.logo} alt="" style={{ height: 80, width: "auto", maxWidth: 220, objectFit: "contain", marginBottom: 36 }} />
         : null
       }
       <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 136, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
@@ -901,7 +912,7 @@ const T_PricingCard = ({ data, brand }) => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <VLabel text={data.packageName || "Package"} color={fg} />
         {brand.logo && brand.logoEnabled !== false
-          ? <img src={brand.logo} alt="" style={{ height: 28, width: "auto", maxWidth: 100, objectFit: "contain" }} />
+          ? <img src={(useAccent && brand.logoLight) ? brand.logoLight : brand.logo} alt="" style={{ height: 28, width: "auto", maxWidth: 100, objectFit: "contain" }} />
           : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.5 }}>{brand.studioName || "Studio"}</span>
         }
       </div>
@@ -989,7 +1000,7 @@ const T_PricingEditorial = ({ data, brand }) => {
         </div>
         <div style={{ textAlign: "right" }}>
           {brand.logo && brand.logoEnabled !== false
-            ? <img src={brand.logo} alt="" style={{ height: 30, width: "auto", maxWidth: 120, objectFit: "contain" }} />
+            ? <img src={(useAccent && brand.logoLight) ? brand.logoLight : brand.logo} alt="" style={{ height: 30, width: "auto", maxWidth: 120, objectFit: "contain" }} />
             : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.55 }}>{brand.studioName || "Studio"}</span>
           }
           <div style={{ marginTop: 18, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.16em", textTransform: "uppercase", color: muted }}>
@@ -1044,7 +1055,10 @@ const T_TestimonialEditorial = ({ data, brand }) => {
       <div style={{ padding: "64px 72px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
         <VLabel text="Client proof" color="var(--vc-cream)" />
         {brand.logo && brand.logoEnabled !== false
-          ? <img src={brand.logo} alt="" style={{ height: 30, width: "auto", maxWidth: 120, objectFit: "contain", filter: "invert(1)" }} />
+          ? (brand.logoLight
+              ? <img src={brand.logoLight} alt="" style={{ height: 30, width: "auto", maxWidth: 120, objectFit: "contain" }} />
+              : <img src={brand.logo} alt="" style={{ height: 30, width: "auto", maxWidth: 120, objectFit: "contain", filter: "invert(1)" }} />
+            )
           : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.58 }}>{brand.studioName || "Studio"}</span>
         }
       </div>

@@ -11,6 +11,8 @@ const DEFAULT_BRAND = {
   payment: "Bank: First Union\nAccount: 0021-4499-823\nRouting: 021000089\nor — Wise / PayPal: hello@northquill.studio",
   taxId: "EIN 88-1234567",
   logo: "",
+  logoLight: "",
+  logoAvatar: "",
   logoEnabled: true,
 };
 
@@ -431,6 +433,8 @@ function App() {
   const [socialTemplateId, setSocialTemplateId] = useLocalStorage("dg.socialTemplateId.v2", "quote");
   const [brand, setBrand] = useLocalStorage("dg.brand.v2", DEFAULT_BRAND);
   const [recentSocialTemplateId, setRecentSocialTemplateId] = useLocalStorage("dg.recentSocialTemplateId.v2", socialTemplateId);
+  const [drafts, setDrafts] = useLocalStorage("dg.drafts.v3", []);
+  const [activeDraftId, setActiveDraftId] = useLocalStorage("dg.activeDraftId.v3", "");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [socialStep, setSocialStep] = useState("pick");
   const [socialPickerKey, setSocialPickerKey] = useState(0);
@@ -440,6 +444,14 @@ function App() {
   // Reset to pick panel whenever switching to social
   useEffect(() => {
     if (docType === "social") setSocialStep("pick");
+  }, [docType]);
+
+  // Sync draft ID on docType change
+  useEffect(() => {
+    const exists = drafts.some(d => d.id === activeDraftId && d.docType === docType);
+    if (!exists) {
+      setActiveDraftId("");
+    }
   }, [docType]);
 
   // Auto-fit zoom to preview width when doc or template changes
@@ -467,8 +479,15 @@ function App() {
   useEffect(() => { window.__brand = brand; }, [brand]);
 
   const cfg = DOC_TYPES.find(d => d.id === docType);
-  const data = docData[docType] || cfg.defaults;
-  const setData = (next) => setDocData({ ...docData, [docType]: next });
+  const activeDraft = activeDraftId ? drafts.find(d => d.id === activeDraftId && d.docType === docType) : null;
+  const data = activeDraft ? activeDraft.data : (docData[docType] || cfg.defaults);
+  const setData = (next) => {
+    if (activeDraft) {
+      setDrafts(drafts.map(d => d.id === activeDraftId ? { ...d, data: next, lastModified: Date.now() } : d));
+    } else {
+      setDocData({ ...docData, [docType]: next });
+    }
+  };
 
   // For social: data is { [tplId]: {...fields} } — derive the active slice
   const socialActiveData = docType === "social"
@@ -618,6 +637,109 @@ function App() {
               ? cfg.name
               : (data.title || data.projectName || data.clientName || cfg.name)}
           </h1>
+          {!cfg.isTool && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14 }}>
+              <select
+                value={activeDraftId || ""}
+                onChange={(e) => setActiveDraftId(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: "var(--shell-field-bg)",
+                  color: "var(--shell-ink)",
+                  border: "1px solid var(--shell-rule)",
+                  borderRadius: 6,
+                  padding: "6px 10px",
+                  fontSize: 12,
+                  fontFamily: "var(--font-mono)",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="">Current local draft</option>
+                {drafts
+                  .filter((d) => d.docType === docType)
+                  .map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
+                  ))}
+              </select>
+              <button
+                onClick={() => {
+                  const name = prompt("Enter draft name:", `Draft ${drafts.filter(d => d.docType === docType).length + 1}`);
+                  if (!name) return;
+                  const newId = "draft_" + Date.now();
+                  const newDraft = {
+                    id: newId,
+                    name: name,
+                    docType: docType,
+                    lastModified: Date.now(),
+                    data: JSON.parse(JSON.stringify(data)),
+                  };
+                  setDrafts([...drafts, newDraft]);
+                  setActiveDraftId(newId);
+                }}
+                title="Save current as new draft"
+                style={{
+                  background: "var(--shell-btn-bg)",
+                  color: "var(--shell-ink)",
+                  border: "1px solid var(--shell-rule)",
+                  borderRadius: 6,
+                  padding: "6px 10px",
+                  fontSize: 12,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ＋ New
+              </button>
+              {activeDraftId && (
+                <>
+                  <button
+                    onClick={() => {
+                      const activeD = drafts.find(d => d.id === activeDraftId);
+                      if (!activeD) return;
+                      const name = prompt("Rename draft:", activeD.name);
+                      if (!name) return;
+                      setDrafts(drafts.map(d => d.id === activeDraftId ? { ...d, name: name } : d));
+                    }}
+                    title="Rename draft"
+                    style={{
+                      background: "var(--shell-btn-bg)",
+                      color: "var(--shell-ink)",
+                      border: "1px solid var(--shell-rule)",
+                      borderRadius: 6,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    onClick={() => {
+                      const activeD = drafts.find(d => d.id === activeDraftId);
+                      if (!activeD) return;
+                      if (!confirm(`Are you sure you want to delete "${activeD.name}"?`)) return;
+                      setDrafts(drafts.filter(d => d.id !== activeDraftId));
+                      setActiveDraftId("");
+                    }}
+                    title="Delete draft"
+                    style={{
+                      background: "var(--shell-btn-bg)",
+                      color: "var(--vc-red)",
+                      border: "1px solid var(--shell-rule)",
+                      borderRadius: 6,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      cursor: "pointer",
+                    }}
+                  >
+                    🗑
+                  </button>
+                </>
+              )}
+            </div>
+          )}
           {cfg.hasVariants && !cfg.isTool && (
             <div className="editor__variants">
               {VARIANTS.map(v => (
@@ -843,12 +965,24 @@ function SettingsModal({ brand, setBrand, onClose }) {
               Brand Identity
             </div>
             <ImageField
-              label="Company logo"
-              hint="SVG, PNG or JPG. Use a version that works on both light and dark backgrounds."
+              label="Company logo (Dark / Default version)"
+              hint="Used on light backgrounds. SVG, PNG or JPG format."
               value={brand.logo}
               onChange={v => set("logo", v)}
             />
-            {brand.logo && (
+            <ImageField
+              label="Company logo (Light / White version)"
+              hint="Used on dark backgrounds. SVG, PNG or JPG format."
+              value={brand.logoLight}
+              onChange={v => set("logoLight", v)}
+            />
+            <ImageField
+              label="Social profile picture / Avatar"
+              hint="Used for social feed templates. Square format recommended."
+              value={brand.logoAvatar}
+              onChange={v => set("logoAvatar", v)}
+            />
+            {(brand.logo || brand.logoLight || brand.logoAvatar) && (
               <Field label="Show logo on templates">
                 <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "6px 0" }}>
                   <input
@@ -863,6 +997,85 @@ function SettingsModal({ brand, setBrand, onClose }) {
                 </label>
               </Field>
             )}
+            <div style={{ borderTop: "1px solid var(--shell-rule)", paddingTop: 20, marginTop: 20 }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--shell-muted)", marginBottom: 14 }}>
+                Backup & Restore
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => {
+                    const keys = ["dg.data.v2", "dg.brand.v2", "dg.drafts.v3", "dg.variant.v2", "dg.socialTemplateId.v2"];
+                    const backup = {};
+                    keys.forEach(k => {
+                      try {
+                        const val = localStorage.getItem(k);
+                        if (val) backup[k] = JSON.parse(val);
+                      } catch (e) {}
+                    });
+                    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `atelier-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  style={{
+                    flex: 1,
+                    background: "var(--shell-btn-bg)",
+                    color: "var(--shell-ink)",
+                    border: "1px solid var(--shell-rule)",
+                    borderRadius: 6,
+                    padding: "10px 14px",
+                    fontSize: 13,
+                    cursor: "pointer",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  📥 Export Backup
+                </button>
+                <button
+                  onClick={() => {
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = ".json";
+                    input.onchange = (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        try {
+                          const data = JSON.parse(evt.target.result);
+                          if (confirm("This will overwrite your current settings, drafts, and content. Proceed?")) {
+                            Object.entries(data).forEach(([k, v]) => {
+                              localStorage.setItem(k, JSON.stringify(v));
+                            });
+                            window.location.reload();
+                          }
+                        } catch (err) {
+                          alert("Invalid backup file format.");
+                        }
+                      };
+                      reader.readAsText(file);
+                    };
+                    input.click();
+                  }}
+                  style={{
+                    flex: 1,
+                    background: "var(--shell-btn-bg)",
+                    color: "var(--shell-ink)",
+                    border: "1px solid var(--shell-rule)",
+                    borderRadius: 6,
+                    padding: "10px 14px",
+                    fontSize: 13,
+                    cursor: "pointer",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  📤 Import Backup
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

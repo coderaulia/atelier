@@ -159,8 +159,8 @@ const V_ThreadsPost = ({ data, brand }) => {
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
         <div style={{ background: "#fff", borderRadius: 32, padding: 64, border: "1px solid rgba(14,14,14,0.12)", boxShadow: "0 16px 48px -16px rgba(0,0,0,0.18)", width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            {brand.logo && brand.logoEnabled !== false
-              ? <img src={brand.logo} alt="" style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover" }} />
+            {(brand.logoAvatar || brand.logo) && brand.logoEnabled !== false
+              ? <img src={brand.logoAvatar || brand.logo} alt="" style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover" }} />
               : <div style={{ width: 96, height: 96, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 36 }}>{initials}</div>
             }
             <div style={{ flex: 1 }}>

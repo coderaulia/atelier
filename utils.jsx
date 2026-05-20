@@ -1,5 +1,5 @@
 // Utilities: icons, markdown, formatters, export helpers
-// Globals: Icon, MD, fmt, useLocalStorage, exportPDF, exportImage
+// Globals: Icon, MD, fmt, useLocalStorage, exportPDF, exportImage, copyImage
 
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
@@ -129,9 +129,9 @@ function exportPrint(targetSelector) {
   });
 }
 
-async function exportImage(targetSelector, filename = "export", format = "png") {
+async function captureImage(targetSelector, format = "png") {
   const node = document.querySelector(targetSelector);
-  if (!node) return;
+  if (!node) return null;
   // Save the transform on the node itself (slide-wrap zoom)
   const oldTransform = node.style.transform;
   const oldBoxShadow = node.style.boxShadow;
@@ -139,20 +139,35 @@ async function exportImage(targetSelector, filename = "export", format = "png") 
   node.style.boxShadow = "none";
   try {
     const opts = { pixelRatio: 2, cacheBust: true };
-    let dataUrl;
     if (format === "jpg" || format === "jpeg") {
-      dataUrl = await htmlToImage.toJpeg(node, { ...opts, quality: 0.95, backgroundColor: "#ffffff" });
-    } else {
-      dataUrl = await htmlToImage.toPng(node, opts);
+      return await htmlToImage.toJpeg(node, { ...opts, quality: 0.95, backgroundColor: "#ffffff" });
     }
-    const link = document.createElement("a");
-    link.download = `${filename}.${format === "jpeg" ? "jpg" : format}`;
-    link.href = dataUrl;
-    link.click();
+    return await htmlToImage.toPng(node, opts);
   } finally {
     node.style.transform = oldTransform;
     node.style.boxShadow = oldBoxShadow;
   }
+}
+
+async function exportImage(targetSelector, filename = "export", format = "png") {
+  const dataUrl = await captureImage(targetSelector, format);
+  if (!dataUrl) return;
+  const link = document.createElement("a");
+  link.download = `${filename}.${format === "jpeg" ? "jpg" : format}`;
+  link.href = dataUrl;
+  link.click();
+}
+
+async function copyImage(targetSelector) {
+  if (!navigator.clipboard || !window.ClipboardItem) {
+    throw new Error("Clipboard image copy is not supported in this browser.");
+  }
+  const dataUrl = await captureImage(targetSelector, "png");
+  if (!dataUrl) return false;
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+  return true;
 }
 
 /* ---------- Auto-resize textarea ---------- */
@@ -254,6 +269,6 @@ function ImageField({ value, onChange, label, hint }) {
 
 Object.assign(window, {
   Icon, useLocalStorage, MD, MDInline, fmt,
-  exportPrint, exportImage, autosize,
+  exportPrint, exportImage, copyImage, autosize,
   Field, TextInput, Textarea, SectionTitle, ImageField,
 });

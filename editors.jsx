@@ -232,7 +232,7 @@ function PRDEditor({ data, onChange }) {
 }
 
 /* ---------- SOCIAL ---------- */
-function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaults, onStepChange }) {
+function SocialEditor({ data, onChange, templates, activeId, setActiveId, recentId, setRecentId, defaults, onStepChange }) {
   const [step, setStep] = _useState("pick");
   const [search, setSearch] = _useState("");
   const [filterKey, setFilterKey] = _useState("all");
@@ -261,7 +261,12 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
     const cat = t.category || "square";
     const kind = t.kind || "Single";
     const key = `${cat}·${kind}`;
-    if (!seenAll.has(key)) { allGroups.push({ cat, kind, key }); seenAll.add(key); }
+    if (!seenAll.has(key)) {
+      allGroups.push({ cat, kind, key, count: 0 });
+      seenAll.add(key);
+    }
+    const group = allGroups.find(g => g.key === key);
+    if (group) group.count += 1;
   });
 
   // Filtered templates
@@ -294,11 +299,12 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
     return (
       <button
         key={t.id}
-        className={"social-grid__tile " + (cat === "vertical" ? "social-grid__tile--vertical " : "") + (t.id === activeId ? "social-grid__tile--active" : "")}
+        className={"social-grid__tile " + (cat === "vertical" ? "social-grid__tile--vertical " : "") + (t.id === activeId ? "social-grid__tile--active " : "") + (t.id === recentId ? "social-grid__tile--recent" : "")}
         style={{ aspectRatio: `${tplW} / ${tplH}` }}
-        onClick={() => { setActiveId(t.id); changeStep("edit"); }}
+        onClick={() => { setActiveId(t.id); if (setRecentId) setRecentId(t.id); changeStep("edit"); }}
         title={t.name}
       >
+        {t.id === recentId && <span className="social-grid__recent-badge">Recent</span>}
         <div className="social-grid__tile-thumb" style={{ width: tplW, height: tplH, transform: `scale(${scale})` }}>
           {firstSlide}
         </div>
@@ -337,13 +343,13 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
               <button
                 className={"social-search__pill" + (filterKey === "all" ? " social-search__pill--active" : "")}
                 onClick={() => setFilterKey("all")}
-              >All</button>
+              >All <span className="social-search__pill-count">{templates.length}</span></button>
               {allGroups.map(g => (
                 <button
                   key={g.key}
                   className={"social-search__pill" + (filterKey === g.key ? " social-search__pill--active" : "")}
                   onClick={() => setFilterKey(filterKey === g.key ? "all" : g.key)}
-                >{catLabel[g.cat] || g.cat} · {g.kind}</button>
+                >{catLabel[g.cat] || g.cat} · {g.kind} <span className="social-search__pill-count">{g.count}</span></button>
               ))}
             </div>
           </div>

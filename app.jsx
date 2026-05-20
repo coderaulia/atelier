@@ -430,9 +430,12 @@ function App() {
   });
   const [socialTemplateId, setSocialTemplateId] = useLocalStorage("dg.socialTemplateId.v2", "quote");
   const [brand, setBrand] = useLocalStorage("dg.brand.v2", DEFAULT_BRAND);
+  const [recentSocialTemplateId, setRecentSocialTemplateId] = useLocalStorage("dg.recentSocialTemplateId.v2", socialTemplateId);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [socialStep, setSocialStep] = useState("pick");
+  const [socialPickerKey, setSocialPickerKey] = useState(0);
   const [zoom, setZoom] = useState(0.5);
+  const [copyState, setCopyState] = useState("idle");
 
   // Reset to pick panel whenever switching to social
   useEffect(() => {
@@ -441,7 +444,7 @@ function App() {
 
   // Auto-fit zoom to preview width when doc or template changes
   const stageRef = useRef(null);
-  useEffect(() => {
+  const fitPreview = () => {
     const stage = stageRef.current;
     if (!stage) return;
     let tW = 8.5 * 96, tH = 11 * 96;
@@ -455,6 +458,9 @@ function App() {
     const fitH = (stage.clientHeight - padding) / tH;
     const fit = Math.max(0.15, Math.min(0.9, Math.min(fitW, fitH)));
     setZoom(Number(fit.toFixed(2)));
+  };
+  useEffect(() => {
+    fitPreview();
   }, [docType, socialTemplateId]);
 
   // expose brand globally for social tile thumbnails to read
@@ -491,7 +497,7 @@ function App() {
     if (docType === "receipt")   return `${(data.receiptNo  || "receipt").replace(/\s+/g, "-")}`;
     if (docType === "quote")     return "quick-quote";
     if (docType === "social") {
-      const tpl = SocialTemplates.find(s => s.id === socialTemplateId);
+      const tpl = AllSocialTemplates.find(s => s.id === socialTemplateId);
       return `${(tpl?.name || "social").toLowerCase().replace(/\s+/g, "-")}`;
     }
     const slug = (data.title || data.projectName || data.clientName || data.refNo || "doc")
@@ -501,6 +507,24 @@ function App() {
 
   const handlePrint = () => exportPrint(exportTarget);
   const handleImage = (fmt) => exportImage(exportTarget, filename, fmt);
+  const handleCopyImage = async () => {
+    setCopyState("copying");
+    try {
+      await copyImage(exportTarget);
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 1600);
+    } catch (err) {
+      console.error(err);
+      setCopyState("error");
+      setTimeout(() => setCopyState("idle"), 2200);
+    }
+  };
+
+  const showSocialPicker = () => {
+    setDocType("social");
+    setSocialStep("pick");
+    setSocialPickerKey(k => k + 1);
+  };
 
   // Download all carousel slides sequentially as individual files
   const downloadAllSlides = async (fmt) => {
@@ -531,7 +555,7 @@ function App() {
             >
               <span className="sidebar__item-icon">{d.icon}</span>
               <span>{d.name}</span>
-              {d.hasVariants && <span className="sidebar__item-count">03</span>}
+              {d.hasVariants && <span className="sidebar__item-count">{String(VARIANTS.length).padStart(2, "0")}</span>}
             </button>
           ))}
         </div>
@@ -540,7 +564,7 @@ function App() {
           <div className="sidebar__heading">Social</div>
           <button
             className={"sidebar__item " + (docType === "social" ? "sidebar__item--active" : "")}
-            onClick={() => setDocType("social")}
+            onClick={showSocialPicker}
           >
             <span className="sidebar__item-icon">{Icon.social}</span>
             <span>Social media</span>
@@ -619,11 +643,14 @@ function App() {
           {docType === "quote"      && <QuoteCalculatorPanel data={data} onChange={setData} />}
           {docType === "social"    && (
             <SocialEditor
+              key={socialPickerKey}
               data={data}
               onChange={setData}
               templates={AllSocialTemplates}
               activeId={socialTemplateId}
               setActiveId={setSocialTemplateId}
+              recentId={recentSocialTemplateId}
+              setRecentId={setRecentSocialTemplateId}
               defaults={DEFAULT_SOCIAL}
               onStepChange={setSocialStep}
             />
@@ -648,6 +675,7 @@ function App() {
             <div className="zoom-group">
               <button className="zoom-btn" onClick={() => setZoom(z => Math.max(0.2, z - 0.1))}>{Icon.zoomOut}</button>
               <span className="zoom-value">{Math.round(zoom * 100)}%</span>
+              <button className="zoom-btn zoom-btn--fit" onClick={fitPreview}>Fit</button>
               <button className="zoom-btn" onClick={() => setZoom(z => Math.min(1.4, z + 0.1))}>{Icon.zoomIn}</button>
             </div>
           )}
@@ -664,6 +692,7 @@ function App() {
             </>
           ) : (
             <>
+              <button className="export-btn export-btn--ghost" onClick={handleCopyImage}>{Icon.copy} {copyState === "copied" ? "Copied" : copyState === "error" ? "Failed" : "Copy"}</button>
               <button className="export-btn export-btn--ghost" onClick={() => handleImage("png")}>{Icon.image} PNG</button>
               <button className="export-btn" onClick={() => handleImage("jpg")}>{Icon.download} JPG</button>
             </>
@@ -765,6 +794,14 @@ function SocialPreview({ template, data, brand, zoom }) {
 
 /* ---------- Settings Modal ---------- */
 function SettingsModal({ brand, setBrand, onClose }) {
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   const set = (k, v) => setBrand({ ...brand, [k]: v });
   return (
     <div className="modal-overlay" onClick={onClose}>

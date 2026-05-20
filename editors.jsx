@@ -232,27 +232,35 @@ function PRDEditor({ data, onChange }) {
 }
 
 /* ---------- SOCIAL ---------- */
-function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaults }) {
-  // data is the full map: { [tplId]: {...fields} }
+function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaults, onStepChange }) {
+  const [step, setStep] = _useState("pick");
+
+  const changeStep = (s) => {
+    setStep(s);
+    if (onStepChange) onStepChange(s);
+  };
+
   const activeData = data[activeId] || (defaults && defaults[activeId]) || {};
   const setActive = (next) => onChange({ ...data, [activeId]: next });
   const set = (k, v) => setActive({ ...activeData, [k]: v });
   const active = templates.find(t => t.id === activeId);
   const fields = active ? active.fields : [];
 
+  const TILE_W = 162;
+  const groups = [];
+  const seen = new Set();
+  templates.forEach(t => {
+    const key = t.category || "square";
+    if (!seen.has(key)) { groups.push(key); seen.add(key); }
+  });
+  const groupLabel = { square: "Instagram · 1:1", vertical: "TikTok / Threads · 9:16" };
+
   return (
-    <>
-      <SectionTitle>Template</SectionTitle>
-      {(() => {
-        const groups = [];
-        const seen = new Set();
-        templates.forEach(t => {
-          const key = t.category || "square";
-          if (!seen.has(key)) { groups.push(key); seen.add(key); }
-        });
-        const groupLabel = { square: "Instagram · 1:1", vertical: "TikTok / Threads · 9:16" };
-        const TILE_W = 162;
-        return (
+    <div className="social-flow" data-step={step}>
+      <div className="social-flow__track">
+
+        {/* Panel 1: Pick */}
+        <div className="social-flow__panel">
           <div className="social-grid">
             {groups.map(g => (
               <React.Fragment key={g}>
@@ -268,7 +276,7 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
                       key={t.id}
                       className={"social-grid__tile " + (g === "vertical" ? "social-grid__tile--vertical " : "") + (t.id === activeId ? "social-grid__tile--active" : "")}
                       style={{ aspectRatio: `${tplW} / ${tplH}` }}
-                      onClick={() => setActiveId(t.id)}
+                      onClick={() => { setActiveId(t.id); changeStep("edit"); }}
                       title={t.name}
                     >
                       <div className="social-grid__tile-thumb" style={{ width: tplW, height: tplH, transform: `scale(${scale})` }}>
@@ -284,24 +292,35 @@ function SocialEditor({ data, onChange, templates, activeId, setActiveId, defaul
               </React.Fragment>
             ))}
           </div>
-        );
-      })()}
+        </div>
 
-      <SectionTitle>Content</SectionTitle>
-      {fields.map(f => (
-        <React.Fragment key={f.key}>
-          {f.type === "image" ? (
-            <ImageField label={f.label} hint={f.hint} value={activeData[f.key]} onChange={v => set(f.key, v)} />
-          ) : (
-            <Field label={f.label} hint={f.hint}>
-              {f.type === "textarea"
-                ? <Textarea value={activeData[f.key]} onChange={v => set(f.key, v)} placeholder={f.placeholder} />
-                : <TextInput value={activeData[f.key]} onChange={v => set(f.key, v)} placeholder={f.placeholder} />}
-            </Field>
-          )}
-        </React.Fragment>
-      ))}
-    </>
+        {/* Panel 2: Edit */}
+        <div className="social-flow__panel">
+          <div className="social-active-head">
+            <button className="social-back-btn" onClick={() => changeStep("pick")}>← Back</button>
+            <div className="social-active-meta">
+              <span className="social-active-kind">{active ? active.kind : ""}</span>
+              <span className="social-active-name">{active ? active.name : ""}</span>
+            </div>
+          </div>
+          <SectionTitle>Content</SectionTitle>
+          {fields.map(f => (
+            <React.Fragment key={f.key}>
+              {f.type === "image" ? (
+                <ImageField label={f.label} hint={f.hint} value={activeData[f.key]} onChange={v => set(f.key, v)} />
+              ) : (
+                <Field label={f.label} hint={f.hint}>
+                  {f.type === "textarea"
+                    ? <Textarea value={activeData[f.key]} onChange={v => set(f.key, v)} placeholder={f.placeholder} />
+                    : <TextInput value={activeData[f.key]} onChange={v => set(f.key, v)} placeholder={f.placeholder} />}
+                </Field>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+
+      </div>
+    </div>
   );
 }
 

@@ -10,6 +10,8 @@ const DEFAULT_BRAND = {
   studioAddress: "Studio 4, Old Loom Works\n221 Baker St, Brooklyn NY 11201",
   payment: "Bank: First Union\nAccount: 0021-4499-823\nRouting: 021000089\nor — Wise / PayPal: hello@northquill.studio",
   taxId: "EIN 88-1234567",
+  logo: "",
+  logoEnabled: true,
 };
 
 const DEFAULT_AGREEMENT = {
@@ -120,9 +122,7 @@ const DEFAULT_SOCIAL = {
   story: {
     coverLead: "How we doubled close-rate",
     coverItalic: "in a quarter.",
-    problem: "You're getting views but no conversions. Here's why.",
-    shift: "Treat the document as part of the product, not an afterthought.",
-    result: "Clients sign faster. Briefs come back warmer. Work compounds.",
+    slides: "The Problem — You're getting views but no conversions. Here's why.\nThe Shift — Treat the document as part of the product, not an afterthought.\nThe Result — Clients sign faster. Briefs come back warmer. Work compounds.",
   },
   tipscarousel: {
     kicker: "Field Notes",
@@ -293,7 +293,13 @@ function App() {
   const [socialTemplateId, setSocialTemplateId] = useLocalStorage("dg.socialTemplateId.v2", "quote");
   const [brand, setBrand] = useLocalStorage("dg.brand.v2", DEFAULT_BRAND);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [socialStep, setSocialStep] = useState("pick");
   const [zoom, setZoom] = useState(0.5);
+
+  // Reset to pick panel whenever switching to social
+  useEffect(() => {
+    if (docType === "social") setSocialStep("pick");
+  }, [docType]);
 
   // Auto-fit zoom to preview width when doc or template changes
   const stageRef = useRef(null);
@@ -406,14 +412,25 @@ function App() {
           </div>
           <button className="sidebar__settings-btn" onClick={() => setSettingsOpen(true)}>{Icon.gear}</button>
         </div>
+        <div className="sidebar__attribution">
+          <a href="https://vanaila.com" target="_blank" rel="noopener noreferrer" className="sidebar__attribution-link">
+            Vanaila Digital · Open source
+          </a>
+        </div>
       </aside>
 
       {/* ===== Editor ===== */}
       <section className="editor">
         <div className="editor__head">
-          <div className="editor__crumb">{cfg.name} · {docType === "social" ? (ActiveSocial?.kind || "Single") : VARIANTS.find(v => v.id === variant)?.name}</div>
+          <div className="editor__crumb">
+            {docType === "social"
+              ? (socialStep === "pick" ? "Social · Browse" : `Social · ${ActiveSocial?.kind || "Single"}`)
+              : `${cfg.name} · ${VARIANTS.find(v => v.id === variant)?.name}`}
+          </div>
           <h1 className="editor__title">
-            {docType === "social" ? (ActiveSocial?.name || "Template") : data.title || cfg.name}
+            {docType === "social"
+              ? (socialStep === "pick" ? "Choose a template" : (ActiveSocial?.name || "Template"))
+              : (data.title || cfg.name)}
           </h1>
           {cfg.hasVariants && (
             <div className="editor__variants">
@@ -440,6 +457,7 @@ function App() {
               activeId={socialTemplateId}
               setActiveId={setSocialTemplateId}
               defaults={DEFAULT_SOCIAL}
+              onStepChange={setSocialStep}
             />
           )}
         </div>
@@ -606,6 +624,33 @@ function SettingsModal({ brand, setBrand, onClose }) {
           <Field label="Tax ID / Business no.">
             <TextInput value={brand.taxId} onChange={v => set("taxId", v)} />
           </Field>
+
+          <div style={{ borderTop: "1px solid var(--shell-rule)", paddingTop: 20, marginTop: 8 }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--shell-muted)", marginBottom: 14 }}>
+              Brand Identity
+            </div>
+            <ImageField
+              label="Company logo"
+              hint="SVG, PNG or JPG. Use a version that works on both light and dark backgrounds."
+              value={brand.logo}
+              onChange={v => set("logo", v)}
+            />
+            {brand.logo && (
+              <Field label="Show logo on templates">
+                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "6px 0" }}>
+                  <input
+                    type="checkbox"
+                    checked={brand.logoEnabled !== false}
+                    onChange={e => set("logoEnabled", e.target.checked)}
+                    style={{ width: 16, height: 16, cursor: "pointer", accentColor: "var(--accent)" }}
+                  />
+                  <span style={{ fontSize: 13, color: "var(--shell-muted)" }}>
+                    {brand.logoEnabled !== false ? "Enabled — showing on all templates" : "Disabled"}
+                  </span>
+                </label>
+              </Field>
+            )}
+          </div>
         </div>
       </div>
     </div>

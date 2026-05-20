@@ -90,13 +90,14 @@ const VLabel = ({ num, text, color, style }) => (
 /* Bottom-bar branding strip shared by many templates */
 const VFooter = ({ brand, color = "var(--vc-ink)", borderColor }) => (
   <div style={{
-    display: "flex", justifyContent: "space-between", alignItems: "flex-end",
+    display: "flex", justifyContent: "space-between", alignItems: "center",
     paddingTop: 22, borderTop: borderColor ? `1.5px solid ${borderColor}` : "1.5px solid currentColor",
     color,
   }}>
-    <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase" }}>
-      {brand.studioName || "Studio"}
-    </span>
+    {brand.logo && brand.logoEnabled !== false
+      ? <img src={brand.logo} alt={brand.studioName || "logo"} style={{ height: 28, width: "auto", maxWidth: 120, objectFit: "contain" }} />
+      : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase" }}>{brand.studioName || "Studio"}</span>
+    }
     <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>
       {brand.handle || "@studio"}
     </span>
@@ -279,18 +280,17 @@ const T_Manifesto = ({ data, brand }) => (
 );
 
 /* ============================================== */
-/* 7. FRAMEWORK CAROUSEL (5 slides)                */
+/* 7. FRAMEWORK CAROUSEL (dynamic slides)          */
 /* ============================================== */
 const T_Framework = ({ data, brand }) => {
   const steps = (data.steps || "Listen — hear the actual ask, not the requested one.\nMap — name every constraint, on paper.\nMake — propose the smallest version that ships.\nShip — ship before it's perfect; iterate in daylight.").split("\n").filter(Boolean);
   const palette = ["var(--vc-cream)", "var(--vc-blue)", "var(--vc-ink)", "var(--vc-lime)"];
   const colors = ["var(--vc-ink)", "#fff", "var(--vc-cream)", "var(--vc-ink)"];
 
-  return [
-    // Cover
+  const cover = (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <VLabel num={1} text="A Framework" />
+        <VLabel num={1} text={data.coverLabel || "A Framework"} />
         <Chevron color="var(--vc-ink)" />
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
@@ -312,51 +312,60 @@ const T_Framework = ({ data, brand }) => {
         </span>
         <Asterisk size={64} />
       </div>
-    </div>,
-    // Step slides
-    ...steps.map((s, i) => {
-      const [name, ...rest] = s.split("—");
-      const body = rest.join("—").trim();
-      const bg = palette[i % palette.length];
-      const fg = colors[i % colors.length];
-      const isDark = i === 1 || i === 2;
-      return (
-        <div className="social-frame" style={{ background: bg, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <VLabel num={i + 1} text={`Step ${i + 1} of ${steps.length}`} color={fg} style={{ opacity: 0.8 }} />
-            <CrescentMark color={fg} />
-          </div>
-          <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-            <div>
-              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 280, lineHeight: 0.88, letterSpacing: "-0.04em", color: isDark ? "var(--vc-red)" : "var(--vc-red)" }}>
-                0{i + 1}
-              </div>
-              <div style={{ marginTop: 16, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 132, lineHeight: 0.98, letterSpacing: "-0.015em" }}>
-                {name.trim()}.
-              </div>
-              <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 32, lineHeight: 1.35, maxWidth: 820, opacity: isDark ? 0.75 : 0.7 }}>
-                {body}
-              </div>
+    </div>
+  );
+
+  const stepSlides = steps.map((s, i) => {
+    const [name, ...rest] = s.split("—");
+    const body = rest.join("—").trim();
+    const bg = palette[i % palette.length];
+    const fg = colors[i % colors.length];
+    const isDark = bg === "var(--vc-blue)" || bg === "var(--vc-ink)";
+    return (
+      <div className="social-frame" style={{ background: bg, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <VLabel num={i + 1} text={`Step ${i + 1} of ${steps.length}`} color={fg} style={{ opacity: 0.8 }} />
+          <CrescentMark color={fg} />
+        </div>
+        <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 280, lineHeight: 0.88, letterSpacing: "-0.04em", color: "var(--vc-red)" }}>
+              {String(i + 1).padStart(2, "0")}
+            </div>
+            <div style={{ marginTop: 16, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 132, lineHeight: 0.98, letterSpacing: "-0.015em" }}>
+              {name.trim()}.
+            </div>
+            <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 32, lineHeight: 1.35, maxWidth: 820, opacity: isDark ? 0.75 : 0.7 }}>
+              {body}
             </div>
           </div>
-          <VFooter brand={brand} color={fg} borderColor={isDark ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.2)"} />
         </div>
-      );
-    }),
-  ];
+        <VFooter brand={brand} color={fg} borderColor={isDark ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.2)"} />
+      </div>
+    );
+  });
+
+  const slides = [cover, ...stepSlides];
+  if (data.ctaText) slides.push(<CarouselCTA brand={brand} data={data} />);
+  return slides;
 };
 
 /* ============================================== */
-/* 8. STORY CAROUSEL (4 slides)                    */
+/* 8. STORY CAROUSEL (dynamic slides)              */
 /* ============================================== */
 const T_Story = ({ data, brand }) => {
-  const slides = [
-    { kicker: "The Problem", body: data.problem || "You're getting views but no conversions. Here's why.", color: "var(--vc-cream)", fg: "var(--vc-ink)" },
-    { kicker: "The Shift",   body: data.shift   || "Treat the document as part of the product, not an afterthought.", color: "var(--vc-blue)", fg: "#fff" },
-    { kicker: "The Result",  body: data.result  || "Clients sign faster. Briefs come back warmer. Work compounds.", color: "var(--vc-lime)", fg: "var(--vc-ink)" },
+  const palette = [
+    { color: "var(--vc-cream)", fg: "var(--vc-ink)" },
+    { color: "var(--vc-blue)",  fg: "#fff" },
+    { color: "var(--vc-lime)",  fg: "var(--vc-ink)" },
+    { color: "var(--vc-ink)",   fg: "var(--vc-cream)" },
   ];
-  return [
-    // Cover
+
+  const rawLines = (data.slides ||
+    "The Problem — You're getting views but no conversions. Here's why.\nThe Shift — Treat the document as part of the product, not an afterthought.\nThe Result — Clients sign faster. Briefs come back warmer. Work compounds."
+  ).split("\n").filter(Boolean);
+
+  const cover = (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <VLabel num={2} text="A Short Story" color="var(--vc-cream)" style={{ opacity: 0.7 }} />
@@ -376,30 +385,45 @@ const T_Story = ({ data, brand }) => {
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>Swipe to read →</span>
         <Asterisk size={56} color="var(--vc-blue)" />
       </div>
-    </div>,
-    ...slides.map((s, i) => (
-      <div className="social-frame" style={{ background: s.color, color: s.fg, padding: 80, display: "flex", flexDirection: "column" }}>
+    </div>
+  );
+
+  const contentSlides = rawLines.map((line, i) => {
+    const dashIdx = line.indexOf("—");
+    const kicker = dashIdx > -1 ? line.slice(0, dashIdx).trim() : "";
+    const body = dashIdx > -1 ? line.slice(dashIdx + 1).trim() : line.trim();
+    const { color, fg } = palette[i % palette.length];
+    return (
+      <div className="social-frame" style={{ background: color, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <VLabel num={i + 1} text={s.kicker} color={s.fg} />
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.6 }}>{i + 1} / {slides.length}</span>
+          <VLabel num={i + 1} text={kicker} color={fg} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.6 }}>
+            {i + 1} / {rawLines.length}
+          </span>
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 96, lineHeight: 1.05, letterSpacing: "-0.015em", maxWidth: 900 }}>
-            {s.body}
+            {body}
           </div>
         </div>
-        <VFooter brand={brand} color={s.fg} borderColor={s.fg === "#fff" ? "rgba(255,255,255,0.25)" : "rgba(14,14,14,0.2)"} />
+        <VFooter brand={brand} color={fg} borderColor={fg === "#fff" || fg === "var(--vc-cream)" ? "rgba(255,255,255,0.25)" : "rgba(14,14,14,0.2)"} />
       </div>
-    )),
-  ];
+    );
+  });
+
+  const slides = [cover, ...contentSlides];
+  if (data.ctaText) slides.push(<CarouselCTA brand={brand} data={data} />);
+  return slides;
 };
 
 /* ============================================== */
-/* 9. TIPS CAROUSEL (cover + 5 rules)              */
+/* 9. TIPS CAROUSEL (cover + N rules)              */
 /* ============================================== */
 const T_Tips = ({ data, brand }) => {
-  const tips = (data.tips || "Write the email before the spec.\nPrice the outcome, not the hour.\nNever pitch what you can't deliver.\nDocument decisions, not opinions.\nShip the smallest useful thing.").split("\n").filter(Boolean).slice(0, 6);
-  return [
+  const tips = (data.tips || "Write the email before the spec.\nPrice the outcome, not the hour.\nNever pitch what you can't deliver.\nDocument decisions, not opinions.\nShip the smallest useful thing.").split("\n").filter(Boolean);
+  const ruleWord = data.ruleLabel || "Rule";
+
+  const cover = (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <VLabel num={3} text={data.kicker || "Field Notes"} />
@@ -408,7 +432,7 @@ const T_Tips = ({ data, brand }) => {
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
         <div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 156, lineHeight: 0.94, color: "var(--vc-ink)", letterSpacing: "-0.03em" }}>
-            {tips.length} <Underscribble>rules</Underscribble>
+            {tips.length} <Underscribble>{ruleWord.toLowerCase()}s</Underscribble>
           </div>
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 132, lineHeight: 1, color: "var(--vc-ink)", marginTop: 8, letterSpacing: "-0.02em" }}>
             I keep close.
@@ -422,32 +446,42 @@ const T_Tips = ({ data, brand }) => {
         <Asterisk size={56} />
         <Wordmark brand={brand} />
       </div>
-    </div>,
-    ...tips.map((t, i) => (
-      <div className="social-frame" style={{ background: i % 2 === 0 ? "var(--vc-cream)" : "var(--vc-ink)", color: i % 2 === 0 ? "var(--vc-ink)" : "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <VLabel num={i + 1} text={`Rule ${i + 1} of ${tips.length}`} color="currentColor" />
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.6 }}>{brand.handle || "@studio"}</span>
-        </div>
-        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "auto 1fr", gap: 60, alignItems: "center" }}>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 480, lineHeight: 0.82, color: "var(--vc-red)", letterSpacing: "-0.04em" }}>
-            {i + 1}
-          </div>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 76, lineHeight: 1.08, letterSpacing: "-0.01em" }}>
-            {t}
-          </div>
-        </div>
-        <VFooter brand={brand} color="currentColor" borderColor={i % 2 === 0 ? "rgba(14,14,14,0.2)" : "rgba(236,230,214,0.2)"} />
+    </div>
+  );
+
+  const tipSlides = tips.map((t, i) => (
+    <div className="social-frame" style={{ background: i % 2 === 0 ? "var(--vc-cream)" : "var(--vc-ink)", color: i % 2 === 0 ? "var(--vc-ink)" : "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <VLabel num={i + 1} text={`${ruleWord} ${i + 1} of ${tips.length}`} color="currentColor" />
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.6 }}>{brand.handle || "@studio"}</span>
       </div>
-    )),
-  ];
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "auto 1fr", gap: 60, alignItems: "center" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 480, lineHeight: 0.82, color: "var(--vc-red)", letterSpacing: "-0.04em" }}>
+          {i + 1}
+        </div>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 76, lineHeight: 1.08, letterSpacing: "-0.01em" }}>
+          {t}
+        </div>
+      </div>
+      <VFooter brand={brand} color="currentColor" borderColor={i % 2 === 0 ? "rgba(14,14,14,0.2)" : "rgba(236,230,214,0.2)"} />
+    </div>
+  ));
+
+  const slides = [cover, ...tipSlides];
+  if (data.ctaText) slides.push(<CarouselCTA brand={brand} data={data} />);
+  return slides;
 };
 
-const Wordmark = ({ brand, color }) => (
-  <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: color || "currentColor", letterSpacing: "-0.01em" }}>
-    {brand.studioName || "Studio"}
-  </span>
-);
+const Wordmark = ({ brand, color }) => {
+  if (brand.logo && brand.logoEnabled !== false) {
+    return <img src={brand.logo} alt={brand.studioName || "logo"} style={{ height: 36, width: "auto", maxWidth: 140, objectFit: "contain" }} />;
+  }
+  return (
+    <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: color || "currentColor", letterSpacing: "-0.01em" }}>
+      {brand.studioName || "Studio"}
+    </span>
+  );
+};
 
 /* ============================================== */
 /* 10. NOW BOOKING (CTA)                           */
@@ -545,6 +579,40 @@ const T_Launch = ({ data, brand }) => (
   </div>
 );
 
+/* ============================================== */
+/* CAROUSEL CLOSING / CTA SLIDE                    */
+/* ============================================== */
+const CarouselCTA = ({ brand, data }) => (
+  <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <VLabel text="Follow for more" color="var(--vc-cream)" style={{ opacity: 0.5 }} />
+      <Asterisk size={56} color="var(--vc-blue)" />
+    </div>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+      {brand.logo && brand.logoEnabled !== false
+        ? <img src={brand.logo} alt="" style={{ height: 80, width: "auto", maxWidth: 220, objectFit: "contain", marginBottom: 36 }} />
+        : null
+      }
+      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 136, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
+        {brand.studioName || "Studio"}
+      </div>
+      <div style={{ marginTop: 16, fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.5 }}>
+        {brand.handle || "@studio"}
+      </div>
+      {data.ctaText && (
+        <div style={{ marginTop: 52, fontFamily: "var(--font-helvetica)", fontWeight: 500, fontSize: 40, lineHeight: 1.35, maxWidth: 720, opacity: 0.85 }}>
+          {data.ctaText}
+        </div>
+      )}
+    </div>
+    <div style={{ paddingTop: 22, borderTop: "1.5px solid rgba(236,230,214,0.15)", display: "flex", justifyContent: "center" }}>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.4 }}>
+        {brand.handle || "@studio"}
+      </span>
+    </div>
+  </div>
+);
+
 /* ============ Template registry ============ */
 const f = (key, label, opts = {}) => ({ key, label, type: opts.type || "text", placeholder: opts.placeholder, hint: opts.hint });
 const fA = (key, label, opts = {}) => f(key, label, { type: "textarea", ...opts });
@@ -604,23 +672,26 @@ const SocialTemplates = [
     fields: [
       f("title", "Title (cover)"),
       f("subtitle", "Subtitle (cover)"),
-      fA("steps", "Steps — 'Name — body', one per line", { hint: "Up to 4 steps." }),
+      f("coverLabel", "Cover bracket label", { placeholder: "A Framework" }),
+      fA("steps", "Steps — 'Name — body', one per line", { hint: "One step per line. No hard limit." }),
+      f("ctaText", "Closing slide CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
     ] },
   { id: "story",        name: "Short Story",       kind: "Carousel",
     slides: (p) => T_Story(p),
     fields: [
       f("coverLead", "Cover · roman"),
       f("coverItalic", "Cover · italic"),
-      fA("problem", "Slide 2 — Problem"),
-      fA("shift", "Slide 3 — Shift"),
-      fA("result", "Slide 4 — Result"),
+      fA("slides", "Story slides — 'Kicker — Body', one per line", { hint: "Colors cycle cream → blue → lime → ink. Add as many slides as needed." }),
+      f("ctaText", "Closing slide CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
     ] },
   { id: "tipscarousel", name: "Tips Carousel",     kind: "Carousel",
     slides: (p) => T_Tips(p),
     fields: [
       f("kicker", "Kicker"),
       fA("subtitle", "Subtitle (cover)"),
-      fA("tips", "Tips (one per line)", { hint: "Up to 6 lines" }),
+      fA("tips", "Tips (one per line)", { hint: "Add as many as needed — no limit." }),
+      f("ruleLabel", "Slide label word", { placeholder: "Rule", hint: "Appears as 'Rule 1 of N'. Change to Tip, Lesson, Step…" }),
+      f("ctaText", "Closing slide CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
     ] },
   { id: "booking",      name: "Now Booking",       kind: "CTA",
     slides: (p) => [<T_Booking {...p} />],

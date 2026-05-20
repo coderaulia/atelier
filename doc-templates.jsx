@@ -4,6 +4,14 @@
 
 /* ---------- Reusable bits ---------- */
 const DocBody = ({ md }) => md ? <div className="doc-body" dangerouslySetInnerHTML={{ __html: MD(md) }} /> : null;
+
+/* Brand name or logo image — used in template headers */
+const BrandMark = ({ brand }) => {
+  if (brand.logo && brand.logoEnabled !== false) {
+    return <img src={brand.logo} alt={brand.studioName || "logo"} style={{ height: 24, width: "auto", maxWidth: 110, objectFit: "contain", display: "block" }} />;
+  }
+  return <>{brand.studioName || "Studio"}</>;
+};
 const InlineMd = ({ md, as = "span" }) => {
   const Tag = as;
   return <Tag dangerouslySetInnerHTML={{ __html: MDInline(md || "") }} />;
@@ -18,7 +26,7 @@ function AgreementClassic({ data, brand }) {
     <div className="doc t-classic">
       <div className="t-head">
         <div style={{ fontFamily: "var(--font-mono)", fontSize: "9pt", letterSpacing: "0.15em", color: "var(--paper-muted)", textTransform: "uppercase", marginBottom: 14 }}>
-          {brand.studioName || "Studio"}
+          <BrandMark brand={brand} />
         </div>
         <div className="t-doctype">Services Agreement</div>
         <div className="t-sub">{data.title || "Untitled engagement"}</div>
@@ -73,7 +81,7 @@ function AgreementModern({ data, brand }) {
           <div className="t-num">REF / {data.refNo || "AG-0001"}</div>
         </div>
         <div className="t-head-right">
-          <div className="t-from">{brand.studioName || "Studio"}</div>
+          <div className="t-from"><BrandMark brand={brand} /></div>
           <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}</div>
           <div className="t-from-meta" style={{ marginTop: 6 }}>{brand.email}</div>
         </div>
@@ -123,7 +131,7 @@ function AgreementEditorial({ data, brand }) {
   return (
     <div className="doc t-editorial">
       <div className="t-head">
-        <span>{brand.studioName || "Studio"}</span>
+        <span><BrandMark brand={brand} /></span>
         <span>No. {data.refNo || "01"}</span>
         <span>{fmt.dateShort(data.date)}</span>
       </div>
@@ -216,7 +224,7 @@ function InvoiceClassic({ data, brand }) {
     <div className="doc t-classic">
       <div className="t-head">
         <div style={{ fontFamily: "var(--font-mono)", fontSize: "9pt", letterSpacing: "0.15em", color: "var(--paper-muted)", textTransform: "uppercase", marginBottom: 14 }}>
-          {brand.studioName || "Studio"}
+          <BrandMark brand={brand} />
         </div>
         <div className="t-doctype">Invoice</div>
         <div className="t-sub">{data.invoiceNo || "INV-0001"}</div>
@@ -260,7 +268,7 @@ function InvoiceModern({ data, brand }) {
           <div className="t-num">{data.invoiceNo || "INV-0001"} · {data.projectRef || ""}</div>
         </div>
         <div className="t-head-right">
-          <div className="t-from">{brand.studioName}</div>
+          <div className="t-from"><BrandMark brand={brand} /></div>
           <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}</div>
           <div className="t-from-meta" style={{ marginTop: 6 }}>{brand.email}</div>
         </div>
@@ -292,7 +300,7 @@ function InvoiceEditorial({ data, brand }) {
   return (
     <div className="doc t-editorial">
       <div className="t-head">
-        <span>{brand.studioName || "Studio"}</span>
+        <span><BrandMark brand={brand} /></span>
         <span>{data.invoiceNo || "INV-0001"}</span>
         <span>{fmt.dateShort(data.issuedAt)}</span>
       </div>
@@ -327,7 +335,7 @@ function ProposalClassic({ data, brand }) {
   return (
     <div className="doc t-classic">
       <div className="t-head">
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "9pt", letterSpacing: "0.15em", color: "var(--paper-muted)", textTransform: "uppercase", marginBottom: 14 }}>{brand.studioName}</div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "9pt", letterSpacing: "0.15em", color: "var(--paper-muted)", textTransform: "uppercase", marginBottom: 14 }}><BrandMark brand={brand} /></div>
         <div className="t-doctype">Proposal</div>
         <div className="t-sub">{data.title || "Untitled proposal"}</div>
       </div>
@@ -358,7 +366,7 @@ function ProposalModern({ data, brand }) {
           <div className="t-num">For {data.clientName || "—"} · {fmt.dateShort(data.date)}</div>
         </div>
         <div className="t-head-right">
-          <div className="t-from">{brand.studioName}</div>
+          <div className="t-from"><BrandMark brand={brand} /></div>
           <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.fullName}<br/>{brand.email}</div>
         </div>
       </div>
@@ -382,7 +390,7 @@ function ProposalEditorial({ data, brand }) {
   return (
     <div className="doc t-editorial">
       <div className="t-head">
-        <span>{brand.studioName}</span>
+        <span><BrandMark brand={brand} /></span>
         <span>Proposal · No. {data.refNo || "01"}</span>
         <span>{fmt.dateShort(data.date)}</span>
       </div>

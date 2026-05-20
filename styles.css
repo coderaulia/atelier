@@ -1029,6 +1029,86 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .modal__close:hover { color: var(--shell-ink); }
 .modal__body { padding: 18px 22px 24px; }
 
+/* Social two-step flow (pick → edit) */
+.social-flow {
+  overflow: hidden;
+}
+.social-flow__track {
+  display: flex;
+  width: 200%;
+  transition: transform 0.32s cubic-bezier(0.32, 0, 0.2, 1);
+}
+.social-flow[data-step="edit"] .social-flow__track {
+  transform: translateX(-50%);
+}
+.social-flow__panel {
+  width: 50%;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.social-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--shell-rule);
+  color: var(--shell-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 7px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.social-back-btn:hover { color: var(--shell-ink); border-color: var(--shell-bg-3); }
+.social-active-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.social-active-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.social-active-kind {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--shell-muted);
+}
+.social-active-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  color: var(--shell-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sidebar attribution */
+.sidebar__attribution {
+  padding: 8px 18px 12px;
+  text-align: center;
+}
+.sidebar__attribution-link {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--shell-muted);
+  text-decoration: none;
+  opacity: 0.55;
+}
+.sidebar__attribution-link:hover { opacity: 1; color: var(--shell-ink); }
+
 /* Print rules */
 @media print {
   @page {

@@ -1,0 +1,23 @@
+{
+  "name": "vanaila-studio-api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:apply": "wrangler d1 execute vanaila-studio --local --file src/db/schema.sql",
+    "db:apply:remote": "wrangler d1 execute vanaila-studio --file src/db/schema.sql"
+  },
+  "dependencies": {
+    "hono": "^4.7.0",
+    "jose": "^5.10.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250525.0",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.15.0"
+  }
+}

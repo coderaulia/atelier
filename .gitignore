@@ -1,0 +1,30 @@
+# deps
+node_modules/
+api/node_modules/
+
+# build output
+dist/
+api/dist/
+
+# Vite
+*.local
+.env
+.env.*
+!.env.example
+
+# Wrangler
+.wrangler/
+api/.wrangler/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# RTK cache
+.rtk/

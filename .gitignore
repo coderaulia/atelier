@@ -1,6 +1,8 @@
 # deps
 node_modules/
 api/node_modules/
+.rtk/
+
 
 # build output
 dist/

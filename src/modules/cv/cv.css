@@ -519,3 +519,165 @@
   border-radius: 5px;
   padding: 7px 10px;
 }
+
+/* ---- CV Import Modal ---- */
+.cv-import-modal {
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cv-import-privacy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a3a1a;
+  border: 1px solid #2a5a2a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #7acc7a;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+
+.cv-import-privacy__icon {
+  font-size: 13px;
+}
+
+.cv-import-upload-btn {
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: var(--font-sans);
+}
+
+.cv-import-upload-btn:hover {
+  opacity: 0.85;
+}
+
+.cv-import-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--shell-bg-3);
+  border: 1px solid var(--shell-rule);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.cv-import-file__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.cv-import-file__name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--shell-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cv-import-file__clear {
+  background: transparent;
+  border: 1px solid var(--shell-rule);
+  color: var(--shell-muted);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.cv-import-file__clear:hover {
+  color: #ff8080;
+  border-color: #5c1a1a;
+}
+
+.cv-import-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.cv-import-progress__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--shell-rule);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: cv-import-spin 0.7s linear infinite;
+}
+
+@keyframes cv-import-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cv-import-progress__text {
+  font-size: 12px;
+  color: var(--shell-muted);
+  font-family: var(--font-mono);
+}
+
+.cv-import-progress__bar {
+  width: 240px;
+  height: 4px;
+  background: var(--shell-rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cv-import-progress__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.2s ease;
+}
+
+.cv-import-progress__percent {
+  font-size: 11px;
+  color: var(--shell-ink);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.cv-import-textarea {
+  width: 100%;
+  background: var(--shell-bg);
+  border: 1px solid var(--shell-rule);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--shell-ink);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.cv-import-textarea:focus {
+  border-color: var(--accent);
+}

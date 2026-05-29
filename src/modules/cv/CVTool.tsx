@@ -14,6 +14,7 @@ import { useLocalStorage } from '../documents/utils';
 import { useToolLimit } from '../../hooks/useToolLimit';
 import { usePlan } from '../../hooks/usePlan';
 import UpgradeModal from '../../components/UpgradeModal';
+import CVImportModal from './CVImportModal';
 
 // ---------- Template renderer map ----------
 function renderTemplate(templateId: CVTemplate, data: CVData, accent: string) {
@@ -92,6 +93,7 @@ export default function CVTool() {
   const [renderError, setRenderError] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showImportMenu, setShowImportMenu] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const prevBlobRef = useRef<string | null>(null);
 
   const { canUse, used, limit, increment } = useToolLimit('cv');
@@ -170,19 +172,29 @@ export default function CVTool() {
     }
   }, [canUse, increment, template, cvData, accent]);
 
-  // ---------- Import placeholder ----------
+  // ---------- Import handlers ----------
   const handleImportLinkedIn = () => {
     setShowImportMenu(false);
-    alert("LinkedIn import via OAuth is on the roadmap. Paste your LinkedIn profile URL and we\u2019ll guide you through export.");
+    alert("LinkedIn import via OAuth is on the roadmap. Paste your LinkedIn profile URL and we'll guide you through export.");
   };
 
-  const handleImportCV = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportCV = () => {
     setShowImportMenu(false);
-    const file = e.target.files?.[0];
-    if (!file) return;
-    alert(`OCR parsing for "${file.name}" is coming soon. For now, paste your text into the fields manually.`);
-    e.target.value = '';
+    setShowImportModal(true);
   };
+
+  const handleApplyImport = useCallback((parsedData: Partial<CVData>) => {
+    setCvData((prev) => ({
+      ...prev,
+      ...parsedData,
+      personal: { ...prev.personal, ...parsedData.personal },
+      experience: parsedData.experience?.length ? parsedData.experience : prev.experience,
+      education: parsedData.education?.length ? parsedData.education : prev.education,
+      skills: parsedData.skills?.length ? parsedData.skills : prev.skills,
+      certifications: parsedData.certifications?.length ? parsedData.certifications : prev.certifications,
+    }));
+    setBlobUrl(null); // Invalidate preview
+  }, [setCvData]);
 
   return (
     <div className="cv-tool">
@@ -205,10 +217,9 @@ export default function CVTool() {
                     <button className="cv-import-menu__item" onClick={handleImportLinkedIn}>
                       <span>🔗</span> From LinkedIn
                     </button>
-                    <label className="cv-import-menu__item" style={{ cursor: 'pointer' }}>
+                    <button className="cv-import-menu__item" onClick={handleImportCV}>
                       <span>📄</span> From existing CV
-                      <input type="file" accept=".pdf,.doc,.docx" hidden onChange={handleImportCV} />
-                    </label>
+                    </button>
                   </div>
                 )}
               </div>
@@ -272,6 +283,14 @@ export default function CVTool() {
 
       {/* ---- Upgrade Modal ---- */}
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+      
+      {/* ---- Import Modal ---- */}
+      {showImportModal && (
+        <CVImportModal
+          onClose={() => setShowImportModal(false)}
+          onApply={handleApplyImport}
+        />
+      )}
     </div>
   );
 }

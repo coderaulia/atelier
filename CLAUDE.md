@@ -17,47 +17,62 @@ Browser-based freemium generator suite. Frontend on Cloudflare Pages, backend on
 ## File Structure
 
 src/
-modules/
-documents/ # Document generator (ported Atelier)
-social/ # Social content generator
-cv/ # CV/Resume builder
-pdf-to-image/ # PDF→Image converter
-image-converter/
-ocr/
-pages/
-Landing.tsx
-Dashboard.tsx
-Auth/
-components/
-UpgradeModal.tsx
-UsageBadge.tsx
-ToolLayout.tsx
-hooks/
-useAuth.ts
-useToolLimit.ts # Usage gate hook
-usePlan.ts
-lib/
-api.ts # Typed fetch wrapper
-midtrans.ts
-workers/
-src/
-index.ts # Hono app entry
-routes/
-auth.ts
-billing.ts
-usage.ts
-storage.ts
-middleware/
-auth.ts
-rateLimit.ts
-db/
-schema.sql
-migrations/
-docs/
-project-status.md
-tech-stack.md
-api-endpoints.md
-commit-log.md
+  App.tsx                         # Main routes (lazy tool imports)
+  main.tsx                        # Entry point with admin + app routes
+  pages/
+    Landing.tsx                   # Marketing landing page
+    Login.tsx                     # Auth login
+    Register.tsx                  # Auth register
+    ToolLanding.tsx               # Per-tool landing page wrapper
+    toolPages.tsx                 # Tool page registry
+    Admin/
+      AdminLayout.tsx             # Admin sidebar + auth guard
+      Overview.tsx                # Stats, charts, revenue
+      Users.tsx                   # User list + search + actions
+      UserDetail.tsx              # User detail + transactions + usage
+      Transactions.tsx            # Payment records table
+      Errors.tsx                  # Error log viewer
+  modules/
+    documents/                    # Document generator (ported Atelier)
+    social/                       # Social content generator
+    cv/                           # CV/Resume builder
+    pdf-to-image/                 # PDF→Image converter
+    image-converter/              # Image format converter
+    ocr/                          # OCR tool (Tesseract.js)
+  components/
+    ErrorBoundary.tsx
+    UpgradeModal.tsx
+    UsageBadge.tsx
+  hooks/
+    useAuth.ts
+    useToolLimit.ts               # Usage gate hook
+    usePlan.ts
+  lib/
+    api.ts                        # Typed fetch wrapper (auth, usage, admin)
+    midtrans.ts
+
+api/
+  src/
+    index.ts                      # Hono app entry
+    types.ts                      # Bindings type
+    auth/
+      routes.ts                   # Register, login, /me
+    routes/
+      usage.ts                    # GET/POST usage limits
+      admin.ts                    # Admin API: stats, users, transactions, errors
+      log-error.ts                # POST /api/log-error
+    middleware/
+      auth.ts                     # JWT + session auth
+      admin.ts                    # Admin role gate
+    lib/
+      jwt.ts
+      password.ts
+    db/
+      schema.sql                  # Full schema
+      migrations/
+        001_admin_dashboard.sql   # Migration: roles, transactions, error_log
+  wrangler.toml
+```
 
 ## Core Patterns
 
@@ -90,14 +105,21 @@ Never upload user files to any server. Show this in UI as a trust signal.
 
 ### D1 Migrations
 
-Write migrations to `workers/migrations/NNN_name.sql`.
-Apply locally first: `wrangler d1 execute DB --local --file=...`
-Then remote: `wrangler d1 execute DB --file=...`
+Write migrations to `api/src/db/migrations/NNN_name.sql`.
+Apply locally first: `wrangler d1 execute vanaila-studio --local --file=...`
+Then remote: `wrangler d1 execute vanaila-studio --file=...`
 
 ### Midtrans
 
 Snap.js loaded via CDN in index.html. Never put server key in frontend.
 Webhook route validates signature before any plan update.
+
+### Admin Dashboard
+
+- Routes: `/admin`, `/admin/users`, `/admin/users/:id`, `/admin/transactions`, `/admin/errors`
+- Protected by `adminMiddleware` — verifies JWT + `role === 'admin'`
+- Set admin: `wrangler d1 execute vanaila-studio --command "UPDATE users SET role='admin' WHERE email='your@email.com';"`
+- Error logging: POST `/api/log-error` with `{ tool_id, error_type, user_agent?, plan? }` — no PII, no file data
 
 ## Commands
 
@@ -107,11 +129,11 @@ npm run dev
 npm run build
 
 # Backend
-wrangler dev
-wrangler deploy
+cd api && npm run dev
+cd api && npm run db:apply
 
 # D1
-wrangler d1 execute DB --local --file=workers/migrations/001_init.sql
+wrangler d1 execute vanaila-studio --local --file=api/src/db/migrations/001_admin_dashboard.sql
 ```
 
 ## Rules
@@ -119,7 +141,7 @@ wrangler d1 execute DB --local --file=workers/migrations/001_init.sql
 - Commit after each phase milestone
 - Update docs/project-status.md and docs/commit-log.md after each commit
 - All Zod validation on backend routes — never trust client input
-- Free daily limits: 5/day authenticated, 3/day anonymous (localStorage)
+- Free daily limits: 5/day authenticated, 2/day anonymous (localStorage)
 - Pro gates: premium templates, bulk export, cloud save, unlimited daily use
 - No watermarks on any plan — ever
 - IDR and USD both supported in Midtrans integration

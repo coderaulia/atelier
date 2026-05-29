@@ -28,9 +28,9 @@ auth.post('/register', async (c) => {
 
   try {
     const user = await c.env.DB
-      .prepare('INSERT INTO users (email, password_hash) VALUES (?, ?) RETURNING id, email, plan, created_at')
+      .prepare('INSERT INTO users (email, password_hash) VALUES (?, ?) RETURNING id, email, plan, role, status, created_at')
       .bind(email, password_hash)
-      .first<{ id: string; email: string; plan: string; created_at: number }>()
+      .first<{ id: string; email: string; plan: string; role: string; status: string; created_at: number }>()
 
     if (!user) return c.json({ error: 'Registration failed' }, 500)
 
@@ -40,7 +40,7 @@ auth.post('/register', async (c) => {
       .bind(token, user.id, expiresAt)
       .run()
 
-    return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan } }, 201)
+    return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan, role: user.role, status: user.status } }, 201)
   } catch (err) {
     const msg = err instanceof Error ? err.message : ''
     if (msg.includes('UNIQUE')) return c.json({ error: 'Email already registered' }, 409)
@@ -57,12 +57,16 @@ auth.post('/login', async (c) => {
   const { email, password } = result.data
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, plan, password_hash FROM users WHERE email = ?')
+    .prepare('SELECT id, email, plan, role, status, password_hash FROM users WHERE email = ?')
     .bind(email)
-    .first<{ id: string; email: string; plan: string; password_hash: string }>()
+    .first<{ id: string; email: string; plan: string; role: string; status: string; password_hash: string }>()
 
   if (!user || !(await verifyPassword(password, user.password_hash))) {
     return c.json({ error: 'Invalid credentials' }, 401)
+  }
+
+  if (user.status === 'banned') {
+    return c.json({ error: 'Account banned' }, 403)
   }
 
   const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)
@@ -70,8 +74,11 @@ auth.post('/login', async (c) => {
     .prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
     .bind(token, user.id, expiresAt)
     .run()
+  await c.env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?')
+    .bind(Math.floor(Date.now() / 1000), user.id)
+    .run()
 
-  return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan } })
+  return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan, role: user.role, status: user.status } })
 })
 
 auth.get('/me', async (c) => {
@@ -98,11 +105,12 @@ auth.get('/me', async (c) => {
   }
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, plan, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, plan, role, status, pro_expires_at, created_at FROM users WHERE id = ?')
     .bind(userId)
-    .first<{ id: string; email: string; plan: string; created_at: number }>()
+    .first<{ id: string; email: string; plan: string; role: string; status: string; pro_expires_at: number | null; created_at: number }>()
 
   if (!user) return c.json({ error: 'User not found' }, 404)
+  if (user.status === 'banned') return c.json({ error: 'Account banned' }, 403)
 
   return c.json({ user })
 })

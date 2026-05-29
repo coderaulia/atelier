@@ -1,0 +1,387 @@
+/* ===== Tool SEO Landing Pages ===== */
+
+.tool-seo-page {
+  --tool-accent: hsl(205 90% 60%);
+  background: hsl(240 8% 6%);
+  color: hsl(240 10% 92%);
+  font-family: 'Manrope', system-ui, sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+/* ---------- Nav ---------- */
+.tool-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: hsl(240 10% 8%/0.8);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid hsl(240 10% 14%);
+}
+
+.tool-brand {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--tool-accent);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.tool-nav__links {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.tool-nav__links a {
+  color: hsl(240 10% 70%);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.tool-nav__links a:hover {
+  color: #fff;
+}
+
+/* ---------- Hero ---------- */
+.tool-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 5rem 1.5rem 3rem;
+  align-items: center;
+  position: relative;
+}
+
+.tool-hero__copy h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #fff 40%, var(--tool-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0.5rem 0 1rem;
+}
+
+.tool-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.3rem 0.8rem;
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--tool-accent) 15%, transparent);
+  color: var(--tool-accent);
+  border: 1px solid color-mix(in srgb, var(--tool-accent) 25%, transparent);
+}
+
+.tool-hero__copy p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: hsl(240 10% 70%);
+  max-width: 520px;
+}
+
+.tool-hero__actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.8rem;
+  flex-wrap: wrap;
+}
+
+.tool-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.7rem 1.8rem;
+  border-radius: 100px;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+}
+.tool-cta--primary {
+  background: var(--tool-accent);
+  color: #000;
+}
+.tool-cta--primary:hover {
+  transform: scale(1.04);
+  filter: brightness(1.1);
+}
+.tool-cta--ghost {
+  background: transparent;
+  color: hsl(240 10% 80%);
+  border: 1px solid hsl(240 10% 25%);
+}
+.tool-cta--ghost:hover {
+  border-color: var(--tool-accent);
+  color: #fff;
+}
+
+.tool-hero__orb {
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--tool-accent) 30%, transparent), transparent 70%);
+  filter: blur(80px);
+  opacity: 0.7;
+  justify-self: end;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+/* ---------- Live Tool ---------- */
+.tool-live {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.tool-live__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: hsl(240 10% 60%);
+}
+.tool-live__header strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.tool-live__frame {
+  border-radius: 16px;
+  border: 1px solid hsl(240 10% 16%);
+  overflow: hidden;
+  background: hsl(240 8% 8%);
+  min-height: 400px;
+}
+.tool-live__frame > * {
+  width: 100% !important;
+  min-height: 400px;
+}
+
+.tool-lazy-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: hsl(240 10% 50%);
+  font-size: 0.9rem;
+}
+
+/* ---------- Sections ---------- */
+.tool-section {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+.tool-section__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--tool-accent);
+  margin-bottom: 0.4rem;
+}
+
+.tool-section h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 600;
+  margin-bottom: 2.5rem;
+  color: #fff;
+}
+
+/* ---------- Steps ---------- */
+.tool-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.tool-step {
+  background: hsl(240 8% 10%);
+  border: 1px solid hsl(240 10% 16%);
+  border-radius: 16px;
+  padding: 2rem 1.2rem;
+  text-align: center;
+  transition: transform 0.25s, border-color 0.25s;
+}
+.tool-step:hover {
+  transform: translateY(-4px);
+  border-color: var(--tool-accent);
+}
+.tool-step__number {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--tool-accent);
+  margin-bottom: 0.6rem;
+}
+.tool-step__icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.8rem;
+}
+.tool-step h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #fff;
+}
+.tool-step p {
+  font-size: 0.85rem;
+  color: hsl(240 10% 60%);
+  line-height: 1.5;
+}
+
+/* ---------- Features ---------- */
+.tool-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.tool-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  background: hsl(240 8% 10%);
+  border: 1px solid hsl(240 10% 16%);
+  border-radius: 14px;
+  padding: 1.2rem;
+  text-align: left;
+  transition: border-color 0.2s;
+}
+.tool-feature:hover {
+  border-color: color-mix(in srgb, var(--tool-accent) 40%, transparent);
+}
+.tool-feature span {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.tool-feature p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: hsl(240 10% 72%);
+  margin: 0;
+}
+
+/* ---------- FAQ ---------- */
+.tool-faq__list {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.tool-faq__list details {
+  background: hsl(240 8% 10%);
+  border: 1px solid hsl(240 10% 16%);
+  border-radius: 12px;
+  margin-bottom: 0.7rem;
+  padding: 1rem 1.2rem;
+  transition: border-color 0.2s;
+}
+.tool-faq__list details[open] {
+  border-color: var(--tool-accent);
+}
+.tool-faq__list summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tool-faq__list summary::-webkit-details-marker {
+  display: none;
+}
+.tool-faq__list summary::after {
+  content: '+';
+  font-size: 1.2rem;
+  color: var(--tool-accent);
+  transition: transform 0.2s;
+}
+.tool-faq__list details[open] summary::after {
+  content: '−';
+}
+.tool-faq__list details p {
+  margin: 0.8rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: hsl(240 10% 65%);
+}
+
+/* ---------- Final CTA ---------- */
+.tool-final-cta {
+  max-width: 700px;
+  margin: 2rem auto 0;
+  padding: 4rem 1.5rem;
+  text-align: center;
+  border-top: 1px solid hsl(240 10% 14%);
+}
+.tool-final-cta h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  color: #fff;
+  margin-bottom: 0.6rem;
+}
+.tool-final-cta p {
+  font-size: 0.95rem;
+  color: hsl(240 10% 65%);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+.tool-final-cta .tool-hero__actions {
+  justify-content: center;
+}
+
+/* ---------- Footer ---------- */
+.tool-footer {
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: hsl(240 10% 45%);
+  border-top: 1px solid hsl(240 10% 14%);
+}
+
+/* ---------- Not-found ---------- */
+.not-found-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  background: hsl(240 8% 6%);
+  color: hsl(240 10% 80%);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .tool-hero { grid-template-columns: 1fr; gap: 0; text-align: center; }
+  .tool-hero__actions { justify-content: center; }
+  .tool-hero__copy p { max-width: none; }
+  .tool-hero__orb { display: none; }
+  .tool-steps { grid-template-columns: 1fr; }
+  .tool-features { grid-template-columns: 1fr; }
+}

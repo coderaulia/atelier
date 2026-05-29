@@ -57,6 +57,14 @@ usage.post('/:toolId', async (c) => {
   const current = row?.count ?? 0
 
   if (current >= FREE_LIMIT) {
+    await c.env.DB
+      .prepare(
+        `INSERT INTO usage_log (user_id, tool_id, date, count, limit_hits) VALUES (?, ?, ?, 0, 1)
+         ON CONFLICT (user_id, tool_id, date) DO UPDATE SET limit_hits = limit_hits + 1`
+      )
+      .bind(userId, toolId, date)
+      .run()
+
     return c.json(
       { error: 'Daily limit reached', limit: FREE_LIMIT, used: current, reset_at: resetAt() },
       429

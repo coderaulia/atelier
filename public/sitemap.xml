@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://studio.vanaila.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://studio.vanaila.com/pricing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://studio.vanaila.com/pdf-to-image</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://studio.vanaila.com/image-converter</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://studio.vanaila.com/ocr</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://studio.vanaila.com/cv-builder</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://studio.vanaila.com/document-generator</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://studio.vanaila.com/social-generator</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+</urlset>

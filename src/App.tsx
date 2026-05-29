@@ -1,0 +1,62 @@
+import { lazy, Suspense } from 'react'
+import { Link, Route, Routes } from 'react-router-dom'
+import ErrorBoundary from './components/ErrorBoundary'
+import Landing from './pages/Landing'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import ToolLanding from './pages/ToolLanding'
+import { toolPages } from './pages/toolPages'
+
+const DocumentTool = lazy(() => import('./modules/documents/DocumentTool'))
+const CVTool = lazy(() => import('./modules/cv/CVTool'))
+const PDFToImageTool = lazy(() => import('./modules/pdf-to-image/PDFToImageTool'))
+const ImageConverterTool = lazy(() => import('./modules/image-converter/ImageConverterTool'))
+const OCRTool = lazy(() => import('./modules/ocr/OCRTool'))
+
+const toolComponents: Record<string, any> = {
+  'pdf-to-image': PDFToImageTool,
+  'image-converter': ImageConverterTool,
+  ocr: OCRTool,
+  'cv-builder': CVTool,
+  'document-generator': DocumentTool,
+  'social-generator': DocumentTool,
+}
+
+function ToolRoute({ slug }: { slug: string }) {
+  const tool = toolPages.find((page) => page.slug === slug)
+  const LiveTool = toolComponents[slug]
+
+  if (!tool || !LiveTool) {
+    return (
+      <main className="not-found-page">
+        <h1>Tool not found</h1>
+        <Link to="/">Back to Vanaila Studio</Link>
+      </main>
+    )
+  }
+
+  return (
+    <ToolLanding tool={tool}>
+      <ErrorBoundary>
+        <Suspense fallback={<div className="tool-lazy-card">Loading live tool…</div>}>
+          <LiveTool />
+        </Suspense>
+      </ErrorBoundary>
+    </ToolLanding>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/pricing" element={<Landing />} />
+      <Route path="/app" element={<ToolRoute slug="document-generator" />} />
+      {toolPages.map((tool) => (
+        <Route key={tool.slug} path={tool.path} element={<ToolRoute slug={tool.slug} />} />
+      ))}
+    </Routes>
+  )
+}

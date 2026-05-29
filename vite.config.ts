@@ -10,4 +10,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@jsquash/avif', '@jsquash/webp'],
   },
+  worker: {
+    format: 'es',
+  },
 })

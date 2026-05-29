@@ -47,6 +47,8 @@ body {
   background: var(--shell-bg);
   -webkit-font-smoothing: antialiased;
   font-feature-settings: "ss01", "cv11";
+}
+.app, .ocr-tool, .cv-tool, .pdf2img-tool, .imgcnv-tool {
   overflow: hidden;
 }
 

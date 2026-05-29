@@ -15,6 +15,7 @@ import './modules/cv/cv.css'
 import './modules/pdf-to-image/pdf-to-image.css'
 import './modules/image-converter/image-converter.css'
 import './modules/ocr/ocr.css'
+import './landing.css'
 
 const router = createBrowserRouter([
   { path: '/', element: <Landing /> },

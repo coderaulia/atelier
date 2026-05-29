@@ -2,21 +2,21 @@
 
 :root {
   --bg: #faf8f3;
-  --bg-2: #f4f0e5;
-  --bg-3: #ebe5d4;
+  --bg-2: #f5f1e8;
+  --bg-3: #ede8dc;
   --surface: #ffffff;
-  --ink: #14130d;
-  --ink-2: #5b574c;
-  --ink-3: #8a8678;
-  --border: #e6e0d0;
-  --border-strong: #d4cdb8;
-  --accent: #e3582c;
+  --ink: #1a1916;
+  --ink-2: #3d3a35;
+  --ink-3: #6b6760;
+  --border: #e3ddc8;
+  --border-strong: #cfc7b0;
+  --accent: #ff6b3d;
   --accent-ink: #ffffff;
-  --accent-soft: rgba(227, 88, 44, 0.08);
-  --dark: #14130d;
+  --accent-soft: rgba(255, 107, 61, 0.1);
+  --dark: #1a1916;
   --dark-ink: #faf8f3;
-  --dark-ink-2: #908a78;
-  --dark-border: #2a261c;
+  --dark-ink-2: #b5afa0;
+  --dark-border: #2d2920;
 
   --serif: "Instrument Serif", "Source Serif 4", Georgia, serif;
   --sans: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -30,7 +30,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
+html {
+  scroll-behavior: smooth;
+}
+
+body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--sans);
@@ -38,6 +42,8 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 img { display: block; max-width: 100%; }
@@ -157,12 +163,12 @@ input, textarea { font: inherit; color: inherit; }
   background: var(--ink);
   color: var(--bg);
 }
-.btn--primary:hover { background: #2a261c; }
+.btn--primary:hover { background: #1f1d16; }
 .btn--accent {
   background: var(--accent);
   color: var(--accent-ink);
 }
-.btn--accent:hover { background: #c84a23; }
+.btn--accent:hover { background: #e85a2f; }
 .btn--ghost {
   background: transparent;
   color: var(--ink);
@@ -253,9 +259,9 @@ input, textarea { font: inherit; color: inherit; }
   margin-left: -8px;
 }
 .hero__proof-dots span:first-child { margin-left: 0; background: #d4cdb8; }
-.hero__proof-dots span:nth-child(2) { background: #e3582c; }
-.hero__proof-dots span:nth-child(3) { background: #1c4532; }
-.hero__proof-dots span:nth-child(4) { background: #5b574c; }
+.hero__proof-dots span:nth-child(2) { background: #ff6b3d; }
+.hero__proof-dots span:nth-child(3) { background: #2d5a45; }
+.hero__proof-dots span:nth-child(4) { background: #3d3a35; }
 
 /* Hero visual — stacked browser windows */
 .hero__visual {
@@ -537,7 +543,7 @@ input, textarea { font: inherit; color: inherit; }
   max-width: 580px;
 }
 .section--dark .section__lede { color: var(--dark-ink-2); }
-.section--dark h2 .accent { color: #f08560; }
+.section--dark h2 .accent { color: #ff8866; }
 .section--dark .eyebrow { color: var(--dark-ink-2); }
 
 /* ===================== TOOLS GRID ===================== */
@@ -618,7 +624,7 @@ input, textarea { font: inherit; color: inherit; }
   font-weight: 400;
   color: var(--accent);
 }
-.tool-card--hero .tool-card__title .it { color: #f08560; }
+.tool-card--hero .tool-card__title .it { color: #ff8866; }
 .tool-card__desc {
   font-size: 14px;
   color: var(--ink-2);
@@ -656,7 +662,7 @@ input, textarea { font: inherit; color: inherit; }
 }
 .tool-card__badge--live { background: var(--accent-soft); color: var(--accent); }
 .tool-card__badge--soon { background: transparent; border: 1px solid var(--border-strong); color: var(--ink-3); }
-.tool-card--hero .tool-card__badge--live { background: rgba(240,133,96,0.15); color: #f08560; }
+.tool-card--hero .tool-card__badge--live { background: rgba(255,136,102,0.15); color: #ff8866; }
 
 .tool-card__doctypes {
   display: flex;
@@ -1195,7 +1201,7 @@ input, textarea { font: inherit; color: inherit; }
   color: var(--accent);
   margin-bottom: 6px;
 }
-.price-tier--pro .price-tier__tag { color: #f08560; }
+.price-tier--pro .price-tier__tag { color: #ff8866; }
 .price-tier__list {
   list-style: none;
   display: flex;
@@ -1215,7 +1221,7 @@ input, textarea { font: inherit; color: inherit; }
   font-weight: 600;
   flex-shrink: 0;
 }
-.price-tier--pro .price-tier__list li::before { color: #f08560; }
+.price-tier--pro .price-tier__list li::before { color: #ff8866; }
 
 /* ===================== NEWSLETTER / FOOTER ===================== */
 .newsletter {

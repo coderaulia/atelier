@@ -7,8 +7,12 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import DocumentTool from './modules/documents/DocumentTool'
 import CVTool from './modules/cv/CVTool'
+import PDFToImageTool from './modules/pdf-to-image/PDFToImageTool'
+import ImageConverterTool from './modules/image-converter/ImageConverterTool'
 import './modules/documents/documents.css'
 import './modules/cv/cv.css'
+import './modules/pdf-to-image/pdf-to-image.css'
+import './modules/image-converter/image-converter.css'
 
 const router = createBrowserRouter([
   { path: '/', element: <Landing /> },
@@ -16,6 +20,8 @@ const router = createBrowserRouter([
   { path: '/register', element: <Register /> },
   { path: '/app', element: <DocumentTool /> },
   { path: '/cv', element: <CVTool /> },
+  { path: '/pdf-to-image', element: <PDFToImageTool /> },
+  { path: '/image-converter', element: <ImageConverterTool /> },
 ])
 
 createRoot(document.getElementById('root')!).render(

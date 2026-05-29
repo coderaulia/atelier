@@ -53,25 +53,30 @@ src/
 
 api/
   src/
-    index.ts                      # Hono app entry
+    index.ts                      # Hono app entry + scheduled cron handler
     types.ts                      # Bindings type
     auth/
-      routes.ts                   # Register, login, /me
+      routes.ts                   # Register, login, /me, forgot-password, reset-password, verify-email, logout, delete account, change-password
     routes/
       usage.ts                    # GET/POST usage limits
+      billing.ts                  # GET /status, POST /cancel, POST /webhook (Midtrans recurring), GET /transactions
       admin.ts                    # Admin API: stats, users, transactions, errors
       log-error.ts                # POST /api/log-error
     middleware/
-      auth.ts                     # JWT + session auth
+      auth.ts                     # JWT + session auth (checks deleted_at)
       admin.ts                    # Admin role gate
     lib/
       jwt.ts
       password.ts
+      tokens.ts                   # Token generation + SHA256 hashing
+      email.ts                    # Resend integration + bilingual templates (EN/ID)
     db/
       schema.sql                  # Full schema
       migrations/
         001_admin_dashboard.sql   # Migration: roles, transactions, error_log
-  wrangler.toml
+        002_account_management.sql # Migration: name, deleted_at, sessions tracking
+        003_auth_lifecycle.sql    # Migration: password_resets, email_verifications, billing fields
+  wrangler.toml                   # Includes cron trigger for daily grace/cleanup
 ```
 
 ## Core Patterns

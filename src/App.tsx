@@ -4,6 +4,9 @@ import ErrorBoundary from './components/ErrorBoundary'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Account from './pages/Account'
+import ForgotPassword from './pages/ForgotPassword'
+import VerifyEmailNotice from './pages/VerifyEmailNotice'
 import ToolLanding from './pages/ToolLanding'
 import { toolPages } from './pages/toolPages'
 
@@ -20,6 +23,32 @@ const toolComponents: Record<string, any> = {
   'cv-builder': CVTool,
   'document-generator': DocumentTool,
   'social-generator': DocumentTool,
+}
+
+/* Marketing demo modes: wrap tools with limited scope */
+function DocGeneratorDemo() { return <DocumentTool mode='documents' /> }
+function SocialGeneratorDemo() { return <DocumentTool mode='social' /> }
+
+const toolComponents: Record<string, any> = {
+  'pdf-to-image': PDFToImageTool,
+  'image-converter': ImageConverterTool,
+  ocr: OCRTool,
+  'cv-builder': CVTool,
+  'document-generator': DocGeneratorDemo,
+  'social-generator': SocialGeneratorDemo,
+}
+
+/* Marketing demo modes: wrap tools with limited scope */
+function DocGeneratorDemo() { return <DocumentTool mode='documents' /> }
+function SocialGeneratorDemo() { return <DocumentTool mode='social' /> }
+
+const toolComponents: Record<string, any> = {
+  'pdf-to-image': PDFToImageTool,
+  'image-converter': ImageConverterTool,
+  ocr: OCRTool,
+  'cv-builder': CVTool,
+  'document-generator': DocGeneratorDemo,
+  'social-generator': SocialGeneratorDemo,
 }
 
 function ToolRoute({ slug }: { slug: string }) {
@@ -52,6 +81,9 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/account" element={<Account />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-email" element={<VerifyEmailNotice />} />
       <Route path="/pricing" element={<Landing />} />
       <Route path="/app" element={<ToolRoute slug="document-generator" />} />
       {toolPages.map((tool) => (

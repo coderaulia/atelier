@@ -75,6 +75,9 @@ export default function Login() {
                 required
                 autoComplete="current-password"
               />
+              <Link to="/forgot-password" style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 4, display: 'inline-block' }}>
+                Forgot password?
+              </Link>
             </div>
 
             {error && (

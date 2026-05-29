@@ -9,6 +9,8 @@ export interface User {
   status?: 'active' | 'banned'
   pro_expires_at?: number | null
   cancel_at_period_end?: boolean
+  grace_until?: number | null
+  email_verified?: number
   created_at?: number
   last_login?: number | null
   deleted_at?: number | null
@@ -35,6 +37,8 @@ export interface Session {
 
 export interface Transaction {
   id: number
+  user_id?: string
+  user_email?: string
   amount: number
   currency: string
   plan_type: string
@@ -43,6 +47,8 @@ export interface Transaction {
   created_at: number
   email?: string
 }
+
+export type AdminTransaction = Transaction
 
 export interface UsageLogEntry {
   date: string
@@ -53,9 +59,9 @@ export interface UsageLogEntry {
 
 export class UsageLimitError extends Error {
   used: number
-  limit: number
+  limit: number | null
   reset_at: number
-  constructor(used: number, limit: number, reset_at: number) {
+  constructor(used: number, limit: number | null, reset_at: number) {
     super('Daily limit reached')
     this.name = 'UsageLimitError'
     this.used = used

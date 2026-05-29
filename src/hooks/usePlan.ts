@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getMe, User } from '../lib/api';
+import { getMe } from '../lib/api';
 
 export interface PlanResult {
   plan: 'free' | 'pro' | null;

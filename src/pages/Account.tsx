@@ -184,7 +184,7 @@ function SubscriptionTab({ user, onUpdate }: { user: User; onUpdate: (u: User) =
   )
 }
 
-function UsageTab({ user }: { user: User }) {
+function UsageTab({ user: _user }: { user: User }) {
   const [usage, setUsage] = useState<UsageLogEntry[]>([])
   const [loading, setLoading] = useState(true)
 

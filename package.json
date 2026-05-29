@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
     "@types/dompurify": "^3.0.5",
     "dompurify": "^3.4.7",
     "html-to-image": "^1.11.13",

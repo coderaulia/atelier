@@ -6,13 +6,16 @@ import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import DocumentTool from './modules/documents/DocumentTool'
+import CVTool from './modules/cv/CVTool'
 import './modules/documents/documents.css'
+import './modules/cv/cv.css'
 
 const router = createBrowserRouter([
   { path: '/', element: <Landing /> },
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
   { path: '/app', element: <DocumentTool /> },
+  { path: '/cv', element: <CVTool /> },
 ])
 
 createRoot(document.getElementById('root')!).render(

@@ -162,14 +162,19 @@ admin.get('/transactions', async (c) => {
   const page = Math.max(1, Number(c.req.query('page') ?? 1))
   const limit = Math.min(100, Math.max(1, Number(c.req.query('limit') ?? 50)))
   const offset = (page - 1) * limit
-  const sort = c.req.query('sort') === 'amount' ? 'amount' : 'created_at'
-  const direction = c.req.query('direction') === 'asc' ? 'ASC' : 'DESC'
+
+  const SORT_COLUMNS: Record<string, string> = { amount: 'amount', created_at: 'created_at', status: 'status' }
+  const DIRS: Record<string, string> = { asc: 'ASC', desc: 'DESC' }
+  const sort = c.req.query('sort') ?? 'created_at'
+  const direction = c.req.query('direction') ?? 'desc'
+  const safeSort = SORT_COLUMNS[sort] ?? 'created_at'
+  const safeDir = DIRS[direction] ?? 'DESC'
 
   const rows = await c.env.DB.prepare(
     `SELECT t.id, u.email AS user_email, t.amount, t.currency, t.plan_type, t.status, t.midtrans_order_id, t.created_at
      FROM transactions t
      LEFT JOIN users u ON u.id = t.user_id
-     ORDER BY ${sort} ${direction}
+     ORDER BY ${safeSort} ${safeDir}
      LIMIT ? OFFSET ?`
   ).bind(limit, offset).all()
   const total = await c.env.DB.prepare('SELECT COUNT(*) AS count FROM transactions').first<{ count: number }>()

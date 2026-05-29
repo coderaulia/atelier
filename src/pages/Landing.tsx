@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import LanguageToggle from '../components/LanguageToggle'
 
 /* ---- Inline icons ---- */
 const ArrowIcon = () => (
@@ -83,6 +84,7 @@ function Nav() {
           <Link className="nav__link" to="/pricing">Pricing</Link>
         </div>
         <div className="nav__actions">
+          <LanguageToggle />
           <Link className="nav__link" to="/login" style={{ fontWeight: 600 }}>Sign in</Link>
           <Link className="btn btn--primary" to="/register">Open the app <ArrowSmIcon /></Link>
         </div>
@@ -960,9 +962,9 @@ function Footer() {
           </div>
           <div>
             <div className="footer__col-title">Legal</div>
-            <a className="footer__col-link" href="#">Privacy</a>
-            <a className="footer__col-link" href="#">Terms</a>
-            <a className="footer__col-link" href="#">Contact</a>
+            <Link className="footer__col-link" to="/privacy">Privacy</Link>
+            <Link className="footer__col-link" to="/terms">Terms</Link>
+            <Link className="footer__col-link" to="/refund">Refund</Link>
           </div>
         </div>
         <div className="footer__bottom">

@@ -1,0 +1,67 @@
+{
+  "documents": {
+    "title": "Document Generator",
+    "description": "Nine document types, three style variants each. Built for freelancers, agencies, and small teams.",
+    "cta": "Open Atelier",
+    "dropzone": "Start typing to generate a document",
+    "exportPdf": "Export PDF",
+    "exportPng": "Export PNG",
+    "preview": "Preview"
+  },
+  "cv": {
+    "title": "CV Builder",
+    "description": "ATS-friendly, editorial, or designer-portfolio. Pick a template, type once, export to PDF.",
+    "cta": "Open CV Builder",
+    "dropzone": "Fill in your details",
+    "exportPdf": "Export PDF",
+    "preview": "Preview",
+    "templates": "Templates",
+    "modern": "Modern",
+    "editorial": "Editorial",
+    "atsMono": "ATS-Mono",
+    "coverLetter": "Cover Letter"
+  },
+  "pdfToImage": {
+    "title": "PDF to Image",
+    "description": "PDF → JPG, PNG. Drop a PDF, get images. Done locally, never leaves your browser.",
+    "cta": "Convert PDF",
+    "dropzone": "Drop a PDF here",
+    "dropzoneHint": "PDF · up to 50 pages",
+    "format": "Format",
+    "quality": "Quality",
+    "downloadAll": "Download All",
+    "downloadZip": "Download ZIP",
+    "pages": "Pages",
+    "processing": "Processing…"
+  },
+  "imageConverter": {
+    "title": "Image Converter",
+    "description": "HEIC, WebP, AVIF, PNG, JPEG — convert, resize, compress. Match any format.",
+    "cta": "Convert Images",
+    "dropzone": "Drop images here",
+    "dropzoneHint": "PNG · JPEG · WebP · HEIC · AVIF",
+    "convertTo": "Convert to",
+    "download": "Download",
+    "downloadZip": "Download ZIP",
+    "processing": "Converting…"
+  },
+  "ocr": {
+    "title": "OCR · Scan",
+    "description": "Image or PDF in, plain text out. Receipts, screenshots, scanned docs.",
+    "cta": "Extract Text",
+    "dropzone": "Drop an image or PDF",
+    "dropzoneHint": "JPG · PNG · PDF",
+    "copyText": "Copy Text",
+    "downloadText": "Download TXT",
+    "processing": "Scanning…",
+    "pages": "Pages"
+  },
+  "social": {
+    "title": "Social Generator",
+    "description": "Posts that look designed. Square, vertical and carousel templates with your brand baked in.",
+    "cta": "Open Social",
+    "export": "Export",
+    "templates": "Templates",
+    "preview": "Preview"
+  }
+}

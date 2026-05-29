@@ -99,15 +99,15 @@ auth.post('/login', async (c) => {
     .first<{ id: string; email: string; plan: string; role: string; status: string; password_hash: string; email_verified: number; deleted_at: number | null }>()
 
   if (!user || !(await verifyPassword(password, user.password_hash))) {
-    return c.json({ error: 'Invalid credentials' }, 401)
+    return c.json({ error: 'Invalid email or password' }, 401)
   }
 
   if (user.status === 'banned') {
-    return c.json({ error: 'Account banned' }, 403)
+    return c.json({ error: 'Invalid email or password' }, 401)
   }
 
   if (user.deleted_at) {
-    return c.json({ error: 'Account deleted' }, 403)
+    return c.json({ error: 'Invalid email or password' }, 401)
   }
 
   const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)

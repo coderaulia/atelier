@@ -1,4 +1,4 @@
-const ITERATIONS = 100_000
+const ITERATIONS = 310_000
 const HASH_BITS = 256
 
 async function pbkdf2(plain: string, salt: Uint8Array): Promise<string> {

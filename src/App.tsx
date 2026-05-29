@@ -9,6 +9,9 @@ import ForgotPassword from './pages/ForgotPassword'
 import VerifyEmailNotice from './pages/VerifyEmailNotice'
 import ToolLanding from './pages/ToolLanding'
 import { toolPages } from './pages/toolPages'
+import PrivacyPolicy from './pages/legal/PrivacyPolicy'
+import TermsOfService from './pages/legal/TermsOfService'
+import RefundPolicy from './pages/legal/RefundPolicy'
 
 const DocumentTool = lazy(() => import('./modules/documents/DocumentTool'))
 const CVTool = lazy(() => import('./modules/cv/CVTool'))
@@ -16,31 +19,9 @@ const PDFToImageTool = lazy(() => import('./modules/pdf-to-image/PDFToImageTool'
 const ImageConverterTool = lazy(() => import('./modules/image-converter/ImageConverterTool'))
 const OCRTool = lazy(() => import('./modules/ocr/OCRTool'))
 
-const toolComponents: Record<string, any> = {
-  'pdf-to-image': PDFToImageTool,
-  'image-converter': ImageConverterTool,
-  ocr: OCRTool,
-  'cv-builder': CVTool,
-  'document-generator': DocumentTool,
-  'social-generator': DocumentTool,
-}
-
 /* Marketing demo modes: wrap tools with limited scope */
-function DocGeneratorDemo() { return <DocumentTool mode='documents' /> }
-function SocialGeneratorDemo() { return <DocumentTool mode='social' /> }
-
-const toolComponents: Record<string, any> = {
-  'pdf-to-image': PDFToImageTool,
-  'image-converter': ImageConverterTool,
-  ocr: OCRTool,
-  'cv-builder': CVTool,
-  'document-generator': DocGeneratorDemo,
-  'social-generator': SocialGeneratorDemo,
-}
-
-/* Marketing demo modes: wrap tools with limited scope */
-function DocGeneratorDemo() { return <DocumentTool mode='documents' /> }
-function SocialGeneratorDemo() { return <DocumentTool mode='social' /> }
+function DocGeneratorDemo() { return <DocumentTool mode="documents" /> }
+function SocialGeneratorDemo() { return <DocumentTool mode="social" /> }
 
 const toolComponents: Record<string, any> = {
   'pdf-to-image': PDFToImageTool,
@@ -85,6 +66,9 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-email" element={<VerifyEmailNotice />} />
       <Route path="/pricing" element={<Landing />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/refund" element={<RefundPolicy />} />
       <Route path="/app" element={<ToolRoute slug="document-generator" />} />
       {toolPages.map((tool) => (
         <Route key={tool.slug} path={tool.path} element={<ToolRoute slug={tool.slug} />} />

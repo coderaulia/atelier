@@ -225,8 +225,10 @@ function SettingsModal({ brand, setBrand, onClose }: any) {
   );
 }
 
+type DocumentToolMode = 'full' | 'documents' | 'social';
+
 /* ---------- Main app ---------- */
-export default function DocumentTool() {
+export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMode }) {
   const TWEAK_DEFAULTS = { accent: "#1c4532", fontHeader: "serif", fontBody: "sans", paper: "letter" };
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
@@ -276,7 +278,19 @@ export default function DocumentTool() {
   const [copyState, setCopyState] = useState("idle");
   const [showUpgrade, setShowUpgrade] = useState(false);
 
+  const isDocumentsDemo = mode === 'documents';
+  const isSocialDemo = mode === 'social';
+  const isMarketingDemo = mode !== 'full';
+
   const { canUse, increment } = useToolLimit("documents");
+
+  useEffect(() => {
+    if (isDocumentsDemo && (docType === "social" || docType === "quote")) setDocType("agreement");
+    if (isSocialDemo && docType !== "social") {
+      setDocType("social");
+      setSocialStep("pick");
+    }
+  }, [isDocumentsDemo, isSocialDemo, docType, setDocType]);
 
   useEffect(() => {
     if (docType === "social") setSocialStep("pick");
@@ -394,60 +408,70 @@ export default function DocumentTool() {
           <span className="sidebar__brand-tag">v 0.1</span>
         </div>
 
-        <div className="sidebar__group">
-          <div className="sidebar__heading">Documents</div>
-          {DOC_TYPES.filter((d: any) => d.id !== "social" && !d.isTool).map((d: any) => (
-            <button
-              key={d.id}
-              className={"sidebar__item " + (docType === d.id ? "sidebar__item--active" : "")}
-              onClick={() => setDocType(d.id)}
-            >
-              <span className="sidebar__item-icon">{d.icon}</span>
-              <span>{d.name}</span>
-              {d.hasVariants && <span className="sidebar__item-count">{String(VARIANTS.length).padStart(2, "0")}</span>}
-            </button>
-          ))}
-        </div>
-
-        <div className="sidebar__group">
-          <div className="sidebar__heading">Social</div>
-          <button
-            className={"sidebar__item " + (docType === "social" ? "sidebar__item--active" : "")}
-            onClick={showSocialPicker}
-          >
-            <span className="sidebar__item-icon">{Icon.social}</span>
-            <span>Social media</span>
-            <span className="sidebar__item-count">{AllSocialTemplates.length}</span>
-          </button>
-        </div>
-
-        <div className="sidebar__group">
-          <div className="sidebar__heading">Tools</div>
-          {DOC_TYPES.filter((d: any) => d.isTool).map((d: any) => (
-            <button
-              key={d.id}
-              className={"sidebar__item " + (docType === d.id ? "sidebar__item--active" : "")}
-              onClick={() => setDocType(d.id)}
-            >
-              <span className="sidebar__item-icon">{d.icon}</span>
-              <span>{d.name}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="sidebar__footer">
-          <span className="sidebar__avatar">{((brand as any).fullName || "M A").split(" ").map((s: string) => s[0]).join("").slice(0, 2).toUpperCase()}</span>
-          <div className="sidebar__user">
-            <div className="sidebar__user-name">{(brand as any).fullName || "—"}</div>
-            <div className="sidebar__user-tag">{(brand as any).handle || "—"}</div>
+        {!isSocialDemo && (
+          <div className="sidebar__group">
+            <div className="sidebar__heading">Documents</div>
+            {DOC_TYPES.filter((d: any) => d.id !== "social" && !d.isTool).map((d: any) => (
+              <button
+                key={d.id}
+                className={"sidebar__item " + (docType === d.id ? "sidebar__item--active" : "")}
+                onClick={() => setDocType(d.id)}
+              >
+                <span className="sidebar__item-icon">{d.icon}</span>
+                <span>{d.name}</span>
+                {d.hasVariants && <span className="sidebar__item-count">{String(VARIANTS.length).padStart(2, "0")}</span>}
+              </button>
+            ))}
           </div>
-          <button className="sidebar__settings-btn" onClick={() => setSettingsOpen(true)}>{Icon.gear}</button>
-        </div>
-        <div className="sidebar__attribution">
-          <a href="https://vanaila.com" target="_blank" rel="noopener noreferrer" className="sidebar__attribution-link">
-            Vanaila Digital · Open source
-          </a>
-        </div>
+        )}
+
+        {!isDocumentsDemo && (
+          <div className="sidebar__group">
+            <div className="sidebar__heading">Social</div>
+            <button
+              className={"sidebar__item " + (docType === "social" ? "sidebar__item--active" : "")}
+              onClick={showSocialPicker}
+            >
+              <span className="sidebar__item-icon">{Icon.social}</span>
+              <span>Social media</span>
+              <span className="sidebar__item-count">{AllSocialTemplates.length}</span>
+            </button>
+          </div>
+        )}
+
+        {!isMarketingDemo && (
+          <div className="sidebar__group">
+            <div className="sidebar__heading">Tools</div>
+            {DOC_TYPES.filter((d: any) => d.isTool).map((d: any) => (
+              <button
+                key={d.id}
+                className={"sidebar__item " + (docType === d.id ? "sidebar__item--active" : "")}
+                onClick={() => setDocType(d.id)}
+              >
+                <span className="sidebar__item-icon">{d.icon}</span>
+                <span>{d.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {!isMarketingDemo && (
+          <>
+            <div className="sidebar__footer">
+              <span className="sidebar__avatar">{((brand as any).fullName || "M A").split(" ").map((s: string) => s[0]).join("").slice(0, 2).toUpperCase()}</span>
+              <div className="sidebar__user">
+                <div className="sidebar__user-name">{(brand as any).fullName || "—"}</div>
+                <div className="sidebar__user-tag">{(brand as any).handle || "—"}</div>
+              </div>
+              <button className="sidebar__settings-btn" onClick={() => setSettingsOpen(true)}>{Icon.gear}</button>
+            </div>
+            <div className="sidebar__attribution">
+              <a href="https://vanaila.com" target="_blank" rel="noopener noreferrer" className="sidebar__attribution-link">
+                Vanaila Digital · Open source
+              </a>
+            </div>
+          </>
+        )}
       </aside>
 
       {/* ===== Editor ===== */}
@@ -628,44 +652,46 @@ export default function DocumentTool() {
       {settingsOpen && <SettingsModal brand={brand} setBrand={setBrand} onClose={() => setSettingsOpen(false)} />}
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
 
-      <TweaksPanel title="Tweaks">
-        <TweakSection label="Accent" />
-        <TweakColor
-          label="Accent"
-          value={t.accent}
-          options={["#1c4532", "#7a3422", "#3a3a64", "#2a3441", "#1f2937", "#4a3a1a"]}
-          onChange={(v: string) => setTweak("accent", v)}
-        />
-        <TweakSection label="Typography" />
-        <TweakSelect
-          label="Headers"
-          value={t.fontHeader}
-          options={[
-            { value: "serif", label: "Serif" },
-            { value: "display", label: "Display italic" },
-            { value: "sans", label: "Sans" },
-            { value: "mono", label: "Mono" },
-          ]}
-          onChange={(v: string) => setTweak("fontHeader", v)}
-        />
-        <TweakSelect
-          label="Body"
-          value={t.fontBody}
-          options={[
-            { value: "sans", label: "Sans" },
-            { value: "serif", label: "Serif" },
-            { value: "mono", label: "Mono" },
-          ]}
-          onChange={(v: string) => setTweak("fontBody", v)}
-        />
-        <TweakSection label="Page" />
-        <TweakRadio
-          label="Paper size"
-          value={t.paper}
-          options={["letter", "a4"]}
-          onChange={(v: string) => setTweak("paper", v)}
-        />
-      </TweaksPanel>
+      {!isMarketingDemo && (
+        <TweaksPanel title="Tweaks">
+          <TweakSection label="Accent" />
+          <TweakColor
+            label="Accent"
+            value={t.accent}
+            options={["#1c4532", "#7a3422", "#3a3a64", "#2a3441", "#1f2937", "#4a3a1a"]}
+            onChange={(v: string) => setTweak("accent", v)}
+          />
+          <TweakSection label="Typography" />
+          <TweakSelect
+            label="Headers"
+            value={t.fontHeader}
+            options={[
+              { value: "serif", label: "Serif" },
+              { value: "display", label: "Display italic" },
+              { value: "sans", label: "Sans" },
+              { value: "mono", label: "Mono" },
+            ]}
+            onChange={(v: string) => setTweak("fontHeader", v)}
+          />
+          <TweakSelect
+            label="Body"
+            value={t.fontBody}
+            options={[
+              { value: "sans", label: "Sans" },
+              { value: "serif", label: "Serif" },
+              { value: "mono", label: "Mono" },
+            ]}
+            onChange={(v: string) => setTweak("fontBody", v)}
+          />
+          <TweakSection label="Page" />
+          <TweakRadio
+            label="Paper size"
+            value={t.paper}
+            options={["letter", "a4"]}
+            onChange={(v: string) => setTweak("paper", v)}
+          />
+        </TweaksPanel>
+      )}
     </div>
   );
 }

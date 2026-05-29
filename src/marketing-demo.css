@@ -1,0 +1,32 @@
+
+/* Marketing landing embedded tool fixes */
+.tool-live__frame .app,
+.tool-live__frame .cv-tool {
+  height: min(640px, 72vh);
+  min-width: 0;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.tool-live__frame .app {
+  grid-template-columns: minmax(180px, 240px) minmax(240px, 1fr) minmax(320px, 1.35fr);
+}
+
+.tool-live__frame .cv-tool {
+  grid-template-columns: minmax(260px, 0.82fr) minmax(180px, 0.56fr) minmax(360px, 1.35fr);
+}
+
+.tool-live__frame .cv-preview {
+  min-width: 0;
+}
+
+.tool-live__frame .cv-preview__iframe {
+  width: 100%;
+  min-width: 0;
+}
+
+.tool-live__frame .sidebar__attribution,
+.tool-live__frame .tweaks-panel,
+.tool-live__frame .tweaks-toggle {
+  display: none !important;
+}

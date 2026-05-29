@@ -19,6 +19,19 @@ function fmt(ts: number | null) {
   return ts ? new Date(ts * 1000).toISOString().slice(0, 10) : 'end of current period'
 }
 
+async function sha512Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input)
+  const digest = await crypto.subtle.digest('SHA-512', data)
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
 billing.get('/status', authMiddleware, async (c) => {
   const user = await c.env.DB
     .prepare('SELECT plan, pro_expires_at, cancel_at_period_end, grace_until FROM users WHERE id = ?')
@@ -77,6 +90,15 @@ billing.post('/webhook', async (c) => {
   const event = result.data
   const userId = event.custom_field1
   if (!userId) return c.json({ error: 'Missing user id' }, 400)
+  if (!event.order_id || !event.gross_amount || !c.env.MIDTRANS_SERVER_KEY) {
+    return c.json({ error: 'Missing signature fields' }, 400)
+  }
+
+  const signature = c.req.header('X-Midtrans-Signature') ?? c.req.header('x-signature-key')
+  const expectedSignature = await sha512Hex(`${event.order_id}${event.transaction_status}${event.gross_amount}${c.env.MIDTRANS_SERVER_KEY}`)
+  if (!signature || !timingSafeEqual(signature.toLowerCase(), expectedSignature)) {
+    return c.json({ error: 'Invalid signature' }, 403)
+  }
 
   const now = Math.floor(Date.now() / 1000)
   const thirtyDays = 30 * 24 * 60 * 60

@@ -13,6 +13,7 @@ app.use('*', cors({
   origin: (origin) => {
     const allowed = [
       'http://localhost:5173',
+      'http://localhost:5176',
       'http://localhost:4173',
       'https://atelier.vanailadigital.com',
     ]
@@ -22,6 +23,16 @@ app.use('*', cors({
   allowHeaders: ['Content-Type', 'Authorization'],
   maxAge: 86400,
 }))
+
+app.use('*', async (c, next) => {
+  c.header('Content-Security-Policy', "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://app.midtrans.com https://*.midtrans.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.midtrans.com https://app.midtrans.com https://*.midtrans.com; frame-src https://app.midtrans.com https://*.midtrans.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")
+  c.header('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+  c.header('X-Content-Type-Options', 'nosniff')
+  c.header('X-Frame-Options', 'DENY')
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin')
+  c.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  await next()
+})
 
 app.route('/auth', auth)
 app.route('/usage', usage)

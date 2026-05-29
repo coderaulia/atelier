@@ -1,0 +1,37 @@
+{
+  "privacy": {
+    "title": "Kebijakan Privasi",
+    "lastUpdated": "Terakhir diperbarui: Mei 2026",
+    "intro": "Atelier by Vanaila Digital (\"kami\") menghormati privasi Anda. Kebijakan ini menjelaskan data yang kami kumpulkan, cara penyimpanan, dan hak Anda.",
+    "sections": {
+      "dataCollected": {"title":"Data yang Kami Kumpulkan","items":["Alamat email (untuk akun dan komunikasi)","Password yang di-hash (kami tidak menyimpan password plaintext)","Log penggunaan (jumlah pemakaian alat, timestamp, region dari IP)","Catatan billing (ID transaksi, nominal, status subscription via Midtrans)"]},
+      "dataNotCollected": {"title":"Data yang TIDAK Kami Kumpulkan","items":["File yang Anda unggah (dokumen, gambar, PDF)","Semua pemrosesan file berjalan sepenuhnya di browser Anda — file tidak diunggah ke server kami","Kami tidak punya akses ke isi dokumen atau gambar Anda"]},
+      "storage": {"title":"Penyimpanan Data","items":["Data akun: Cloudflare D1 (region US)","Cloud saves Pro: Cloudflare R2 (terenkripsi)","Semua data dienkripsi saat disimpan dan dikirim (TLS 1.3)"]},
+      "thirdParties": {"title":"Layanan Pihak Ketiga","items":["Midtrans — pemrosesan pembayaran (detail kartu ditangani Midtrans, tidak disimpan di server kami)","Resend — pengiriman email transaksional","PostHog — analitik produk anonim (tanpa data personal)"]},
+      "rights": {"title":"Hak Anda","intro":"Anda berhak untuk:","items":["Akses: Meminta salinan semua data pribadi yang kami simpan","Koreksi: Meminta perbaikan data pribadi yang tidak akurat","Penghapusan: Menghapus akun dan semua data terkait melalui DELETE /auth/account","Portabilitas data: Meminta data dalam format machine-readable"]},
+      "pdp": {"title":"Kepatuhan UU PDP Indonesia","body":"Kami mematuhi Undang-Undang Pelindungan Data Pribadi Indonesia (UU PDP No. 27/2022). Kami memproses data pribadi secara sah, adil, dan transparan. Anda berhak mengakses, memperbaiki, menghapus, dan memindahkan data pribadi. Kami menerapkan langkah keamanan yang sesuai dan akan memberi notifikasi kepada Anda serta otoritas terkait jika terjadi kebocoran data."},
+      "gdpr": {"title":"Kepatuhan GDPR (Pengguna EU)","body":"Untuk pengguna di European Economic Area (EEA), United Kingdom, dan Switzerland: Kami memproses data pribadi sesuai General Data Protection Regulation (GDPR). Dasar hukum pemrosesan kami adalah kebutuhan kontraktual (menyediakan layanan) dan kepentingan sah (analitik). Anda berhak mengajukan komplain ke otoritas perlindungan data lokal."},
+      "contact": {"title":"Kontak","body":"Untuk pertanyaan privasi atau permintaan data, hubungi privacy@vanailadigital.com."}
+    }
+  },
+  "terms": {
+    "title":"Ketentuan Layanan","lastUpdated":"Terakhir diperbarui: Mei 2026","intro":"Dengan menggunakan Atelier by Vanaila Digital (\"Layanan\"), Anda menyetujui ketentuan ini.",
+    "sections": {
+      "acceptableUse":{"title":"Penggunaan yang Diperbolehkan","items":["Anda tidak boleh menggunakan Layanan untuk membuat atau menyebarkan konten ilegal, berbahaya, atau abusif","Anda tidak boleh mencoba reverse-engineer, mengeksploitasi, atau melewati rate limit","Anda tidak boleh menyalahgunakan free tier untuk menggantikan layanan komersial berbayar","Anda tidak boleh memakai skrip otomatis untuk mengakses Layanan"]},
+      "freePlan":{"title":"Limit Paket Free","items":["Pengguna login: 5 penggunaan alat per hari","Pengguna anonim: 3 penggunaan alat per hari","Limit reset harian pukul 00:00 UTC","Paket Free mencakup semua alat dan format ekspor"]},
+      "proPlan":{"title":"Paket Pro","items":["Subscription bulanan: $8/bulan atau $72/tahun","Batal kapan saja — akses Pro berlanjut sampai akhir periode billing berjalan","Tidak ada refund parsial kecuali diminta dalam 7 hari dari charge (lihat Kebijakan Refund)","Fitur Pro termasuk penyimpanan brand kit, riwayat cloud, AI drafting, dan batch operation tanpa batas"]},
+      "oneTimePurchase":{"title":"Pembelian Sekali Bayar","items":["Pembelian sekali bayar tidak dapat direfund setelah file diunduh","Unduhan dianggap sebagai pengiriman produk digital"]},
+      "refundPolicy":{"title":"Refund Subscription","items":["Refund pro-rata tersedia dalam 7 hari sejak charge subscription","Refund diproses via Midtrans dalam 5-7 hari kerja","Hubungi billing@vanailadigital.com untuk meminta refund"]},
+      "ip":{"title":"Kekayaan Intelektual","items":["Anda memiliki semua file yang Anda buat memakai Layanan","Kami tidak mengklaim kepemilikan atas dokumen, gambar, atau ekspor Anda","Kode, template, dan desain Layanan dimiliki Vanaila Digital"]},
+      "governingLaw":{"title":"Hukum yang Berlaku","body":"Ketentuan ini diatur oleh hukum Republik Indonesia. Sengketa diselesaikan di pengadilan Jakarta, Indonesia."}
+    }
+  },
+  "refund": {
+    "title":"Kebijakan Refund","lastUpdated":"Terakhir diperbarui: Mei 2026","intro":"Kami ingin Anda puas dengan Atelier. Kebijakan ini menjelaskan kapan refund tersedia.",
+    "sections": {
+      "subscription":{"title":"Refund Subscription (Paket Pro)","items":["Anda dapat meminta refund dalam 7 hari dari tanggal charge subscription","Refund bersifat pro-rata berdasarkan sisa periode billing","Setelah jendela 7 hari, tidak ada refund untuk periode berjalan","Pembatalan menghentikan charge berikutnya tetapi tidak otomatis merefund periode berjalan"]},
+      "oneTime":{"title":"Refund Pembelian Sekali Bayar","items":["Pembelian sekali bayar tidak dapat direfund setelah file diunduh","Unduhan dianggap sebagai pengiriman produk digital","Jika masalah teknis mencegah unduhan, hubungi kami untuk bantuan"]},
+      "howToRequest":{"title":"Cara Meminta Refund","items":["Email billing@vanailadigital.com dengan email akun dan ID transaksi Anda","Kami akan merespons dalam 2 hari kerja","Refund diproses via Midtrans dalam 5-7 hari kerja","Refund dikreditkan ke metode pembayaran asli"]}
+    }
+  }
+}

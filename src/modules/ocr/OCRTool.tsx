@@ -2,6 +2,9 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useToolLimit } from '../../hooks/useToolLimit';
 import { usePlan } from '../../hooks/usePlan';
 import UpgradeModal from '../../components/UpgradeModal';
+import Toast from '../../components/Toast';
+import { validateImage, validatePDF, validateOCRImage, validateOCRPDFPage } from '../../lib/fileValidation';
+import { getFriendlyErrorMessage, isLowPowerDevice, releaseCanvas } from '../../lib/errorHandler';
 
 // Lazy-loaded tesseract.js
 let Tesseract: any = null;
@@ -52,6 +55,8 @@ export default function OCRTool() {
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null);
+  const [mobileWarning, setMobileWarning] = useState(isLowPowerDevice());
   const [recognizedText, setRecognizedText] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [pdfPages, setPdfPages] = useState<PDFPage[]>([]);
@@ -70,27 +75,44 @@ export default function OCRTool() {
 
     const type = selectedFile.type;
     if (type.startsWith('image/')) {
+      // Validate image
+      const imgResult = validateImage(selectedFile);
+      if (!imgResult.valid) {
+        setToast({ message: imgResult.error!, type: 'error' });
+        return;
+      }
+      const ocrResult = validateOCRImage(selectedFile);
+      if (!ocrResult.valid) {
+        setToast({ message: ocrResult.error!, type: 'error' });
+        return;
+      }
+
       setFileType('image');
       setFile(selectedFile);
       setPdfPages([]);
       setSelectedPages(new Set());
       setRecognizedText('');
-      setError(null);
       
       // Create preview
       const url = URL.createObjectURL(selectedFile);
       setPreviewUrl(url);
     } else if (type === 'application/pdf') {
+      // Validate PDF
+      const result = await validatePDF(selectedFile);
+      if (!result.valid) {
+        setToast({ message: result.error!, type: 'error' });
+        return;
+      }
+
       setFileType('pdf');
       setFile(selectedFile);
       setRecognizedText('');
-      setError(null);
       setPreviewUrl(null);
       
       // Render PDF pages
       await renderPDFPages(selectedFile);
     } else {
-      setError('Please upload an image (PNG/JPG/WebP) or PDF file');
+      setToast({ message: 'Please upload an image (PNG/JPG/WebP) or PDF file', type: 'error' });
     }
   }, []);
 
@@ -106,21 +128,33 @@ export default function OCRTool() {
 
       const rendered: PDFPage[] = [];
 
+      // Memory guard: process one page at a time
       for (let i = 1; i <= numPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 });
+        try {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1.5 });
 
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d')!;
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d')!;
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
 
-        await page.render({ canvasContext: context, viewport }).promise;
+          await page.render({ canvasContext: context, viewport }).promise;
 
-        rendered.push({
-          pageNum: i,
-          canvas,
-        });
+          // Validate rendered page size for OCR
+          const dataUrl = canvas.toDataURL('image/png');
+          const blob = await (await fetch(dataUrl)).blob();
+          const sizeCheck = validateOCRPDFPage(blob.size);
+          if (!sizeCheck.valid) {
+            setToast({ message: `Page ${i}: ${sizeCheck.error}`, type: 'warning' });
+            continue;
+          }
+
+          rendered.push({ pageNum: i, canvas });
+        } catch (pageErr) {
+          setToast({ message: getFriendlyErrorMessage(pageErr, i), type: 'error' });
+          break;
+        }
       }
 
       setPdfPages(rendered);
@@ -142,7 +176,7 @@ export default function OCRTool() {
         setPreviewUrl(url);
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to load PDF');
+      setToast({ message: getFriendlyErrorMessage(err), type: 'error' });
     } finally {
       setIsProcessing(false);
       setProgressText('');
@@ -166,9 +200,11 @@ export default function OCRTool() {
   }, []);
 
   const handleClear = useCallback(() => {
+    // Memory guard: release all PDF page canvases
+    pdfPages.forEach((p) => releaseCanvas(p.canvas));
+    setPdfPages([]);
     setFile(null);
     setFileType(null);
-    setPdfPages([]);
     setSelectedPages(new Set());
     setRecognizedText('');
     setError(null);
@@ -181,7 +217,7 @@ export default function OCRTool() {
       workerRef.current.terminate();
       workerRef.current = null;
     }
-  }, [previewUrl]);
+  }, [previewUrl, pdfPages]);
 
   // ---------- Page selection (PDF) ----------
   const togglePage = useCallback((pageNum: number) => {
@@ -284,7 +320,7 @@ export default function OCRTool() {
       await worker.terminate();
       workerRef.current = null;
     } catch (err: any) {
-      setError(err?.message || 'OCR recognition failed');
+      setToast({ message: getFriendlyErrorMessage(err), type: 'error' });
     } finally {
       setIsProcessing(false);
       setProgress(0);
@@ -553,6 +589,20 @@ export default function OCRTool() {
       </div>
 
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+
+      {/* Mobile performance warning */}
+      {mobileWarning && (
+        <div className="mobile-warning">
+          ⚡ OCR may be slower on mobile devices.
+        </div>
+      )}
+
+      {/* Toast notification */}
+      <Toast
+        message={toast?.message ?? null}
+        type={toast?.type ?? 'error'}
+        onClose={() => setToast(null)}
+      />
     </div>
   );
 }

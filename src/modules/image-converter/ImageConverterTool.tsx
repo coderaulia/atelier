@@ -3,6 +3,9 @@ import { useToolLimit } from '../../hooks/useToolLimit'
 import { usePlan } from '../../hooks/usePlan'
 import JSZip from 'jszip'
 import type { ConversionJob, ImageFormat } from './types'
+import Toast from '../../components/Toast'
+import { validateImage } from '../../lib/fileValidation'
+import { getFriendlyErrorMessage, isLowPowerDevice } from '../../lib/errorHandler'
 import './image-converter.css'
 
 export default function ImageConverterTool() {
@@ -13,6 +16,8 @@ export default function ImageConverterTool() {
   const [quality, setQuality] = useState(90)
   const [jobs, setJobs] = useState<ConversionJob[]>([])
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null)
+  const [mobileWarning, setMobileWarning] = useState(isLowPowerDevice())
 
   const workerRef = useRef<Worker | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -43,6 +48,15 @@ export default function ImageConverterTool() {
 
     const fileArray = Array.from(files)
     
+    // Validate each file
+    for (const file of fileArray) {
+      const result = validateImage(file)
+      if (!result.valid) {
+        setToast({ message: result.error!, type: 'error' })
+        return
+      }
+    }
+    
     // Free plan: 1 file only
     if (!isPro && fileArray.length > 1) {
       setShowUpgrade(true)
@@ -51,7 +65,7 @@ export default function ImageConverterTool() {
 
     // Pro plan: max 20 files
     if (isPro && fileArray.length > 20) {
-      alert('Maximum 20 files at a time')
+      setToast({ message: 'Maximum 20 files at a time', type: 'error' })
       return
     }
 
@@ -102,9 +116,10 @@ export default function ImageConverterTool() {
         quality: job.quality
       })
     } catch (error) {
+      const friendlyError = getFriendlyErrorMessage(error)
       setJobs(prev => prev.map(j => 
         j.id === job.id 
-          ? { ...j, status: 'error', error: error instanceof Error ? error.message : 'Failed to process', progress: 0 }
+          ? { ...j, status: 'error', error: friendlyError, progress: 0 }
           : j
       ))
     }
@@ -426,6 +441,20 @@ export default function ImageConverterTool() {
           </div>
         </div>
       )}
+
+      {/* Mobile performance warning */}
+      {mobileWarning && (
+        <div className="mobile-warning">
+          ⚡ Processing may be slower on mobile devices.
+        </div>
+      )}
+
+      {/* Toast notification */}
+      <Toast
+        message={toast?.message ?? null}
+        type={toast?.type ?? 'error'}
+        onClose={() => setToast(null)}
+      />
     </div>
   )
 }

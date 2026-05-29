@@ -15,6 +15,9 @@ import { useToolLimit } from '../../hooks/useToolLimit';
 import { usePlan } from '../../hooks/usePlan';
 import UpgradeModal from '../../components/UpgradeModal';
 import CVImportModal from './CVImportModal';
+import Toast from '../../components/Toast';
+import { validateCVData } from '../../lib/fileValidation';
+import { getFriendlyErrorMessage } from '../../lib/errorHandler';
 
 // ---------- Template renderer map ----------
 function renderTemplate(templateId: CVTemplate, data: CVData, accent: string) {
@@ -94,6 +97,7 @@ export default function CVTool() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'info' } | null>(null);
   const prevBlobRef = useRef<string | null>(null);
 
   const { canUse, used, limit, increment } = useToolLimit('cv');
@@ -119,6 +123,12 @@ export default function CVTool() {
 
   // ---------- Render PDF blob ----------
   const refreshPreview = useCallback(async () => {
+    const validation = validateCVData(cvData);
+    if (!validation.valid) {
+      setToast({ message: validation.error!, type: 'error' });
+      return;
+    }
+
     setIsRendering(true);
     setRenderError(null);
     try {
@@ -130,7 +140,9 @@ export default function CVTool() {
       prevBlobRef.current = url;
       setBlobUrl(url);
     } catch (err: any) {
-      setRenderError(err?.message ?? 'Failed to render PDF');
+      const message = getFriendlyErrorMessage(err);
+      setRenderError(message);
+      setToast({ message, type: 'error' });
     } finally {
       setIsRendering(false);
     }
@@ -140,6 +152,12 @@ export default function CVTool() {
   const handleExport = useCallback(async () => {
     if (!canUse) {
       setShowUpgrade(true);
+      return;
+    }
+
+    const validation = validateCVData(cvData);
+    if (!validation.valid) {
+      setToast({ message: validation.error!, type: 'error' });
       return;
     }
 
@@ -166,7 +184,9 @@ export default function CVTool() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 10000);
     } catch (err: any) {
-      setRenderError(err?.message ?? 'Export failed');
+      const message = getFriendlyErrorMessage(err);
+      setRenderError(message);
+      setToast({ message, type: 'error' });
     } finally {
       setIsRendering(false);
     }
@@ -175,7 +195,7 @@ export default function CVTool() {
   // ---------- Import handlers ----------
   const handleImportLinkedIn = () => {
     setShowImportMenu(false);
-    alert("LinkedIn import via OAuth is on the roadmap. Paste your LinkedIn profile URL and we'll guide you through export.");
+    setToast({ message: "LinkedIn import via OAuth is on the roadmap. Paste your LinkedIn profile URL and we'll guide you through export.", type: 'info' });
   };
 
   const handleImportCV = () => {
@@ -291,6 +311,13 @@ export default function CVTool() {
           onApply={handleApplyImport}
         />
       )}
+
+      {/* Toast notification */}
+      <Toast
+        message={toast?.message ?? null}
+        type={toast?.type ?? 'error'}
+        onClose={() => setToast(null)}
+      />
     </div>
   );
 }

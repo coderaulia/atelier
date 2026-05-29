@@ -2,6 +2,9 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useToolLimit } from '../../hooks/useToolLimit';
 import { usePlan } from '../../hooks/usePlan';
 import UpgradeModal from '../../components/UpgradeModal';
+import Toast from '../../components/Toast';
+import { validatePDF, warnPDFPageLimit } from '../../lib/fileValidation';
+import { getFriendlyErrorMessage, isLowPowerDevice, releaseCanvas, canvasToBlob } from '../../lib/errorHandler';
 
 // Lazy-loaded pdfjs-dist
 let pdfjsLib: any = null;
@@ -46,6 +49,9 @@ export default function PDFToImageTool() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null);
+  const [pageWarning, setPageWarning] = useState<string | null>(null);
+  const [mobileWarning, setMobileWarning] = useState(isLowPowerDevice());
   const [pages, setPages] = useState<PageRender[]>([]);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
   const [format, setFormat] = useState<OutputFormat>('png');
@@ -63,16 +69,17 @@ export default function PDFToImageTool() {
   const canSelectMore = selectedPages.size < effectiveLimit;
 
   // ---------- File handling ----------
-  const handleFileSelect = useCallback((selectedFile: File | null) => {
+  const handleFileSelect = useCallback(async (selectedFile: File | null) => {
     if (!selectedFile) return;
-    if (selectedFile.type !== 'application/pdf') {
-      setError('Please upload a PDF file');
+    const result = await validatePDF(selectedFile);
+    if (!result.valid) {
+      setToast({ message: result.error!, type: 'error' });
       return;
     }
     setFile(selectedFile);
     setPages([]);
     setSelectedPages(new Set());
-    setError(null);
+    setPageWarning(null);
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -92,19 +99,21 @@ export default function PDFToImageTool() {
   }, []);
 
   const handleClear = useCallback(() => {
-    setFile(null);
+    // Memory guard: release all page canvases
+    pages.forEach((p) => releaseCanvas(p.canvas));
     setPages([]);
+    setFile(null);
     setSelectedPages(new Set());
-    setError(null);
+    setPageWarning(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
-  }, []);
+  }, [pages]);
 
   // ---------- PDF rendering ----------
   const renderPDF = useCallback(async () => {
     if (!file) return;
 
     setIsProcessing(true);
-    setError(null);
+    setToast(null);
     setProgress(0);
 
     try {
@@ -115,27 +124,37 @@ export default function PDFToImageTool() {
 
       const rendered: PageRender[] = [];
 
+      // Memory guard: process one page at a time, release immediately after readback
       for (let i = 1; i <= numPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 });
+        try {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 2.0 });
 
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d')!;
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d')!;
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
 
-        await page.render({ canvasContext: context, viewport }).promise;
+          await page.render({ canvasContext: context, viewport }).promise;
 
-        rendered.push({
-          pageNum: i,
-          canvas,
-          blob: null,
-        });
+          rendered.push({
+            pageNum: i,
+            canvas,
+            blob: null,
+          });
 
-        setProgress(Math.round((i / numPages) * 100));
+          setProgress(Math.round((i / numPages) * 100));
+        } catch (pageErr) {
+          setToast({
+            message: getFriendlyErrorMessage(pageErr, i),
+            type: 'error',
+          });
+          break;
+        }
       }
 
       setPages(rendered);
+      setPageWarning(warnPDFPageLimit(numPages));
       // Auto-select first page (or up to limit for free)
       const autoSelect = new Set<number>();
       for (let i = 1; i <= Math.min(numPages, effectiveLimit); i++) {
@@ -143,7 +162,10 @@ export default function PDFToImageTool() {
       }
       setSelectedPages(autoSelect);
     } catch (err: any) {
-      setError(err?.message || 'Failed to render PDF');
+      setToast({
+        message: getFriendlyErrorMessage(err),
+        type: 'error',
+      });
     } finally {
       setIsProcessing(false);
       setProgress(0);
@@ -181,12 +203,11 @@ export default function PDFToImageTool() {
       return;
     }
     if (selectedPages.size === 0) {
-      setError('No pages selected');
+      setToast({ message: 'No pages selected', type: 'error' });
       return;
     }
 
     setIsProcessing(true);
-    setError(null);
 
     try {
       const ok = await increment();
@@ -200,13 +221,7 @@ export default function PDFToImageTool() {
       const pageRender = pages.find((p) => p.pageNum === pageNum);
       if (!pageRender) return;
 
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        pageRender.canvas.toBlob(
-          (b) => (b ? resolve(b) : reject(new Error('Failed to create blob'))),
-          format === 'png' ? 'image/png' : 'image/jpeg',
-          quality
-        );
-      });
+      const blob = await canvasToBlob(pageRender.canvas, format === 'png' ? 'image/png' : 'image/jpeg', quality);
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -215,7 +230,7 @@ export default function PDFToImageTool() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch (err: any) {
-      setError(err?.message || 'Download failed');
+      setToast({ message: getFriendlyErrorMessage(err), type: 'error' });
     } finally {
       setIsProcessing(false);
     }
@@ -232,12 +247,11 @@ export default function PDFToImageTool() {
       return;
     }
     if (selectedPages.size === 0) {
-      setError('No pages selected');
+      setToast({ message: 'No pages selected', type: 'error' });
       return;
     }
 
     setIsProcessing(true);
-    setError(null);
     setProgress(0);
 
     try {
@@ -258,13 +272,9 @@ export default function PDFToImageTool() {
         const pageRender = pages.find((p) => p.pageNum === pageNum);
         if (!pageRender) continue;
 
-        const blob = await new Promise<Blob>((resolve, reject) => {
-          pageRender.canvas.toBlob(
-            (b) => (b ? resolve(b) : reject(new Error('Failed to create blob'))),
-            format === 'png' ? 'image/png' : 'image/jpeg',
-            quality
-          );
-        });
+        // Memory guard: read one page into blob, release canvas immediately after
+        const blob = await canvasToBlob(pageRender.canvas, format === 'png' ? 'image/png' : 'image/jpeg', quality);
+        releaseCanvas(pageRender.canvas);
 
         const filename = `page-${String(pageNum).padStart(3, '0')}.${format}`;
         zipFile.file(filename, blob);
@@ -281,7 +291,10 @@ export default function PDFToImageTool() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch (err: any) {
-      setError(err?.message || 'Bulk download failed');
+      setToast({
+        message: getFriendlyErrorMessage(err),
+        type: 'error',
+      });
     } finally {
       setIsProcessing(false);
       setProgress(0);
@@ -466,8 +479,6 @@ export default function PDFToImageTool() {
                   </button>
                 )}
               </div>
-
-              {error && <div className="pdf2img-error">{error}</div>}
             </>
           )}
         </div>
@@ -559,6 +570,27 @@ export default function PDFToImageTool() {
       </div>
 
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+
+      {/* Mobile performance warning */}
+      {mobileWarning && (
+        <div className="mobile-warning">
+          ⚡ Processing may be slower on mobile devices.
+        </div>
+      )}
+
+      {/* Page count warning */}
+      {pageWarning && (
+        <div className="pdf2img-error" style={{ marginLeft: 0 }}>
+          ⚠️ {pageWarning}
+        </div>
+      )}
+
+      {/* Toast notification */}
+      <Toast
+        message={toast?.message ?? null}
+        type={toast?.type ?? 'error'}
+        onClose={() => setToast(null)}
+      />
     </div>
   );
 }

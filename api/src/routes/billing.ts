@@ -1,0 +1,150 @@
+import { Hono } from 'hono'
+import { z } from 'zod'
+import { authMiddleware, type AuthVariables } from '../middleware/auth'
+import { emailTemplates, sendEmail } from '../lib/email'
+import type { Bindings } from '../types'
+
+const billing = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
+
+const webhookSchema = z.object({
+  order_id: z.string().optional(),
+  transaction_status: z.string(),
+  payment_type: z.string().optional(),
+  gross_amount: z.string().optional(),
+  currency: z.string().optional(),
+  custom_field1: z.string().optional(), // user_id
+})
+
+function fmt(ts: number | null) {
+  return ts ? new Date(ts * 1000).toISOString().slice(0, 10) : 'end of current period'
+}
+
+billing.get('/status', authMiddleware, async (c) => {
+  const user = await c.env.DB
+    .prepare('SELECT plan, pro_expires_at, cancel_at_period_end, grace_until FROM users WHERE id = ?')
+    .bind(c.var.userId)
+    .first<{ plan: 'free' | 'pro'; pro_expires_at: number | null; cancel_at_period_end: number; grace_until: number | null }>()
+
+  if (!user) return c.json({ error: 'User not found' }, 404)
+  return c.json(user)
+})
+
+billing.post('/cancel', authMiddleware, async (c) => {
+  const user = await c.env.DB
+    .prepare('SELECT email, plan, pro_expires_at FROM users WHERE id = ?')
+    .bind(c.var.userId)
+    .first<{ email: string; plan: string; pro_expires_at: number | null }>()
+
+  if (!user) return c.json({ error: 'User not found' }, 404)
+  if (user.plan !== 'pro') return c.json({ error: 'No active Pro subscription' }, 400)
+
+  await c.env.DB
+    .prepare('UPDATE users SET cancel_at_period_end = 1 WHERE id = ?')
+    .bind(c.var.userId)
+    .run()
+
+  const expiryDate = fmt(user.pro_expires_at)
+  const t = emailTemplates('en')
+  sendEmail({ to: user.email, subject: t.subscriptionCancelledSubject, html: t.subscriptionCancelledBody(expiryDate) }, c.env.RESEND_API_KEY).catch(() => {})
+
+  return c.json({ ok: true, pro_expires_at: user.pro_expires_at, cancel_at_period_end: true })
+})
+
+billing.post('/transactions', authMiddleware, async (c) => {
+  const rows = await c.env.DB
+    .prepare('SELECT id, amount, currency, plan_type, status, midtrans_order_id, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC')
+    .bind(c.var.userId)
+    .all()
+  return c.json({ transactions: rows.results ?? [] })
+})
+
+billing.get('/transactions', authMiddleware, async (c) => {
+  const rows = await c.env.DB
+    .prepare('SELECT id, amount, currency, plan_type, status, midtrans_order_id, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC')
+    .bind(c.var.userId)
+    .all()
+  return c.json({ transactions: rows.results ?? [] })
+})
+
+// Midtrans recurring lifecycle webhook.
+// Recurring should use Midtrans Core API token-based recurring charges.
+// Snap is for initial checkout; saved card token then powers recurring Core API charges.
+billing.post('/webhook', async (c) => {
+  const body = await c.req.json().catch(() => null)
+  const result = webhookSchema.safeParse(body)
+  if (!result.success) return c.json({ error: 'Invalid webhook' }, 400)
+
+  const event = result.data
+  const userId = event.custom_field1
+  if (!userId) return c.json({ error: 'Missing user id' }, 400)
+
+  const now = Math.floor(Date.now() / 1000)
+  const thirtyDays = 30 * 24 * 60 * 60
+
+  if (event.payment_type === 'recurring' && event.transaction_status === 'capture') {
+    const user = await c.env.DB
+      .prepare('SELECT email, pro_expires_at FROM users WHERE id = ?')
+      .bind(userId)
+      .first<{ email: string; pro_expires_at: number | null }>()
+
+    const base = user?.pro_expires_at && user.pro_expires_at > now ? user.pro_expires_at : now
+    const nextRenewal = base + thirtyDays
+
+    await c.env.DB
+      .prepare('UPDATE users SET plan = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
+      .bind('pro', nextRenewal, userId)
+      .run()
+
+    await c.env.DB
+      .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', 'pro', 'success', event.order_id ?? null)
+      .run()
+
+    if (user?.email) {
+      const t = emailTemplates('en')
+      sendEmail({
+        to: user.email,
+        subject: t.subscriptionConfirmedSubject,
+        html: t.subscriptionConfirmedBody(Number(event.gross_amount ?? 0), event.currency ?? 'IDR', fmt(nextRenewal)),
+      }, c.env.RESEND_API_KEY).catch(() => {})
+    }
+  }
+
+  if (event.transaction_status === 'deny' || event.transaction_status === 'expire') {
+    const graceUntil = now + 3 * 24 * 60 * 60
+    const user = await c.env.DB
+      .prepare('SELECT email FROM users WHERE id = ?')
+      .bind(userId)
+      .first<{ email: string }>()
+
+    await c.env.DB
+      .prepare('UPDATE users SET grace_until = ? WHERE id = ?')
+      .bind(graceUntil, userId)
+      .run()
+
+    await c.env.DB
+      .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', 'pro', 'failed', event.order_id ?? null)
+      .run()
+
+    if (user?.email) {
+      const t = emailTemplates('en')
+      const retryUrl = `${c.env.APP_URL ?? 'http://localhost:5173'}/pricing`
+      sendEmail({ to: user.email, subject: t.paymentFailedSubject, html: t.paymentFailedBody(retryUrl) }, c.env.RESEND_API_KEY).catch(() => {})
+    }
+  }
+
+  return c.json({ ok: true })
+})
+
+billing.get('/receipt/:id', authMiddleware, async (c) => {
+  const id = c.req.param('id')
+  const tx = await c.env.DB
+    .prepare('SELECT t.id, t.amount, t.currency, t.plan_type, t.status, t.midtrans_order_id, t.created_at, u.email FROM transactions t JOIN users u ON u.id = t.user_id WHERE t.id = ? AND t.user_id = ?')
+    .bind(id, c.var.userId)
+    .first()
+  if (!tx) return c.json({ error: 'Receipt not found' }, 404)
+  return c.json({ transaction: tx })
+})
+
+export default billing

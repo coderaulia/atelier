@@ -10,3 +10,6 @@ database_id = "placeholder-replace-after-wrangler-d1-create"
 
 # Set secrets via: wrangler secret put JWT_SECRET
 # [vars] — don't put JWT_SECRET here, use wrangler secret
+
+[triggers]
+crons = ["0 0 * * *"]

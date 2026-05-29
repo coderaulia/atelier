@@ -7,6 +7,8 @@ import Users from './pages/Admin/Users'
 import UserDetail from './pages/Admin/UserDetail'
 import Transactions from './pages/Admin/Transactions'
 import Errors from './pages/Admin/Errors'
+import Account from './pages/Account'
+import Receipt from './pages/Receipt'
 import ErrorBoundary from './components/ErrorBoundary'
 import './index.css'
 import './modules/documents/documents.css'
@@ -26,6 +28,8 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/admin/users/:id" element={<ErrorBoundary><UserDetail /></ErrorBoundary>} />
         <Route path="/admin/transactions" element={<ErrorBoundary><Transactions /></ErrorBoundary>} />
         <Route path="/admin/errors" element={<ErrorBoundary><Errors /></ErrorBoundary>} />
+        <Route path="/account" element={<ErrorBoundary><Account /></ErrorBoundary>} />
+        <Route path="/receipt/:transaction_id" element={<ErrorBoundary><Receipt /></ErrorBoundary>} />
         <Route path="/*" element={<App />} />
       </Routes>
     </BrowserRouter>

@@ -66,3 +66,14 @@ wrangler d1 execute vanaila-studio --local --command "UPDATE users SET role='adm
 - Midtrans billing endpoints are not implemented yet.
 - R2 cloud save is not implemented yet.
 - Recharts is not installed; admin charts currently use lightweight CSS bars.
+
+## Account management
+
+User-facing `/account` page is implemented with tabs:
+
+- Profile: email, member since, current plan, editable display name.
+- Subscription: free upgrade CTA, pro cancellation/reactivation, transaction history.
+- Usage: current user's usage_log last 30 days.
+- Security: change password, sessions, sign out other devices, soft-delete account.
+
+Receipt route implemented at `/receipt/:transaction_id` and verifies ownership via API.

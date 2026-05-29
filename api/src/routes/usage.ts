@@ -21,6 +21,35 @@ const usage = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
 
 usage.use('*', authMiddleware)
 
+// GET /usage/me — must come before /:toolId
+usage.get('/me', async (c) => {
+  const userId = c.get('userId')
+  const plan = c.get('plan')
+  const since30 = new Date()
+  since30.setUTCDate(since30.getUTCDate() - 30)
+  const sinceStr = since30.toISOString().slice(0, 10)
+
+  const rows = await c.env.DB
+    .prepare(
+      `SELECT date, tool_id, count,
+        CASE WHEN ? = 'pro' THEN NULL ELSE ? END AS limit_val
+       FROM usage_log
+       WHERE user_id = ? AND date >= ?
+       ORDER BY date DESC, tool_id ASC`
+    )
+    .bind(plan, FREE_LIMIT, userId, sinceStr)
+    .all()
+
+  return c.json({
+    usage: (rows.results ?? []).map((r: any) => ({
+      date: r.date,
+      tool_id: r.tool_id,
+      count: r.count,
+      limit: r.limit_val,
+    })),
+  })
+})
+
 usage.get('/:toolId', async (c) => {
   const toolId = c.req.param('toolId')
   const userId = c.get('userId')

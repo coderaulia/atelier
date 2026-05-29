@@ -48,3 +48,22 @@ Payload:
 ```
 
 Do not send PII, file names, file content, or source documents.
+
+## Account management
+
+- `PATCH /auth/profile` — update `{ name }`
+- `POST /auth/change-password` — update password after verifying current password
+- `GET /auth/sessions` — list active sessions
+- `DELETE /auth/sessions/all` — sign out all other devices
+- `DELETE /auth/account` — soft delete account with `deleted_at`
+
+## Billing/account
+
+- `POST /billing/cancel`
+- `POST /billing/reactivate`
+- `GET /billing/transactions`
+- `GET /billing/receipt/:id`
+
+## User usage
+
+- `GET /usage/me` — last 30 days usage for current user

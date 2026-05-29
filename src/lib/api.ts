@@ -3,12 +3,15 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
 export interface User {
   id: string
   email: string
+  name?: string | null
   plan: 'free' | 'pro'
   role?: 'user' | 'admin'
   status?: 'active' | 'banned'
   pro_expires_at?: number | null
+  cancel_at_period_end?: boolean
   created_at?: number
   last_login?: number | null
+  deleted_at?: number | null
   total_tool_uses?: number
 }
 
@@ -21,6 +24,31 @@ export interface UsageStatus {
   used: number
   limit: number | null
   reset_at: number
+}
+
+export interface Session {
+  expires_at: number
+  last_used: number | null
+  user_agent: string | null
+  current?: boolean
+}
+
+export interface Transaction {
+  id: number
+  amount: number
+  currency: string
+  plan_type: string
+  status: 'success' | 'pending' | 'failed'
+  midtrans_order_id?: string | null
+  created_at: number
+  email?: string
+}
+
+export interface UsageLogEntry {
+  date: string
+  tool_id: string
+  count: number
+  limit: number | null
 }
 
 export class UsageLimitError extends Error {
@@ -46,9 +74,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return data
 }
 
-function authHeaders(): HeadersInit {
-  const token = localStorage.getItem('auth_token') ?? localStorage.getItem('token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
+function authHeaders(token?: string | null): HeadersInit {
+  const t = token ?? localStorage.getItem('auth_token') ?? localStorage.getItem('token')
+  return t ? { Authorization: `Bearer ${t}` } : {}
 }
 
 export function register(email: string, password: string) {
@@ -67,29 +95,91 @@ export function login(email: string, password: string) {
 
 export function getMe(token: string) {
   return request<{ user: User }>('/auth/me', {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: authHeaders(token),
   })
 }
 
 export function getUsage(toolId: string, token: string) {
   return request<UsageStatus>(`/usage/${toolId}`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: authHeaders(token),
   })
 }
 
 export async function incrementUsage(toolId: string, token: string): Promise<UsageStatus> {
   const res = await fetch(`${API_URL}/usage/${toolId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
   })
-  const data = await res.json() as UsageStatus & { error?: string; used: number; limit: number; reset_at: number }
-  if (res.status === 429) {
-    throw new UsageLimitError(data.used, data.limit, data.reset_at)
-  }
+  const data = await res.json() as UsageStatus & { error?: string }
+  if (res.status === 429) throw new UsageLimitError(data.used, data.limit, data.reset_at)
   if (!res.ok) throw new Error(data.error ?? 'Request failed')
   return data
 }
 
+// ── Account management ──────────────────────────────────────────
+export function updateProfile(name: string | null) {
+  return request<{ user: User }>('/auth/profile', {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ name }),
+  })
+}
+
+export function changePassword(currentPassword: string, newPassword: string) {
+  return request<{ ok: true }>('/auth/change-password', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  })
+}
+
+export function getSessions() {
+  return request<{ sessions: Session[] }>('/auth/sessions', { headers: authHeaders() })
+}
+
+export function signOutAll() {
+  return request<{ ok: true }>('/auth/sessions/all', {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+}
+
+export function deleteAccount() {
+  return request<{ ok: true }>('/auth/account', {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+}
+
+// ── Billing ─────────────────────────────────────────────────────
+export function cancelSubscription() {
+  return request<{ ok: true; pro_expires_at: number }>('/billing/cancel', {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+}
+
+export function reactivateSubscription() {
+  return request<{ ok: true }>('/billing/reactivate', {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+}
+
+export function getTransactions() {
+  return request<{ transactions: Transaction[] }>('/billing/transactions', { headers: authHeaders() })
+}
+
+export function getReceipt(txId: number) {
+  return request<{ transaction: Transaction }>(`/billing/receipt/${txId}`, { headers: authHeaders() })
+}
+
+// ── Usage log ───────────────────────────────────────────────────
+export function getMyUsage() {
+  return request<{ usage: UsageLogEntry[] }>('/usage/me', { headers: authHeaders() })
+}
+
+// ── Admin ───────────────────────────────────────────────────────
 export type AdminStats = {
   total_users: number
   users_today: number
@@ -100,17 +190,6 @@ export type AdminStats = {
   limit_hits_today: { tool_id: string; count: number }[]
   daily_tool_usage: { date: string; tool_id: string; count: number }[]
   daily_signups: { date: string; count: number }[]
-}
-
-export type AdminTransaction = {
-  id: number
-  user_email: string
-  amount: number
-  currency: string
-  plan_type: string
-  status: 'success' | 'pending' | 'failed'
-  midtrans_order_id?: string
-  created_at: number
 }
 
 export type AdminError = {
@@ -133,7 +212,7 @@ export function getAdminUsers(params: { page?: number; limit?: number; search?: 
 }
 
 export function getAdminUser(id: string) {
-  return request<{ user: User; transactions: AdminTransaction[]; usage_log: { date: string; tool_id: string; count: number; limit_hits: number }[] }>(`/admin/users/${id}`, { headers: authHeaders() })
+  return request<{ user: User; transactions: Transaction[]; usage_log: { date: string; tool_id: string; count: number; limit_hits: number }[] }>(`/admin/users/${id}`, { headers: authHeaders() })
 }
 
 export function patchAdminUser(id: string, body: Partial<Pick<User, 'plan' | 'status' | 'pro_expires_at'>>) {
@@ -147,7 +226,7 @@ export function patchAdminUser(id: string, body: Partial<Pick<User, 'plan' | 'st
 export function getAdminTransactions(params: { page?: number; limit?: number; sort?: string; direction?: string }) {
   const qs = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => value && qs.set(key, String(value)))
-  return request<{ page: number; limit: number; total: number; transactions: AdminTransaction[] }>(`/admin/transactions?${qs}`, { headers: authHeaders() })
+  return request<{ page: number; limit: number; total: number; transactions: Transaction[] }>(`/admin/transactions?${qs}`, { headers: authHeaders() })
 }
 
 export function getAdminErrors() {

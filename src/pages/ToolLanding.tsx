@@ -12,7 +12,11 @@ export default function ToolLanding({ tool, children }: { tool: ToolPage; childr
   return (
     <main className="tool-seo-page" style={{ '--tool-accent': tool.accent } as React.CSSProperties}>
       <nav className="tool-nav" aria-label="Primary navigation">
-        <Link className="tool-brand" to="/">Vanaila Studio</Link>
+        <Link className="tool-brand" to="/">
+          <span className="nav__mark" />
+          <span>Atelier</span>
+          <span className="nav__brand-sub">by Vanaila</span>
+        </Link>
         <div className="tool-nav__links">
           <Link to="/pricing">Pricing</Link>
           <a href="#faq">FAQ</a>

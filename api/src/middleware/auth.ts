@@ -32,12 +32,16 @@ export const authMiddleware = createMiddleware<{ Bindings: Bindings; Variables: 
     }
 
     const user = await c.env.DB
-      .prepare('SELECT plan FROM users WHERE id = ?')
+      .prepare('SELECT plan, deleted_at FROM users WHERE id = ?')
       .bind(userId)
-      .first<{ plan: string }>()
+      .first<{ plan: string; deleted_at: number | null }>()
 
     if (!user) {
       return c.json({ error: 'User not found' }, 404)
+    }
+
+    if (user.deleted_at) {
+      return c.json({ error: 'Account deleted' }, 403)
     }
 
     c.set('userId', userId)

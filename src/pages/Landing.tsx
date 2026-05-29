@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 /* ---- Inline icons ---- */
@@ -78,9 +78,9 @@ function Nav() {
         </a>
         <div className="nav__links">
           <a className="nav__link" href="#tools">Tools</a>
-          <a className="nav__link" href="#try">Live demo</a>
-          <a className="nav__link" href="#templates">Templates</a>
-          <a className="nav__link" href="#pricing">Pricing</a>
+          <Link className="nav__link" to="/cv-builder">CV Builder</Link>
+          <Link className="nav__link" to="/image-converter">Image Converter</Link>
+          <Link className="nav__link" to="/pricing">Pricing</Link>
         </div>
         <div className="nav__actions">
           <Link className="nav__link" to="/login" style={{ fontWeight: 600 }}>Sign in</Link>
@@ -186,8 +186,8 @@ function Hero() {
             Documents, CVs, image and PDF conversions, OCR, and social posts — built in your browser. No installs. No accounts. No watermarks. Pro is opt-in.
           </p>
           <div className="hero__ctas">
-            <Link className="btn btn--accent btn--lg" to="/register">Start free <ArrowIcon /></Link>
-            <a className="btn btn--ghost btn--lg" href="#tools">See all 5 tools</a>
+            <Link className="btn btn--accent btn--lg" to="/document-generator">Start free <ArrowIcon /></Link>
+            <a className="btn btn--ghost btn--lg" href="#tools">See all 6 tools</a>
           </div>
           <div className="hero__proof">
             <div className="hero__proof-dots">
@@ -234,8 +234,8 @@ function ToolsGrid() {
     <section className="section" id="tools">
       <div className="container">
         <div className="section__head">
-          <span className="eyebrow eyebrow--accent">The Suite · 05 Tools</span>
-          <h2>Five tools that replace a <span className="accent">monthly stack</span> of seven.</h2>
+          <span className="eyebrow eyebrow--accent">The Suite · 06 Tools</span>
+          <h2>Six tools that replace a <span className="accent">monthly stack</span> of seven.</h2>
           <p className="section__lede">
             Each one solves a real, recurring annoyance. Use them standalone. Or as a chain — write the proposal, convert the PDF, post the win.
           </p>
@@ -243,7 +243,7 @@ function ToolsGrid() {
 
         <div className="tools">
           {/* Atelier — hero tool, full-width */}
-          <Link className="tool-card tool-card--hero" to="/register">
+          <Link className="tool-card tool-card--hero" to="/document-generator">
             <div className="tool-card__body">
               <div className="tool-card__num">Tool 01 / Atelier</div>
               <div className="tool-card__icon"><DocIcon /></div>
@@ -283,7 +283,7 @@ function ToolsGrid() {
             </div>
           </Link>
 
-          <a className="tool-card tool-card--lg" href="#try">
+          <Link className="tool-card tool-card--lg" to="/cv-builder">
             <div className="tool-card__num">Tool 02 / CV Studio</div>
             <div className="tool-card__icon"><BriefcaseIcon /></div>
             <h3 className="tool-card__title">A <span className="it">CV that lands.</span></h3>
@@ -294,9 +294,9 @@ function ToolsGrid() {
               <span className="tool-card__cta">Try the live demo <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
               <span className="tool-card__badge tool-card__badge--live">● Live demo</span>
             </div>
-          </a>
+          </Link>
 
-          <a className="tool-card tool-card--lg" href="#pricing">
+          <Link className="tool-card tool-card--lg" to="/pdf-to-image">
             <div className="tool-card__num">Tool 03 / Convert</div>
             <div className="tool-card__icon"><ConvertIcon /></div>
             <h3 className="tool-card__title">PDF &amp; image, <span className="it">in either direction.</span></h3>
@@ -304,12 +304,12 @@ function ToolsGrid() {
               PDF → JPG, PNG. JPG → PDF. Batch a folder. Done locally. Your files never leave the browser.
             </p>
             <div className="tool-card__foot">
-              <span className="tool-card__cta">Join the waitlist <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--soon">Soon</span>
+              <span className="tool-card__cta">Convert PDFs <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
+              <span className="tool-card__badge tool-card__badge--live">● Live</span>
             </div>
-          </a>
+          </Link>
 
-          <a className="tool-card tool-card--md" href="#pricing">
+          <Link className="tool-card tool-card--md" to="/ocr">
             <div className="tool-card__num">Tool 04 / Scan</div>
             <div className="tool-card__icon"><ScanIcon /></div>
             <h3 className="tool-card__title">OCR <span className="it">that just works.</span></h3>
@@ -317,12 +317,12 @@ function ToolsGrid() {
               Image or PDF in, plain text out. Receipts, screenshots, scanned docs.
             </p>
             <div className="tool-card__foot">
-              <span className="tool-card__cta">Notify me <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--soon">Soon</span>
+              <span className="tool-card__cta">Extract text <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
+              <span className="tool-card__badge tool-card__badge--live">● Live</span>
             </div>
-          </a>
+          </Link>
 
-          <a className="tool-card tool-card--md" href="#pricing">
+          <Link className="tool-card tool-card--md" to="/image-converter">
             <div className="tool-card__num">Tool 05 / Image Lab</div>
             <div className="tool-card__icon"><ImageIcon /></div>
             <h3 className="tool-card__title">HEIC, WebP, <span className="it">whatever.</span></h3>
@@ -330,12 +330,12 @@ function ToolsGrid() {
               Convert, resize, compress. Match the format your CMS, client, or aunt's iPhone needs.
             </p>
             <div className="tool-card__foot">
-              <span className="tool-card__cta">Notify me <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--soon">Soon</span>
+              <span className="tool-card__cta">Convert images <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
+              <span className="tool-card__badge tool-card__badge--live">● Live</span>
             </div>
-          </a>
+          </Link>
 
-          <Link className="tool-card tool-card--md" to="/register">
+          <Link className="tool-card tool-card--md" to="/social-generator">
             <div className="tool-card__num">Inside Atelier / Social</div>
             <div className="tool-card__icon"><SocialIcon /></div>
             <h3 className="tool-card__title">Posts that look <span className="it">designed.</span></h3>
@@ -468,7 +468,7 @@ function TryItEmbed() {
             </div>
 
             <div style={{ marginTop: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
-              <Link className="btn btn--accent" to="/register">Open full editor <ArrowSmIcon /></Link>
+              <Link className="btn btn--accent" to="/cv-builder">Open full editor <ArrowSmIcon /></Link>
               <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 ↳ Includes export
               </span>
@@ -867,7 +867,7 @@ function Pricing() {
               <li>Settings stored locally on your device</li>
             </ul>
             <div>
-              <Link className="btn btn--ghost" to="/register" style={{ background: 'rgba(255,255,255,0.1)', color: '#faf8f3', borderColor: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+              <Link className="btn btn--ghost" to="/document-generator" style={{ background: 'rgba(255,255,255,0.1)', color: '#faf8f3', borderColor: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
                 Start with Free <ArrowSmIcon />
               </Link>
             </div>
@@ -889,7 +889,7 @@ function Pricing() {
               <li>Custom domain on shared documents</li>
             </ul>
             <div>
-              <Link className="btn btn--accent" to="/register?plan=pro">Try Pro free for 14 days <ArrowSmIcon /></Link>
+              <Link className="btn btn--accent" to="/pricing">Try Pro free for 14 days <ArrowSmIcon /></Link>
             </div>
           </div>
         </div>
@@ -944,11 +944,12 @@ function Footer() {
           </div>
           <div>
             <div className="footer__col-title">Tools</div>
-            <Link className="footer__col-link" to="/register">Atelier — Docs</Link>
-            <a className="footer__col-link" href="#try">CV Studio</a>
-            <a className="footer__col-link" href="#pricing">Convert</a>
-            <a className="footer__col-link" href="#pricing">Scan (OCR)</a>
-            <a className="footer__col-link" href="#pricing">Image Lab</a>
+            <Link className="footer__col-link" to="/document-generator">Document Generator</Link>
+            <Link className="footer__col-link" to="/cv-builder">CV Builder</Link>
+            <Link className="footer__col-link" to="/pdf-to-image">PDF to Image</Link>
+            <Link className="footer__col-link" to="/ocr">Scan (OCR)</Link>
+            <Link className="footer__col-link" to="/image-converter">Image Converter</Link>
+            <Link className="footer__col-link" to="/social-generator">Social Generator</Link>
           </div>
           <div>
             <div className="footer__col-title">Company</div>
@@ -975,6 +976,12 @@ function Footer() {
 
 /* ===================== PAGE ===================== */
 export default function Landing() {
+  useEffect(() => {
+    document.title = 'Atelier by Vanaila — Documents, CVs, conversions & more'
+    const meta = document.querySelector('meta[name="description"]')
+    if (meta) meta.setAttribute('content', 'Documents, CVs, image and PDF conversions, OCR, and social posts — built in your browser. No installs, no accounts, no watermarks.')
+  }, [])
+
   return (
     <>
       <Nav />

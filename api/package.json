@@ -8,6 +8,7 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "db:apply": "wrangler d1 execute vanaila-studio --local --file src/db/schema.sql",
+    "db:migrate": "for f in src/db/migrations/*.sql; do echo \"Applying $f...\"; wrangler d1 execute vanaila-studio --local --file \"$f\"; done",
     "db:apply:remote": "wrangler d1 execute vanaila-studio --file src/db/schema.sql",
     "seed:admin": "node scripts/seed-admin.mjs"
   },

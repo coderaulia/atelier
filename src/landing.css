@@ -1018,10 +1018,10 @@ input, textarea { font: inherit; color: inherit; }
 .thumb--accent .thumb__type { color: var(--dark-ink-2); }
 .thumb--accent .thumb__body span { background: rgba(255,255,255,0.12); }
 .thumb--accent .thumb__foot { color: var(--dark-ink-2); }
-.thumb--orange { background: #2c4a6b; color: white; border-color: #243d59; }
-.thumb--orange .thumb__type { color: rgba(255,255,255,0.7); }
-.thumb--orange .thumb__body span { background: rgba(255,255,255,0.2); }
-.thumb--orange .thumb__foot { color: rgba(255,255,255,0.7); }
+.thumb--blue { background: #2c4a6b; color: white; border-color: #243d59; }
+.thumb--blue .thumb__type { color: rgba(255,255,255,0.7); }
+.thumb--blue .thumb__body span { background: rgba(255,255,255,0.2); }
+.thumb--blue .thumb__foot { color: rgba(255,255,255,0.7); }
 
 /* Social-format thumbs (square / vertical) */
 .thumb--social {

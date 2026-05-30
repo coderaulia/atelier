@@ -10,14 +10,14 @@
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 32px;
   background:
-    radial-gradient(circle at top right, rgba(251, 191, 36, 0.18), transparent 34%),
+    radial-gradient(circle at top right, rgba(44, 74, 107, 0.18), transparent 34%),
     linear-gradient(135deg, rgba(30, 41, 59, 0.84), rgba(15, 23, 42, 0.72));
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
   margin-bottom: 1.5rem;
 }
 
 .dashboard-hero__eyebrow {
-  color: hsl(43 96% 68%);
+  color: #5a8fc7;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -44,8 +44,8 @@
   gap: 1rem;
   padding: 1.4rem;
   border-radius: 24px;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(249, 115, 22, 0.08));
-  border: 1px solid rgba(251, 191, 36, 0.24);
+  background: linear-gradient(135deg, rgba(44, 74, 107, 0.16), rgba(26, 35, 50, 0.08));
+  border: 1px solid rgba(44, 74, 107, 0.24);
   margin-bottom: 1.5rem;
 }
 
@@ -54,7 +54,7 @@
 
 .dashboard-upsell__badge {
   color: #111827;
-  background: hsl(43 96% 56%);
+  background: #2c4a6b;
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
   font-size: 0.72rem;
@@ -77,8 +77,8 @@
 }
 
 .dashboard-upsell__btn {
-  background: linear-gradient(135deg, hsl(43 96% 56%), hsl(18 92% 60%));
-  color: #111827;
+  background: linear-gradient(135deg, #2c4a6b, #5a8fc7);
+  color: #ffffff;
   border: none;
 }
 
@@ -136,20 +136,20 @@
 
 .dashboard-tool-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(251, 191, 36, 0.35);
+  border-color: rgba(44, 74, 107, 0.35);
   background: rgba(30, 41, 59, 0.72);
 }
 
 .dashboard-tool-card--recent {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(15, 23, 42, 0.62));
-  border-color: rgba(251, 191, 36, 0.26);
+  background: linear-gradient(135deg, rgba(44, 74, 107, 0.16), rgba(15, 23, 42, 0.62));
+  border-color: rgba(44, 74, 107, 0.26);
 }
 
 .dashboard-tool-card__recent {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  color: hsl(43 96% 68%);
+  color: #5a8fc7;
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -172,7 +172,7 @@
 }
 
 .dashboard-tool-card__arrow {
-  color: hsl(43 96% 68%);
+  color: #5a8fc7;
   font-weight: 800;
   font-size: 0.9rem;
 }
@@ -195,7 +195,7 @@
 .dashboard-usage-card__bar span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, hsl(43 96% 56%), hsl(18 92% 60%));
+  background: linear-gradient(90deg, #2c4a6b, #5a8fc7);
   border-radius: inherit;
 }
 

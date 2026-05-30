@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import * as htmlToImage from 'html-to-image';
 
 /* ---------- Icons (line, 18px) ---------- */
 const I = ({ d, vb = "0 0 24 24", size = 18, stroke = "currentColor", fill = "none", sw = 1.5 }: any) => (
@@ -83,6 +82,10 @@ export const fmt = {
 };
 
 /* ---------- Export helpers ---------- */
+async function loadHtmlToImage() {
+  return import('html-to-image');
+}
+
 export function exportPrint(targetSelector: string) {
   const node = document.querySelector(targetSelector) as HTMLElement | null;
   if (!node) return;
@@ -139,6 +142,7 @@ export async function captureImage(targetSelector: string, format = "png"): Prom
   node.style.transform = "none";
   node.style.boxShadow = "none";
   try {
+    const htmlToImage = await loadHtmlToImage();
     const opts = { pixelRatio: 2, cacheBust: true };
     if (format === "jpg" || format === "jpeg") {
       return await htmlToImage.toJpeg(node, { ...opts, quality: 0.95, backgroundColor: "#ffffff" });

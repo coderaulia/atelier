@@ -37,8 +37,8 @@ export default function MarketingNav({ showGoToApp = true }: MarketingNavProps) 
         <Link to="/" className="marketing-nav__brand">
           <span className="marketing-nav__logo">V</span>
           <span>
-            <strong>Vanaila</strong>
-            <small>Studio</small>
+            <strong>Atelier</strong>
+            <small>Vanaila</small>
           </span>
         </Link>
 

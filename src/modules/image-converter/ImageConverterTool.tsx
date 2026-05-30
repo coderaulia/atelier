@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useToolLimit } from '../../hooks/useToolLimit'
 import { usePlan } from '../../hooks/usePlan'
-import JSZip from 'jszip'
 import type { ConversionJob, ImageFormat } from './types'
 import Toast from '../../components/Toast'
 import { validateImage } from '../../lib/fileValidation'
@@ -152,6 +151,7 @@ export default function ImageConverterTool() {
       return
     }
 
+    const { default: JSZip } = await import('jszip')
     const zip = new JSZip()
     
     for (const job of completeJobs) {

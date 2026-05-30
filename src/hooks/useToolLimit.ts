@@ -50,10 +50,10 @@ export function useToolLimit(toolId: string): ToolLimitResult {
       .then(({ used, limit }) => {
         setUsed(used)
         setLimit(limit ?? FREE_LIMIT)
-        lsSet(toolId, used)
       })
       .catch(() => {
-        setUsed(lsGet(toolId))
+        setUsed(0)
+        setLimit(FREE_LIMIT)
       })
       .finally(() => setIsLoading(false))
   }, [toolId, isAuthed, token])
@@ -71,12 +71,10 @@ export function useToolLimit(toolId: string): ToolLimitResult {
     try {
       const result = await incrementUsage(toolId, token!)
       setUsed(result.used)
-      lsSet(toolId, result.used)
       return true
     } catch (err) {
       if (err instanceof UsageLimitError) {
         setUsed(err.used)
-        lsSet(toolId, err.used)
         return false
       }
       throw err

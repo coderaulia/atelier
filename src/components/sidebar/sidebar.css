@@ -34,11 +34,11 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  background: linear-gradient(135deg, hsl(43 96% 56%), hsl(18 92% 60%));
+  background: linear-gradient(135deg, #2c4a6b, #1a2332);
   border-radius: 8px;
   font-weight: 900;
   font-size: 0.9rem;
-  color: #111;
+  color: #fff;
   flex-shrink: 0;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .app-sidebar__search input:focus {
-  border-color: hsl(43 96% 56% / 0.6);
+  border-color: #5a8fc7;
   background: rgba(148, 163, 184, 0.15);
 }
 
@@ -159,8 +159,8 @@
 }
 
 .sidebar-item__badge--pro {
-  background: hsl(43 96% 56% / 0.2);
-  color: hsl(43 96% 68%);
+  background: rgba(44, 74, 107, 0.2);
+  color: #5a8fc7;
 }
 
 .sidebar-item__badge--beta {
@@ -252,7 +252,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, hsl(212 100% 56%), hsl(266 92% 68%));
+  background: linear-gradient(135deg, #2c4a6b, #5a8fc7);
   font-size: 0.8rem;
   font-weight: 700;
   color: white;
@@ -284,7 +284,7 @@
 }
 
 .sidebar-footer__plan--pro {
-  color: hsl(43 96% 60%);
+  color: #5a8fc7;
   font-weight: 600;
 }
 

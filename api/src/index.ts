@@ -6,9 +6,29 @@ import admin from './routes/admin'
 import logError from './routes/log-error'
 import billing from './routes/billing'
 import bugReports from './routes/bug-reports'
+import { checkRateLimit, getClientIP } from './lib/rate-limit'
 import type { Bindings } from './types'
 
 const app = new Hono<{ Bindings: Bindings }>()
+
+// Global rate limiter - first layer DDoS protection (100 req/min per IP)
+app.use('*', async (c, next) => {
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `global:${ip}`, 60, 100)
+  if (!limit.allowed) {
+    return c.json({ error: 'Rate limit exceeded', reset_at: limit.resetAt }, 429)
+  }
+  await next()
+})
+
+// Reject oversized payloads before JSON parsing.
+app.use('*', async (c, next) => {
+  const contentLength = Number(c.req.header('Content-Length') ?? '0')
+  if (contentLength > 1_048_576) {
+    return c.json({ error: 'Payload too large' }, 413)
+  }
+  await next()
+})
 
 app.use('*', cors({
   origin: (origin) => {

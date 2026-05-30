@@ -516,13 +516,13 @@ function TryItEmbed() {
 /* ===================== TEMPLATE GALLERY ===================== */
 interface DocThumbProps {
   type: string
-  variant?: 'accent' | 'orange'
+  variant?: 'accent' | 'blue'
   children: React.ReactNode
 }
 
 function DocThumb({ type, variant, children }: DocThumbProps) {
   const dark = variant === 'accent'
-  const blue = variant === 'orange'
+  const blue = variant === 'blue'
   const bg = dark ? '#1a2332' : blue ? '#2c4a6b' : '#fff'
   const fg = (dark || blue) ? '#f8f9fb' : '#0f1419'
   const muted = (dark || blue) ? 'rgba(255,255,255,0.48)' : 'var(--ink-3)'
@@ -607,7 +607,7 @@ function DocThumbPRD() {
 function DocThumbRetainer() {
   const lb = linesBg(false, true)
   return (
-    <DocThumb type="Retainer · Modern" variant="orange">
+    <DocThumb type="Retainer · Modern" variant="blue">
       <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 18, marginBottom: 10, lineHeight: 1.2, color: 'rgba(255,255,255,0.95)' }}>Monthly creative retainer.</div>
       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 'auto', lineHeight: 1.6 }}>12-month engagement<br />North &amp; Quill × Atlas &amp; Bell<br />$4,500 / mo</div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 9, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 14, borderTop: `1px solid ${lb}`, paddingTop: 8 }}>
@@ -666,13 +666,13 @@ const ROW_1: Row1Component[] = [
   DocThumbRetainer, DocThumbReceipt, DocThumbOnboarding, DocThumbHandover,
 ]
 
-interface DocRow2Item { type: string; title: string; footL: string; footR: string; variant: '' | 'accent' | 'orange' }
+interface DocRow2Item { type: string; title: string; footL: string; footR: string; variant: '' | 'accent' | 'blue' }
 interface SocialRow2Item { social: true; id: string }
 type Row2Item = DocRow2Item | SocialRow2Item
 
 const ROW_2_DOC: DocRow2Item[] = [
   { type: 'CV / Resume', title: 'Editorial, single column.', footL: 'CV · EDITORIAL', footR: 'A4', variant: '' },
-  { type: 'CV / Resume', title: 'ATS-Mono, ATS-safe.', footL: 'CV · MONO', footR: 'Letter', variant: 'orange' },
+  { type: 'CV / Resume', title: 'ATS-Mono, ATS-safe.', footL: 'CV · MONO', footR: 'Letter', variant: 'blue' },
   { type: 'CV / Resume', title: 'Modern designer portfolio.', footL: 'CV · MODERN', footR: 'A4', variant: '' },
   { type: 'Cover letter', title: 'Dear hiring team —', footL: 'CL · SERIF', footR: '1pg', variant: '' },
   { type: 'Cover letter', title: 'Punchy & brief.', footL: 'CL · MODERN', footR: '1pg', variant: 'accent' },
@@ -788,7 +788,7 @@ function TemplateGallery() {
                   return C ? <div key={i} style={{ flexShrink: 0 }}><C /></div> : null
                 }
                 return (
-                  <div key={i} className={`thumb${t.variant === 'accent' ? ' thumb--accent' : t.variant === 'orange' ? ' thumb--orange' : ''}`}>
+                  <div key={i} className={`thumb${t.variant === 'accent' ? ' thumb--accent' : t.variant === 'blue' ? ' thumb--blue' : ''}`}>
                     <div className="thumb__type">{t.type}</div>
                     <div className="thumb__title">{t.title}</div>
                     <div className="thumb__body"><span /><span /><span /><span /><span /></div>

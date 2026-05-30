@@ -78,37 +78,37 @@ usage.post('/:toolId', async (c) => {
     return c.json({ used: 1, limit: null, reset_at: resetAt() })
   }
 
-  const row = await c.env.DB
-    .prepare('SELECT count FROM usage_log WHERE user_id = ? AND tool_id = ? AND date = ?')
-    .bind(userId, toolId, date)
-    .first<{ count: number }>()
-
-  const current = row?.count ?? 0
-
-  if (current >= FREE_LIMIT) {
-    await c.env.DB
-      .prepare(
-        `INSERT INTO usage_log (user_id, tool_id, date, count, limit_hits) VALUES (?, ?, ?, 0, 1)
-         ON CONFLICT (user_id, tool_id, date) DO UPDATE SET limit_hits = limit_hits + 1`
-      )
-      .bind(userId, toolId, date)
-      .run()
-
-    return c.json(
-      { error: 'Daily limit reached', limit: FREE_LIMIT, used: current, reset_at: resetAt() },
-      429
-    )
-  }
-
   await c.env.DB
     .prepare(
-      `INSERT INTO usage_log (user_id, tool_id, date, count) VALUES (?, ?, ?, 1)
-       ON CONFLICT (user_id, tool_id, date) DO UPDATE SET count = count + 1`
+      'INSERT OR IGNORE INTO usage_log (user_id, tool_id, date, count, limit_hits) VALUES (?, ?, ?, 0, 0)'
     )
     .bind(userId, toolId, date)
     .run()
 
-  return c.json({ used: current + 1, limit: FREE_LIMIT, reset_at: resetAt() })
+  const updated = await c.env.DB
+    .prepare(
+      'UPDATE usage_log SET count = count + 1 WHERE user_id = ? AND tool_id = ? AND date = ? AND count < ? RETURNING count'
+    )
+    .bind(userId, toolId, date, FREE_LIMIT)
+    .first<{ count: number }>()
+
+  if (!updated) {
+    const row = await c.env.DB
+      .prepare(
+        `UPDATE usage_log SET limit_hits = limit_hits + 1
+         WHERE user_id = ? AND tool_id = ? AND date = ?
+         RETURNING count`
+      )
+      .bind(userId, toolId, date)
+      .first<{ count: number }>()
+
+    return c.json(
+      { error: 'Daily limit reached', limit: FREE_LIMIT, used: row?.count ?? FREE_LIMIT, reset_at: resetAt() },
+      429
+    )
+  }
+
+  return c.json({ used: updated.count, limit: FREE_LIMIT, reset_at: resetAt() })
 })
 
 export default usage

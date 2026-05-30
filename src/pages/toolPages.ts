@@ -25,7 +25,7 @@ export const toolPages: ToolPage[] = [
     description: 'Convert PDF pages to JPG or PNG in your browser. Private, fast, free for small files, with Pro batch ZIP export.',
     valueProp: 'Turn PDF pages into sharp JPG or PNG files without sending documents to a server.',
     ogImage: `${siteUrl}/og/pdf-to-image.png`,
-    accent: 'hsl(18 92% 60%)',
+    accent: '#2c4a6b',
     features: [
       { icon: '🔒', text: 'Local browser rendering keeps sensitive PDFs private.' },
       { icon: '🖼️', text: 'Export pages as PNG or compressed JPG.' },
@@ -49,7 +49,7 @@ export const toolPages: ToolPage[] = [
     description: 'Convert images between PNG, JPG, WebP, and AVIF locally in your browser. Free single files, Pro batch exports.',
     valueProp: 'Convert PNG, JPG, WebP, and AVIF files with private browser-side processing.',
     ogImage: `${siteUrl}/og/image-converter.png`,
-    accent: 'hsl(158 84% 48%)',
+    accent: '#3e5f7a',
     features: [
       { icon: '🎛️', text: 'Tune format, quality, and export settings.' },
       { icon: '🧩', text: 'WASM codecs load only when needed.' },
@@ -73,7 +73,7 @@ export const toolPages: ToolPage[] = [
     description: 'Extract text from images and PDFs with free OCR in your browser. Private local recognition for English and Indonesian.',
     valueProp: 'Extract editable text from images and PDFs privately in your browser.',
     ogImage: `${siteUrl}/og/ocr.png`,
-    accent: 'hsl(266 92% 68%)',
+    accent: '#4a6fa5',
     features: [
       { icon: '🔍', text: 'Recognize text from PNG, JPG, WebP, and PDF pages.' },
       { icon: '🌏', text: 'English and Indonesian OCR language support.' },
@@ -97,7 +97,7 @@ export const toolPages: ToolPage[] = [
     description: 'Build a polished CV or resume online with live preview, browser PDF export, free templates, and Pro premium layouts.',
     valueProp: 'Create a polished resume with live preview and direct PDF download.',
     ogImage: `${siteUrl}/og/cv-builder.png`,
-    accent: 'hsl(205 90% 60%)',
+    accent: '#5a8fc7',
     features: [
       { icon: '📝', text: 'Guided sections for summary, experience, education, and skills.' },
       { icon: '👀', text: 'Live preview before exporting your PDF.' },
@@ -121,7 +121,7 @@ export const toolPages: ToolPage[] = [
     description: 'Generate proposals, invoices, quotes, and client documents in browser with branded templates and private local export.',
     valueProp: 'Create polished freelance documents faster with branded templates and local export.',
     ogImage: `${siteUrl}/og/document-generator.png`,
-    accent: 'hsl(43 96% 56%)',
+    accent: '#2c4a6b',
     features: [
       { icon: '📑', text: 'Templates for proposals, quotes, invoices, and briefs.' },
       { icon: '🏷️', text: 'Brand settings help keep documents consistent.' },
@@ -145,7 +145,7 @@ export const toolPages: ToolPage[] = [
     description: 'Create branded social media visuals and content templates in your browser. Fast, private, and built for freelancers.',
     valueProp: 'Design branded social posts and creator assets without leaving your browser.',
     ogImage: `${siteUrl}/og/social-generator.png`,
-    accent: 'hsl(326 92% 63%)',
+    accent: '#3e5f7a',
     features: [
       { icon: '📱', text: 'Templates for social posts and creator formats.' },
       { icon: '✨', text: 'Premium visual styles built for client-facing content.' },
@@ -169,7 +169,7 @@ export const toolPages: ToolPage[] = [
     description: 'Combine multiple PDFs into one file in your browser. Private, fast, free for 3 files, Pro for bulk merging.',
     valueProp: 'Merge up to 20 PDF files into one document without uploading to servers.',
     ogImage: `${siteUrl}/og/pdf-merge.png`,
-    accent: 'hsl(18 92% 60%)',
+    accent: '#2c4a6b',
     features: [
       { icon: '📑', text: 'Merge 2-20 PDF files into one.' },
       { icon: '🎯', text: 'Drag and drop to reorder files.' },
@@ -193,7 +193,7 @@ export const toolPages: ToolPage[] = [
     description: 'Reduce PDF file size in your browser. Private compression with quality preview. Free for small files, Pro for unlimited.',
     valueProp: 'Compress PDFs without uploading files to servers.',
     ogImage: `${siteUrl}/og/pdf-compress.png`,
-    accent: 'hsl(266 92% 68%)',
+    accent: '#4a6fa5',
     features: [
       { icon: '🗜️', text: 'Reduce file size with browser-side optimization.' },
       { icon: '👁️', text: 'Compare before and after file size.' },

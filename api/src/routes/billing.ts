@@ -122,6 +122,12 @@ billing.post('/webhook', async (c) => {
   const thirtyDays = 30 * 24 * 60 * 60
 
   if (event.payment_type === 'recurring' && event.transaction_status === 'capture') {
+    const existing = await c.env.DB
+      .prepare('SELECT id FROM transactions WHERE midtrans_order_id = ?')
+      .bind(event.order_id)
+      .first<{ id: number }>()
+    if (existing) return c.json({ ok: true })
+
     const user = await c.env.DB
       .prepare('SELECT email, pro_expires_at FROM users WHERE id = ?')
       .bind(userId)
@@ -151,6 +157,12 @@ billing.post('/webhook', async (c) => {
   }
 
   if (event.transaction_status === 'deny' || event.transaction_status === 'expire') {
+    const dup = await c.env.DB
+      .prepare('SELECT id FROM transactions WHERE midtrans_order_id = ?')
+      .bind(event.order_id)
+      .first<{ id: number }>()
+    if (dup) return c.json({ ok: true })
+
     const graceUntil = now + 3 * 24 * 60 * 60
     const user = await c.env.DB
       .prepare('SELECT email FROM users WHERE id = ?')

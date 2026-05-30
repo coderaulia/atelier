@@ -230,7 +230,7 @@ export default function App() {
           <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#f8fafc', background: '#0a0f1e' }}>
             <h1 style={{ fontSize: '4rem', marginBottom: '1rem' }}>404</h1>
             <p style={{ color: 'rgba(226,232,240,0.68)', marginBottom: '1.5rem' }}>This page doesn't exist.</p>
-            <a href="/" style={{ color: 'hsl(43 96% 62%)', fontWeight: 700 }}>Back to home</a>
+            <a href="/" style={{ color: '#5a8fc7', fontWeight: 700 }}>Back to home</a>
           </main>
         }
       />

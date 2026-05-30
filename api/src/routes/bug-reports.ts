@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { verifyToken } from '../lib/jwt'
 import { sha256Hex } from '../lib/tokens'
+import { checkRateLimit, getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
 const bugReports = new Hono<{ Bindings: Bindings }>()
@@ -35,6 +36,12 @@ bugReports.post('/', async (c) => {
 
   if (!session) {
     return c.json({ error: 'Session expired' }, 401)
+  }
+
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `bug-report:${ip}`, 60, 5)
+  if (!limit.allowed) {
+    return c.json({ error: 'Too many bug report submissions', reset_at: limit.resetAt }, 429)
   }
 
   const user = await c.env.DB

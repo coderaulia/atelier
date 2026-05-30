@@ -54,20 +54,32 @@ export default function AdminLayout({ children, active }: AdminLayoutProps) {
           <div style={{ marginTop: 12, fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--mono)', letterSpacing: '0.04em' }}>ADMIN PANEL</div>
         </div>
 
-        <nav style={{ flex: 1, padding: '16px 12px' }}>
+        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
           <NavLink to="/admin" active={active === 'overview'}>Overview</NavLink>
+          
+          <NavSection>Users & Billing</NavSection>
           <NavLink to="/admin/users" active={active === 'users'}>Users</NavLink>
           <NavLink to="/admin/transactions" active={active === 'transactions'}>Transactions</NavLink>
           <NavLink to="/admin/subscriptions" active={active === 'subscriptions'}>Subscriptions</NavLink>
           <NavLink to="/admin/refunds" active={active === 'refunds'}>Refunds</NavLink>
+
+          <NavSection>Support</NavSection>
           <NavLink to="/admin/bug-reports" active={active === 'bug-reports'}>Bug Reports</NavLink>
-          <NavLink to="/admin/analytics" active={active === 'analytics'}>Analytics</NavLink>
+
+          <NavSection>Analytics</NavSection>
+          <NavLink to="/admin/analytics" active={active === 'analytics'}>Dashboard</NavLink>
           <NavLink to="/admin/revenue" active={active === 'revenue'}>Revenue</NavLink>
+
+          <NavSection>System</NavSection>
           <NavLink to="/admin/system/config" active={active === 'system-config'}>Config</NavLink>
           <NavLink to="/admin/system/features" active={active === 'feature-flags'}>Features</NavLink>
           <NavLink to="/admin/system/health" active={active === 'health'}>Health</NavLink>
+
+          <NavSection>Content</NavSection>
           <NavLink to="/admin/content/announcements" active={active === 'announcements'}>Announcements</NavLink>
           <NavLink to="/admin/content/email-templates" active={active === 'email-templates'}>Email Templates</NavLink>
+
+          <NavSection>Monitoring</NavSection>
           <NavLink to="/admin/audit-logs" active={active === 'audit-logs'}>Audit Logs</NavLink>
           <NavLink to="/admin/errors" active={active === 'errors'}>Errors</NavLink>
         </nav>
@@ -102,5 +114,23 @@ function NavLink({ to, active, children }: { to: string; active: boolean; childr
     >
       {children}
     </Link>
+  )
+}
+
+function NavSection({ children }: { children: ReactNode }) {
+  return (
+    <div
+      style={{
+        fontSize: 11,
+        fontWeight: 600,
+        color: 'var(--ink-3)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        padding: '16px 12px 8px',
+        marginTop: 8,
+      }}
+    >
+      {children}
+    </div>
   )
 }

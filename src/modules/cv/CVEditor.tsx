@@ -420,18 +420,22 @@ function CertificationsSection({
 export function CVEditor({
   data,
   onChange,
+  activeSection,
 }: {
   data: CVData;
   onChange: (data: CVData) => void;
+  activeSection?: string;
 }) {
+  const show = (name: string) => !activeSection || activeSection === name;
+
   return (
     <div className="cv-editor">
-      <PersonalSection data={data.personal} onChange={(p) => onChange({ ...data, personal: p })} />
-      <SummarySection value={data.summary} onChange={(s) => onChange({ ...data, summary: s })} />
-      <ExperienceSection items={data.experience} onChange={(ex) => onChange({ ...data, experience: ex })} />
-      <EducationSection items={data.education} onChange={(ed) => onChange({ ...data, education: ed })} />
-      <SkillsSection items={data.skills} onChange={(sk) => onChange({ ...data, skills: sk })} />
-      <CertificationsSection items={data.certifications} onChange={(c) => onChange({ ...data, certifications: c })} />
+      {show('personal') && <PersonalSection data={data.personal} onChange={(p) => onChange({ ...data, personal: p })} />}
+      {show('summary') && <SummarySection value={data.summary} onChange={(s) => onChange({ ...data, summary: s })} />}
+      {show('experience') && <ExperienceSection items={data.experience} onChange={(ex) => onChange({ ...data, experience: ex })} />}
+      {show('education') && <EducationSection items={data.education} onChange={(ed) => onChange({ ...data, education: ed })} />}
+      {show('skills') && <SkillsSection items={data.skills} onChange={(sk) => onChange({ ...data, skills: sk })} />}
+      {show('certifications') && <CertificationsSection items={data.certifications} onChange={(c) => onChange({ ...data, certifications: c })} />}
     </div>
   );
 }

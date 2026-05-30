@@ -267,6 +267,85 @@
   color: var(--shell-ink);
 }
 
+/* ---- Step Editor ---- */
+.cv-step-editor {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.cv-step-progress {
+  display: flex;
+  gap: 6px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--shell-rule);
+  background: var(--shell-bg-2);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.cv-step-progress__item {
+  min-width: 74px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--shell-muted);
+  border-radius: 10px;
+  padding: 8px 6px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s ease;
+}
+
+.cv-step-progress__item:hover {
+  border-color: var(--shell-rule);
+  background: var(--shell-bg-3);
+  color: var(--shell-ink);
+}
+
+.cv-step-progress__item--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.cv-step-progress__item--completed .cv-step-progress__icon {
+  filter: grayscale(0);
+}
+
+.cv-step-progress__icon {
+  font-size: 18px;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.cv-step-progress__label {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.cv-step-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.cv-step-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--shell-rule);
+  background: var(--shell-bg-2);
+}
+
+.cv-step-nav__indicator {
+  font-size: 12px;
+  color: var(--shell-muted);
+  white-space: nowrap;
+}
+
 /* ---- Layout ---- */
 .cv-tool {
   display: grid;

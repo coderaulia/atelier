@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import { CVData, CVTemplate, CV_TEMPLATES, DEFAULT_CV, generateCVFromStartupConfig, type CVStartupConfig } from './types';
 import { CVEditor } from './CVEditor';
+import CVStepEditor from './CVStepEditor';
 import CVWizard from './CVWizard';
 import {
   ClassicTemplate,
@@ -99,6 +100,7 @@ export default function CVTool() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [useStepEditor, setUseStepEditor] = useLocalStorage<boolean>('cv_step_editor_v1', true);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'info' } | null>(null);
   const prevBlobRef = useRef<string | null>(null);
 
@@ -251,6 +253,13 @@ export default function CVTool() {
               >
                 Guide
               </button>
+              <button
+                className="cv-btn cv-btn--ghost cv-btn--sm"
+                onClick={() => setUseStepEditor((prev: boolean) => !prev)}
+                title={useStepEditor ? 'Show full form' : 'Show guided steps'}
+              >
+                {useStepEditor ? 'Full' : 'Steps'}
+              </button>
               {/* Import menu */}
               <div className="cv-import-wrap">
                 <button
@@ -287,7 +296,11 @@ export default function CVTool() {
         </div>
 
         <div className="cv-sidebar__scroll">
-          <CVEditor data={cvData} onChange={setCvData} />
+          {useStepEditor ? (
+            <CVStepEditor data={cvData} onChange={setCvData} />
+          ) : (
+            <CVEditor data={cvData} onChange={setCvData} />
+          )}
         </div>
       </div>
 

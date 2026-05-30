@@ -30,7 +30,7 @@ export default function AuditLogs() {
 
   const totalPages = Math.ceil(total / limit)
 
-  function parseChanges(json: string | null) {
+  function parseChanges(json: string | null | undefined) {
     if (!json) return null
     try {
       const obj = JSON.parse(json)

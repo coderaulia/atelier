@@ -655,7 +655,7 @@ export function createAdminAnnouncement(payload: Partial<Announcement>) {
   })
 }
 
-export function updateAdminAnnouncement(id: string, payload: Partial<Announcement> & { is_active?: boolean }) {
+export function updateAdminAnnouncement(id: string, payload: Omit<Partial<Announcement>, 'is_active'> & { is_active?: boolean | number }) {
   return request<{ announcement: Announcement }>(`/admin/content/announcements/${id}`, {
     method: 'PATCH',
     headers: authHeaders(),

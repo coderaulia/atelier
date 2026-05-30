@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import React from 'react';
 import { CVData, WorkExperience, Education, Skill, Certification } from './types';
 
 // ---- tiny uid ----

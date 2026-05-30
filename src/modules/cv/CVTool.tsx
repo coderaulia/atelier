@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import { CVData, CVTemplate, CV_TEMPLATES, DEFAULT_CV } from './types';
 import { CVEditor } from './CVEditor';
@@ -204,7 +204,7 @@ export default function CVTool() {
   };
 
   const handleApplyImport = useCallback((parsedData: Partial<CVData>) => {
-    setCvData((prev) => ({
+    setCvData((prev: CVData) => ({
       ...prev,
       ...parsedData,
       personal: { ...prev.personal, ...parsedData.personal },

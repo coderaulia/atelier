@@ -48,10 +48,9 @@ export default function PDFToImageTool() {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null);
   const [pageWarning, setPageWarning] = useState<string | null>(null);
-  const [mobileWarning, setMobileWarning] = useState(isLowPowerDevice());
+  const [mobileWarning] = useState(isLowPowerDevice());
   const [pages, setPages] = useState<PageRender[]>([]);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
   const [format, setFormat] = useState<OutputFormat>('png');

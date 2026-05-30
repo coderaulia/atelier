@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useToolLimit } from '../../hooks/useToolLimit';
 import { usePlan } from '../../hooks/usePlan';
 import UpgradeModal from '../../components/UpgradeModal';

@@ -15,7 +15,6 @@ interface WorkerResponse {
 
 // Lazy-load WASM modules
 let avifEncoder: any = null
-let avifDecoder: any = null
 let webpEncoder: any = null
 
 async function loadAVIFEncoder() {
@@ -24,14 +23,6 @@ async function loadAVIFEncoder() {
     avifEncoder = module.default
   }
   return avifEncoder
-}
-
-async function loadAVIFDecoder() {
-  if (!avifDecoder) {
-    const module = await import('@jsquash/avif/decode')
-    avifDecoder = module.default
-  }
-  return avifDecoder
 }
 
 async function loadWebPEncoder() {

@@ -10,7 +10,7 @@ export interface User {
   role?: 'user' | 'admin'
   status?: 'active' | 'banned'
   pro_expires_at?: number | null
-  cancel_at_period_end?: boolean
+  cancel_at_period_end?: boolean | number
   grace_until?: number | null
   email_verified?: number
   created_at?: number

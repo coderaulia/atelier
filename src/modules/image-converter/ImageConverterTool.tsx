@@ -16,7 +16,7 @@ export default function ImageConverterTool() {
   const [jobs, setJobs] = useState<ConversionJob[]>([])
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null)
-  const [mobileWarning, setMobileWarning] = useState(isLowPowerDevice())
+  const [mobileWarning] = useState(isLowPowerDevice())
 
   const workerRef = useRef<Worker | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)

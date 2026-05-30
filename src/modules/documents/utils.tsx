@@ -26,7 +26,7 @@ export const Icon: Record<string, React.JSX.Element> = {
 };
 
 /* ---------- localStorage hook ---------- */
-export function useLocalStorage<T>(key: string, initial: T): [T, (v: T) => void] {
+export function useLocalStorage<T>(key: string, initial: T): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [v, setV] = useState<T>(() => {
     try {
       const raw = localStorage.getItem(key);

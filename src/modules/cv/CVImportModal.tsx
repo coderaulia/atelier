@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { CVData } from './types';
 
 // Lazy-loaded dependencies

@@ -56,7 +56,7 @@ export default function OCRTool() {
   const [progressText, setProgressText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null);
-  const [mobileWarning, setMobileWarning] = useState(isLowPowerDevice());
+  const [mobileWarning] = useState(isLowPowerDevice());
   const [recognizedText, setRecognizedText] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [pdfPages, setPdfPages] = useState<PDFPage[]>([]);

@@ -1,12 +1,9 @@
-import React from 'react';
 import {
   Document,
   Page,
   Text,
   View,
   StyleSheet,
-  Link,
-  Font,
 } from '@react-pdf/renderer';
 import { CVData } from './types';
 
@@ -471,7 +468,7 @@ export const ModernTemplate = ({ data, accent }: { data: CVData; accent: string 
 // 3. MINIMAL TEMPLATE (Free)
 // Pure typography, elegant layout.
 // ----------------------------------------------------
-export const MinimalTemplate = ({ data, accent }: { data: CVData; accent: string }) => {
+export const MinimalTemplate = ({ data }: { data: CVData; accent: string }) => {
   const { personal, summary, experience, education, skills, certifications } = data;
 
   const minStyles = StyleSheet.create({
@@ -652,7 +649,7 @@ export const MinimalTemplate = ({ data, accent }: { data: CVData; accent: string
 // 4. ATS-OPTIMIZED TEMPLATE (Pro-gated)
 // Single column, zero columns, standard margins, maximum readability for ATS.
 // ----------------------------------------------------
-export const AtsOptimizedTemplate = ({ data, accent }: { data: CVData; accent: string }) => {
+export const AtsOptimizedTemplate = ({ data }: { data: CVData; accent: string }) => {
   const { personal, summary, experience, education, skills, certifications } = data;
 
   const atsStyles = StyleSheet.create({

@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
+import { checkRateLimit, getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
 // Usage limits per user type
@@ -80,6 +81,12 @@ async function applyDailyLimit(
 const usage = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
 
 usage.use('*', authMiddleware)
+usage.use('*', async (c, next) => {
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `usage:${c.var.userId}:${ip}`, 60, 60)
+  if (!limit.allowed) return c.json({ error: 'Too many usage requests', reset_at: limit.resetAt }, 429)
+  await next()
+})
 
 // GET /usage/me — user's usage history
 usage.get('/me', async (c) => {

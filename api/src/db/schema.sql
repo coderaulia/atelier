@@ -113,3 +113,57 @@ CREATE TABLE IF NOT EXISTS admin_audit_log (
 );
 CREATE INDEX IF NOT EXISTS idx_admin_audit_log_admin ON admin_audit_log(admin_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_admin_audit_log_target ON admin_audit_log(target_user_id, created_at);
+
+-- Bug reports
+CREATE TABLE IF NOT EXISTS bug_reports (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id),
+  email TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  description TEXT NOT NULL,
+  tool_id TEXT,
+  severity TEXT CHECK(severity IN ('low', 'medium', 'high', 'critical')) DEFAULT 'medium',
+  status TEXT CHECK(status IN ('new', 'in_progress', 'resolved', 'closed', 'wont_fix')) DEFAULT 'new',
+  priority INTEGER DEFAULT 0,
+  assigned_to TEXT REFERENCES users(id),
+  user_agent TEXT,
+  browser_info TEXT,
+  screenshot_url TEXT,
+  source TEXT CHECK(source IN ('app', 'email')) DEFAULT 'app',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  resolved_at INTEGER,
+  resolved_by TEXT REFERENCES users(id),
+  resolution_notes TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_status ON bug_reports(status);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_severity ON bug_reports(severity);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_user_id ON bug_reports(user_id);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_created_at ON bug_reports(created_at);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_assigned_to ON bug_reports(assigned_to);
+
+CREATE TABLE IF NOT EXISTS bug_report_comments (
+  id TEXT PRIMARY KEY,
+  bug_report_id TEXT NOT NULL REFERENCES bug_reports(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  comment TEXT NOT NULL,
+  is_internal INTEGER DEFAULT 0 CHECK(is_internal IN (0, 1)),
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_bug_comments_report ON bug_report_comments(bug_report_id);
+CREATE INDEX IF NOT EXISTS idx_bug_comments_created ON bug_report_comments(created_at);
+
+CREATE TABLE IF NOT EXISTS admin_notifications (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  severity TEXT CHECK(severity IN ('info', 'warning', 'critical')) DEFAULT 'info',
+  link TEXT,
+  is_read INTEGER DEFAULT 0 CHECK(is_read IN (0, 1)),
+  created_at INTEGER NOT NULL,
+  read_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_admin_notif_unread ON admin_notifications(is_read, created_at);
+CREATE INDEX IF NOT EXISTS idx_admin_notif_type ON admin_notifications(type);
+

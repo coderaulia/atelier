@@ -10,14 +10,16 @@ import { contentPublic } from './routes/admin/content'
 import { checkRateLimit, getClientIP } from './lib/rate-limit'
 import type { Bindings } from './types'
 
+const DEFAULT_ORIGINS = ['https://atelier.vanailadigital.com']
+
 const app = new Hono<{ Bindings: Bindings }>()
 
 app.use('*', cors({
-  origin: (origin) => {
+  origin: (origin, c) => {
     if (!origin) return ''
-    // Allow any localhost port in development
     if (/^http:\/\/localhost:\d+$/.test(origin)) return origin
-    const allowed = ['https://atelier.vanailadigital.com']
+    const envOrigins = c.env?.ALLOWED_ORIGINS
+    const allowed = envOrigins ? envOrigins.split(',').map((s: string) => s.trim()) : DEFAULT_ORIGINS
     return allowed.includes(origin) ? origin : ''
   },
   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -90,6 +92,11 @@ async function handleScheduled(env: Bindings) {
   for (const user of deleted.results ?? []) {
     await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(user.id).run()
   }
+
+  await env.DB.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used = 1').bind(now).run()
+  await env.DB.prepare('DELETE FROM email_verifications WHERE expires_at < ? OR used = 1').bind(now).run()
+  await env.DB.prepare('DELETE FROM rate_limit WHERE window_start < ?').bind(now - 3600).run()
+  await env.DB.prepare('DELETE FROM failed_logins WHERE attempted_at < ?').bind(now - 24 * 60 * 60).run()
 }
 
 export default {

@@ -6,6 +6,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { randomToken, sha256Hex } from '../lib/tokens'
 import { sendEmail, emailTemplates } from '../lib/email'
 import { checkRateLimit, getClientIP } from '../lib/rate-limit'
+import { getAppUrl } from '../lib/config'
 import type { Bindings } from '../types'
 
 const auth = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
@@ -78,7 +79,7 @@ auth.post('/register', async (c) => {
       .bind(user.id, verifyHash, verifyExpires)
       .run()
 
-    const baseUrl = c.env.APP_URL ?? 'http://localhost:5173'
+    const baseUrl = getAppUrl(c.env.APP_URL)
     const lang = c.req.header('Accept-Language')?.startsWith('id') ? 'id' : 'en'
     const t = emailTemplates(lang)
     sendEmail({ to: email, subject: t.verifySubject, html: t.verifyBody(verifyToken, baseUrl) }, c.env.RESEND_API_KEY).catch(() => {})
@@ -161,7 +162,7 @@ auth.get('/me', async (c) => {
 
   let userId: string
   try {
-    userId = await verifyToken(token, c.env.JWT_SECRET)
+    userId = await verifyToken(token, c.env.JWT_SECRET, c.env.JWT_SECRET_OLD)
   } catch {
     return c.json({ error: 'Invalid token' }, 401)
   }
@@ -219,7 +220,7 @@ auth.post('/forgot-password', async (c) => {
     .bind(user.id, tokenHash, expiresAt)
     .run()
 
-  const baseUrl = c.env.APP_URL ?? 'http://localhost:5173'
+  const baseUrl = getAppUrl(c.env.APP_URL)
   const lang = c.req.header('Accept-Language')?.startsWith('id') ? 'id' : 'en'
   const t = emailTemplates(lang)
   sendEmail({ to: email, subject: t.resetSubject, html: t.resetBody(token, baseUrl) }, c.env.RESEND_API_KEY).catch(() => {})
@@ -298,7 +299,7 @@ auth.get('/verify-email', async (c) => {
     .bind(row.id)
     .run()
 
-  return c.redirect(`${c.env.APP_URL ?? 'http://localhost:5173'}/account?verified=1`)
+  return c.redirect(`${getAppUrl(c.env.APP_URL)}/account?verified=1`)
 })
 
 // ─── POST /verify-email (send verification) ──────────────────────
@@ -327,7 +328,7 @@ auth.post('/verify-email', authMiddleware, async (c) => {
     .bind(userId, verifyHash, expiresAt)
     .run()
 
-  const baseUrl = c.env.APP_URL ?? 'http://localhost:5173'
+  const baseUrl = getAppUrl(c.env.APP_URL)
   const t = emailTemplates('en')
   sendEmail({ to: user.email, subject: t.verifySubject, html: t.verifyBody(token, baseUrl) }, c.env.RESEND_API_KEY).catch(() => {})
 

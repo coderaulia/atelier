@@ -2,6 +2,8 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { emailTemplates, sendEmail } from '../lib/email'
+import { checkRateLimit, getClientIP } from '../lib/rate-limit'
+import { getAppUrl } from '../lib/config'
 import type { Bindings } from '../types'
 
 const billing = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
@@ -101,6 +103,10 @@ billing.get('/transactions', authMiddleware, async (c) => {
 // Recurring should use Midtrans Core API token-based recurring charges.
 // Snap is for initial checkout; saved card token then powers recurring Core API charges.
 billing.post('/webhook', async (c) => {
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `billing:webhook:${ip}`, 60, 10)
+  if (!limit.allowed) return c.json({ error: 'Too many webhook requests', reset_at: limit.resetAt }, 429)
+
   const body = await c.req.json().catch(() => null)
   const result = webhookSchema.safeParse(body)
   if (!result.success) return c.json({ error: 'Invalid webhook' }, 400)
@@ -181,7 +187,7 @@ billing.post('/webhook', async (c) => {
 
     if (user?.email) {
       const t = emailTemplates('en')
-      const retryUrl = `${c.env.APP_URL ?? 'http://localhost:5173'}/pricing`
+      const retryUrl = `${getAppUrl(c.env.APP_URL)}/pricing`
       sendEmail({ to: user.email, subject: t.paymentFailedSubject, html: t.paymentFailedBody(retryUrl) }, c.env.RESEND_API_KEY).catch(() => {})
     }
   }

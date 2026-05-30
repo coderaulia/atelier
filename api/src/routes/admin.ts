@@ -8,11 +8,17 @@ import analyticsAdmin from './admin/analytics'
 import systemAdmin from './admin/system'
 import { contentAdmin } from './admin/content'
 import auditAdmin from './admin/audit'
-import { getClientIP } from '../lib/rate-limit'
+import { checkRateLimit, getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
 const admin = new Hono<{ Bindings: Bindings; Variables: AdminVariables }>()
 admin.use('*', adminMiddleware)
+admin.use('*', async (c, next) => {
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `admin:${c.var.userId}:${ip}`, 60, 60)
+  if (!limit.allowed) return c.json({ error: 'Too many admin requests', reset_at: limit.resetAt }, 429)
+  await next()
+})
 
 function todayUTC(): string {
   return new Date().toISOString().slice(0, 10)

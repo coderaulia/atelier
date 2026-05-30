@@ -24,7 +24,7 @@ bugReports.post('/', async (c) => {
 
   let userId: string
   try {
-    userId = await verifyToken(token, c.env.JWT_SECRET)
+    userId = await verifyToken(token, c.env.JWT_SECRET, c.env.JWT_SECRET_OLD)
   } catch {
     return c.json({ error: 'Invalid token' }, 401)
   }

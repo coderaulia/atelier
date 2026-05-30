@@ -17,8 +17,15 @@ export async function signToken(userId: string, secret: string): Promise<{ token
   return { token, expiresAt }
 }
 
-export async function verifyToken(token: string, secret: string): Promise<string> {
-  const { payload } = await jwtVerify(token, secretKey(secret))
-  if (typeof payload.sub !== 'string') throw new Error('Invalid token payload')
-  return payload.sub
+export async function verifyToken(token: string, secret: string, oldSecret?: string): Promise<string> {
+  try {
+    const { payload } = await jwtVerify(token, secretKey(secret))
+    if (typeof payload.sub !== 'string') throw new Error('Invalid token payload')
+    return payload.sub
+  } catch {
+    if (!oldSecret) throw new Error('Token verification failed with both secrets')
+    const { payload } = await jwtVerify(token, secretKey(oldSecret))
+    if (typeof payload.sub !== 'string') throw new Error('Invalid token payload')
+    return payload.sub
+  }
 }

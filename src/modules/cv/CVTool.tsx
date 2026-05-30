@@ -3,6 +3,7 @@ import { pdf } from '@react-pdf/renderer';
 import { CVData, CVTemplate, CV_TEMPLATES, DEFAULT_CV, generateCVFromStartupConfig, type CVStartupConfig } from './types';
 import { CVEditor } from './CVEditor';
 import CVStepEditor from './CVStepEditor';
+import CVATSPanel from './CVATSPanel';
 import CVWizard from './CVWizard';
 import {
   ClassicTemplate,
@@ -101,6 +102,7 @@ export default function CVTool() {
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [useStepEditor, setUseStepEditor] = useLocalStorage<boolean>('cv_step_editor_v1', true);
+  const [jdKeywordInput, setJdKeywordInput] = useLocalStorage<string>('cv_jd_keywords_v1', '');
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'info' } | null>(null);
   const prevBlobRef = useRef<string | null>(null);
 
@@ -109,6 +111,10 @@ export default function CVTool() {
 
   const selectedTpl = CV_TEMPLATES.find((t) => t.id === template)!;
   const accent = selectedTpl?.accent ?? '#1a1a2e';
+  const jdKeywords = jdKeywordInput
+    .split(/[,\n]/)
+    .map((k) => k.trim())
+    .filter(Boolean);
 
   // ---------- Handle template selection (gate Pro) ----------
   const handleSelectTemplate = useCallback(
@@ -333,6 +339,19 @@ export default function CVTool() {
           {renderError && (
             <div className="cv-error">{renderError}</div>
           )}
+
+          <div className="cv-jd-keywords">
+            <label className="cv-jd-keywords__label">Job description keywords</label>
+            <textarea
+              className="cv-jd-keywords__input"
+              value={jdKeywordInput}
+              onChange={(e) => setJdKeywordInput(e.target.value)}
+              placeholder="Paste target keywords, comma-separated or one per line: React, TypeScript, product strategy..."
+              rows={3}
+            />
+          </div>
+
+          <CVATSPanel data={cvData} jdKeywords={jdKeywords} />
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getReceipt, type Transaction } from '../lib/api'
+import { getAuthToken } from '../lib/auth'
 
 export default function Receipt() {
   const { transaction_id = '' } = useParams()
@@ -9,7 +10,7 @@ export default function Receipt() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token') ?? localStorage.getItem('token')
+    const token = getAuthToken()
     if (!token) {
       navigate('/login')
       return

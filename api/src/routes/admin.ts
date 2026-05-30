@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
+import { getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
 const admin = new Hono<{ Bindings: Bindings; Variables: AdminVariables }>()
@@ -150,11 +151,28 @@ admin.patch('/users/:id', async (c) => {
   }
   if (!fields.length) return c.json({ error: 'No changes provided' }, 400)
 
+  const before = await c.env.DB
+    .prepare('SELECT id, email, plan, role, status, pro_expires_at FROM users WHERE id = ?')
+    .bind(id)
+    .first()
+
   const updated = await c.env.DB.prepare(
     `UPDATE users SET ${fields.join(', ')} WHERE id = ? RETURNING id, email, plan, role, status, pro_expires_at, created_at, last_login`
   ).bind(...values, id).first()
 
   if (!updated) return c.json({ error: 'User not found' }, 404)
+
+  await c.env.DB
+    .prepare('INSERT INTO admin_audit_log (admin_id, action, target_user_id, changes, ip_address) VALUES (?, ?, ?, ?, ?)')
+    .bind(
+      c.var.userId,
+      'user.update',
+      id,
+      JSON.stringify({ before, after: updated, patch: result.data }),
+      getClientIP(c)
+    )
+    .run()
+
   return c.json({ user: updated })
 })
 

@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Account from './pages/Account'
 import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import VerifyEmailNotice from './pages/VerifyEmailNotice'
 import ToolLanding from './pages/ToolLanding'
 import { toolPages } from './pages/toolPages'
@@ -64,6 +65,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/account" element={<Account />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/verify-email" element={<VerifyEmailNotice />} />
       <Route path="/pricing" element={<Landing />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />

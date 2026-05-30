@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../lib/api'
+import { setAuthToken, setStoredUser } from '../lib/auth'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -15,8 +16,8 @@ export default function Login() {
     setLoading(true)
     try {
       const { token, user } = await login(email, password)
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
+      setAuthToken(token)
+      setStoredUser(user as Record<string, unknown>)
       navigate('/app')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')

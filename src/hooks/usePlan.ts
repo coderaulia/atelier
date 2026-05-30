@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getMe } from '../lib/api';
+import { getAuthToken } from '../lib/auth';
 
 export interface PlanResult {
   plan: 'free' | 'pro' | null;
@@ -12,7 +13,7 @@ export function usePlan(): PlanResult {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
+    const token = getAuthToken();
     if (!token) {
       setPlan(null);
       setIsLoading(false);

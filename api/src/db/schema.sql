@@ -84,3 +84,32 @@ CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_ha
 CREATE INDEX IF NOT EXISTS idx_password_resets_expires ON password_resets(expires_at);
 CREATE INDEX IF NOT EXISTS idx_email_verifications_token ON email_verifications(token_hash);
 CREATE INDEX IF NOT EXISTS idx_email_verifications_expires ON email_verifications(expires_at);
+
+CREATE TABLE IF NOT EXISTS rate_limit (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  key           TEXT NOT NULL,
+  window_start  INTEGER NOT NULL,
+  created_at    INTEGER NOT NULL DEFAULT (unixepoch())
+);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_key_window ON rate_limit(key, window_start);
+
+CREATE TABLE IF NOT EXISTS failed_logins (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  email         TEXT NOT NULL,
+  ip_address    TEXT NOT NULL,
+  attempted_at  INTEGER NOT NULL DEFAULT (unixepoch())
+);
+CREATE INDEX IF NOT EXISTS idx_failed_logins_email_time ON failed_logins(email, attempted_at);
+CREATE INDEX IF NOT EXISTS idx_failed_logins_ip_time ON failed_logins(ip_address, attempted_at);
+
+CREATE TABLE IF NOT EXISTS admin_audit_log (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  admin_id        TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  action          TEXT NOT NULL,
+  target_user_id  TEXT,
+  changes         TEXT,
+  ip_address      TEXT,
+  created_at      INTEGER NOT NULL DEFAULT (unixepoch())
+);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_log_admin ON admin_audit_log(admin_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_log_target ON admin_audit_log(target_user_id, created_at);

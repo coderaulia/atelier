@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getMe } from '../../lib/api'
+import { getAuthToken } from '../../lib/auth'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -13,7 +14,7 @@ export default function AdminLayout({ children, active }: AdminLayoutProps) {
   const [email, setEmail] = useState('')
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token') ?? localStorage.getItem('token')
+    const token = getAuthToken()
     if (!token) {
       navigate('/login')
       return

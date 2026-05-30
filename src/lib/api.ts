@@ -1,3 +1,5 @@
+import { getAuthToken } from './auth'
+
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
 
 export interface User {
@@ -81,7 +83,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 function authHeaders(token?: string | null): HeadersInit {
-  const t = token ?? localStorage.getItem('auth_token') ?? localStorage.getItem('token')
+  const t = token ?? getAuthToken()
   return t ? { Authorization: `Bearer ${t}` } : {}
 }
 
@@ -243,6 +245,7 @@ export function getAdminErrors() {
 export function logToolError(payload: { tool_id: string; error_type: string; user_agent?: string; plan?: 'free' | 'pro' }) {
   return request<{ ok: true }>('/api/log-error', {
     method: 'POST',
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   })
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMe, updateProfile, changePassword, getSessions, signOutAll, deleteAccount, cancelSubscription, reactivateSubscription, getTransactions, getMyUsage, type User, type Session, type Transaction, type UsageLogEntry } from '../lib/api'
+import { getAuthToken, clearAuth } from '../lib/auth'
 
 type Tab = 'profile' | 'subscription' | 'usage' | 'security'
 
@@ -11,7 +12,7 @@ export default function Account() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token') ?? localStorage.getItem('token')
+    const token = getAuthToken()
     if (!token) {
       navigate('/login')
       return
@@ -266,7 +267,7 @@ function SecurityTab() {
     }
     try {
       await deleteAccount()
-      localStorage.clear()
+      clearAuth()
       window.location.href = '/'
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Failed')

@@ -30,3 +30,5 @@ Thumbs.db
 
 # RTK cache
 .rtk/
+.dev.vars
+api/.dev.vars

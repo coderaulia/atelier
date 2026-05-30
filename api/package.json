@@ -8,7 +8,8 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "db:apply": "wrangler d1 execute vanaila-studio --local --file src/db/schema.sql",
-    "db:apply:remote": "wrangler d1 execute vanaila-studio --file src/db/schema.sql"
+    "db:apply:remote": "wrangler d1 execute vanaila-studio --file src/db/schema.sql",
+    "seed:admin": "node scripts/seed-admin.mjs"
   },
   "dependencies": {
     "hono": "^4.7.0",

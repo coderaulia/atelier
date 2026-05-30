@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { register } from '../lib/api'
+import { setAuthToken, setStoredUser } from '../lib/auth'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -22,8 +23,8 @@ export default function Register() {
     setLoading(true)
     try {
       const { token, user } = await register(email, password)
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
+      setAuthToken(token)
+      setStoredUser(user as Record<string, unknown>)
       navigate('/app')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')

@@ -1,6 +1,15 @@
 import { useEffect, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { type ToolPage } from './toolPages'
+import { type ToolPage, toolPages } from './toolPages'
+
+const toolShortNames: Record<string, string> = {
+  'pdf-to-image': 'PDF→Img',
+  'image-converter': 'Image',
+  ocr: 'OCR',
+  'cv-builder': 'CV',
+  'document-generator': 'Docs',
+  'social-generator': 'Social',
+}
 
 export default function ToolLanding({ tool, children }: { tool: ToolPage; children: ReactNode }) {
   useEffect(() => {
@@ -18,8 +27,16 @@ export default function ToolLanding({ tool, children }: { tool: ToolPage; childr
           <span className="nav__brand-sub">by Vanaila</span>
         </Link>
         <div className="tool-nav__links">
-          <Link to="/pricing">Pricing</Link>
-          <a href="#faq">FAQ</a>
+          {toolPages.map((tp) =>
+            tp.slug !== tool.slug ? (
+              <Link key={tp.slug} className="tool-nav__link" to={tp.path}>
+                {toolShortNames[tp.slug] || tp.name}
+              </Link>
+            ) : null
+          )}
+          <span className="tool-nav__sep" />
+          <Link className="tool-nav__link" to="/pricing">Pricing</Link>
+          <a className="tool-nav__link" href="#faq">FAQ</a>
         </div>
       </nav>
 

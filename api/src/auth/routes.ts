@@ -5,6 +5,7 @@ import { hashPassword, verifyPassword } from '../lib/password'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { randomToken, sha256Hex } from '../lib/tokens'
 import { sendEmail, emailTemplates } from '../lib/email'
+import { checkRateLimit, getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
 const auth = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
@@ -45,6 +46,11 @@ auth.post('/register', async (c) => {
     return c.json({ error: 'Invalid email or password (min 8 chars)' }, 400)
   }
   const { email, password } = result.data
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `register:${ip}`, 60, 5)
+  if (!limit.allowed) {
+    return c.json({ error: 'Too many registration attempts', reset_at: limit.resetAt }, 429)
+  }
 
   const password_hash = await hashPassword(password)
 
@@ -57,9 +63,10 @@ auth.post('/register', async (c) => {
     if (!user) return c.json({ error: 'Registration failed' }, 500)
 
     const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)
+    const tokenHash = await sha256Hex(token)
     await c.env.DB
       .prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
-      .bind(token, user.id, expiresAt)
+      .bind(tokenHash, user.id, expiresAt)
       .run()
 
     // Send verification email
@@ -92,6 +99,22 @@ auth.post('/login', async (c) => {
     return c.json({ error: 'Invalid request' }, 400)
   }
   const { email, password } = result.data
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `login:${ip}`, 60, 10)
+  if (!limit.allowed) {
+    return c.json({ error: 'Too many login attempts', reset_at: limit.resetAt }, 429)
+  }
+
+  const now = Math.floor(Date.now() / 1000)
+  const lockWindow = now - 3600
+  await c.env.DB.prepare('DELETE FROM failed_logins WHERE attempted_at <= ?').bind(lockWindow).run()
+  const failed = await c.env.DB
+    .prepare('SELECT COUNT(*) AS count FROM failed_logins WHERE email = ? AND attempted_at > ?')
+    .bind(email.toLowerCase(), lockWindow)
+    .first<{ count: number }>()
+  if ((failed?.count ?? 0) >= 10) {
+    return c.json({ error: 'Invalid email or password' }, 401)
+  }
 
   const user = await c.env.DB
     .prepare('SELECT id, email, plan, role, status, password_hash, email_verified, deleted_at FROM users WHERE email = ?')
@@ -99,6 +122,10 @@ auth.post('/login', async (c) => {
     .first<{ id: string; email: string; plan: string; role: string; status: string; password_hash: string; email_verified: number; deleted_at: number | null }>()
 
   if (!user || !(await verifyPassword(password, user.password_hash))) {
+    await c.env.DB
+      .prepare('INSERT INTO failed_logins (email, ip_address, attempted_at) VALUES (?, ?, ?)')
+      .bind(email.toLowerCase(), ip, now)
+      .run()
     return c.json({ error: 'Invalid email or password' }, 401)
   }
 
@@ -111,10 +138,12 @@ auth.post('/login', async (c) => {
   }
 
   const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)
+  const tokenHash = await sha256Hex(token)
   await c.env.DB
     .prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
-    .bind(token, user.id, expiresAt)
+    .bind(tokenHash, user.id, expiresAt)
     .run()
+  await c.env.DB.prepare('DELETE FROM failed_logins WHERE email = ?').bind(email.toLowerCase()).run()
   await c.env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?')
     .bind(Math.floor(Date.now() / 1000), user.id)
     .run()
@@ -139,7 +168,7 @@ auth.get('/me', async (c) => {
 
   const session = await c.env.DB
     .prepare('SELECT expires_at FROM sessions WHERE token = ? AND user_id = ?')
-    .bind(token, userId)
+    .bind(await sha256Hex(token), userId)
     .first<{ expires_at: number }>()
 
   if (!session || session.expires_at < Math.floor(Date.now() / 1000)) {
@@ -165,6 +194,11 @@ auth.post('/forgot-password', async (c) => {
     return c.json({ error: 'Invalid email' }, 400)
   }
   const { email } = result.data
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `forgot-password:${ip}`, 60, 3)
+  if (!limit.allowed) {
+    return c.json({ error: 'Too many password reset attempts', reset_at: limit.resetAt }, 429)
+  }
 
   const user = await c.env.DB
     .prepare('SELECT id FROM users WHERE email = ?')
@@ -270,6 +304,11 @@ auth.get('/verify-email', async (c) => {
 // ─── POST /verify-email (send verification) ──────────────────────
 auth.post('/verify-email', authMiddleware, async (c) => {
   const userId = c.var.userId
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `verify-email:${ip}`, 60, 3)
+  if (!limit.allowed) {
+    return c.json({ error: 'Too many verification email requests', reset_at: limit.resetAt }, 429)
+  }
 
   const user = await c.env.DB
     .prepare('SELECT email, email_verified FROM users WHERE id = ?')
@@ -357,7 +396,7 @@ auth.post('/logout', authMiddleware, async (c) => {
   if (token) {
     await c.env.DB
       .prepare('DELETE FROM sessions WHERE token = ? AND user_id = ?')
-      .bind(token, userId)
+      .bind(await sha256Hex(token), userId)
       .run()
   }
 

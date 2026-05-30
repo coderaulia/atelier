@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getUsage, incrementUsage, UsageLimitError } from '../lib/api'
+import { getAuthToken } from '../lib/auth'
 
 const ANON_LIMIT = 2
 const FREE_LIMIT = 5
@@ -29,7 +30,7 @@ export interface ToolLimitResult {
 }
 
 export function useToolLimit(toolId: string): ToolLimitResult {
-  const token = localStorage.getItem('auth_token')
+  const token = getAuthToken()
   const isAuthed = !!token
 
   const [used, setUsed] = useState<number>(0)

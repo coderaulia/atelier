@@ -1,5 +1,6 @@
 import { createMiddleware } from 'hono/factory'
 import { verifyToken } from '../lib/jwt'
+import { sha256Hex } from '../lib/tokens'
 import type { Bindings } from '../types'
 
 export type AdminVariables = {
@@ -24,7 +25,7 @@ export const adminMiddleware = createMiddleware<{ Bindings: Bindings; Variables:
 
     const session = await c.env.DB
       .prepare('SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?')
-      .bind(token, Math.floor(Date.now() / 1000))
+      .bind(await sha256Hex(token), Math.floor(Date.now() / 1000))
       .first<{ user_id: string }>()
 
     if (!session) {

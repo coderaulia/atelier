@@ -391,7 +391,7 @@ export default function OCRTool() {
               <div className="ocr-usage__track">
                 <div
                   className="ocr-usage__fill"
-                  style={{ width: `${Math.min((used / limit) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((used / (limit ?? 1)) * 100, 100)}%` }}
                 />
               </div>
             </div>

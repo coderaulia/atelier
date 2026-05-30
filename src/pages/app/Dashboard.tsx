@@ -98,7 +98,7 @@ export default function Dashboard() {
                 const item = usage.find((entry) => entry.toolId === tool.id)
                 const used = item?.used ?? 0
                 const limit = item?.limit ?? tool.freeDailyLimit
-                const pct = Math.min(100, (used / limit) * 100)
+                const pct = Math.min(100, (used / (limit ?? 1)) * 100)
                 return (
                   <article className="dashboard-usage-card" key={tool.id}>
                     <div className="dashboard-usage-card__top">

@@ -2,10 +2,12 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { Bindings } from '../types'
 
-const FREE_LIMIT = 5
+// Usage limits per user type
+const FREE_DAILY_LIMIT = 3 // Registered free: tight limit to create upgrade pressure
+const PRO_DAILY_LIMIT = 100 // Pro subscription: generous but not unlimited (prevent abuse)
 
-// CV builder — server-side limit deferred, handle separately later
-const UNLIMITED_TOOLS = new Set(['cv'])
+// Tools that don't consume credits (always free)
+const FREE_TOOLS = new Set(['pdf-merge', 'pdf-compress', 'image-converter'])
 
 function todayUTC(): string {
   return new Date().toISOString().slice(0, 10)
@@ -17,11 +19,69 @@ function resetAt(): number {
   return Math.floor(d.getTime() / 1000)
 }
 
+
+// ─── Daily limit logic (shared between POST and credit-fallback) ──────
+
+async function applyDailyLimit(
+  db: D1Database,
+  userId: string,
+  toolId: string,
+  date: string,
+  limit: number,
+  plan: string,
+): Promise<Response> {
+  await db
+    .prepare(
+      'INSERT OR IGNORE INTO usage_log (user_id, tool_id, date, count, limit_hits) VALUES (?, ?, ?, 0, 0)'
+    )
+    .bind(userId, toolId, date)
+    .run()
+
+  const updated = await db
+    .prepare(
+      'UPDATE usage_log SET count = count + 1 WHERE user_id = ? AND tool_id = ? AND date = ? AND count < ? RETURNING count'
+    )
+    .bind(userId, toolId, date, limit)
+    .first<{ count: number }>()
+
+  if (!updated) {
+    const row = await db
+      .prepare(
+        `UPDATE usage_log SET limit_hits = limit_hits + 1
+         WHERE user_id = ? AND tool_id = ? AND date = ?
+         RETURNING count`
+      )
+      .bind(userId, toolId, date)
+      .first<{ count: number }>()
+
+    return new Response(
+      JSON.stringify({
+        error: 'Daily limit reached',
+        limit,
+        used: row?.count ?? limit,
+        reset_at: resetAt(),
+        has_watermark: plan !== 'pro',
+      }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+
+  return new Response(
+    JSON.stringify({
+      used: updated.count,
+      limit,
+      reset_at: resetAt(),
+      has_watermark: plan !== 'pro',
+    }),
+    { headers: { 'Content-Type': 'application/json' } }
+  )
+}
+
 const usage = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
 
 usage.use('*', authMiddleware)
 
-// GET /usage/me — must come before /:toolId
+// GET /usage/me — user's usage history
 usage.get('/me', async (c) => {
   const userId = c.get('userId')
   const plan = c.get('plan')
@@ -32,12 +92,12 @@ usage.get('/me', async (c) => {
   const rows = await c.env.DB
     .prepare(
       `SELECT date, tool_id, count,
-        CASE WHEN ? = 'pro' THEN NULL ELSE ? END AS limit_val
+        CASE WHEN ? = 'pro' THEN ? ELSE ? END AS limit_val
        FROM usage_log
        WHERE user_id = ? AND date >= ?
        ORDER BY date DESC, tool_id ASC`
     )
-    .bind(plan, FREE_LIMIT, userId, sinceStr)
+    .bind(plan, PRO_DAILY_LIMIT, FREE_DAILY_LIMIT, userId, sinceStr)
     .all()
 
   return c.json({
@@ -50,65 +110,144 @@ usage.get('/me', async (c) => {
   })
 })
 
+// GET /usage/:toolId — check current usage and limits
 usage.get('/:toolId', async (c) => {
   const toolId = c.req.param('toolId')
   const userId = c.get('userId')
   const plan = c.get('plan')
   const date = todayUTC()
 
-  if (plan === 'pro' || UNLIMITED_TOOLS.has(toolId)) {
-    return c.json({ used: 0, limit: null, reset_at: resetAt() })
+  // Free tools: no limits, no watermark
+  if (FREE_TOOLS.has(toolId)) {
+    return c.json({
+      used: 0,
+      limit: null,
+      reset_at: resetAt(),
+      has_watermark: false,
+    })
   }
 
+  // Check available credits from packs
+  const creditPacks = await c.env.DB
+    .prepare(
+      `SELECT id, pack_type, credits_total, credits_used
+       FROM credit_packs
+       WHERE user_id = ? AND credits_used < credits_total
+       ORDER BY purchased_at ASC`
+    )
+    .bind(userId)
+    .all<{ id: number; pack_type: string; credits_total: number; credits_used: number }>()
+
+  const totalCredits = (creditPacks.results ?? []).reduce(
+    (sum, pack) => sum + (pack.credits_total - pack.credits_used),
+    0
+  )
+
+  // If user has credits, they can use without watermark
+  if (totalCredits > 0) {
+    return c.json({
+      used: 0,
+      limit: null,
+      reset_at: resetAt(),
+      has_watermark: false,
+      credits_available: totalCredits,
+    })
+  }
+
+  // Pro users: generous daily limit, no watermark
+  if (plan === 'pro') {
+    const row = await c.env.DB
+      .prepare('SELECT count FROM usage_log WHERE user_id = ? AND tool_id = ? AND date = ?')
+      .bind(userId, toolId, date)
+      .first<{ count: number }>()
+
+    return c.json({
+      used: row?.count ?? 0,
+      limit: PRO_DAILY_LIMIT,
+      reset_at: resetAt(),
+      has_watermark: false,
+    })
+  }
+
+  // Free users: tight daily limit, with watermark
   const row = await c.env.DB
     .prepare('SELECT count FROM usage_log WHERE user_id = ? AND tool_id = ? AND date = ?')
     .bind(userId, toolId, date)
     .first<{ count: number }>()
 
-  return c.json({ used: row?.count ?? 0, limit: FREE_LIMIT, reset_at: resetAt() })
+  return c.json({
+    used: row?.count ?? 0,
+    limit: FREE_DAILY_LIMIT,
+    reset_at: resetAt(),
+    has_watermark: true,
+  })
 })
 
+// POST /usage/:toolId — increment usage
 usage.post('/:toolId', async (c) => {
   const toolId = c.req.param('toolId')
   const userId = c.get('userId')
   const plan = c.get('plan')
   const date = todayUTC()
 
-  if (plan === 'pro' || UNLIMITED_TOOLS.has(toolId)) {
-    return c.json({ used: 1, limit: null, reset_at: resetAt() })
+  // Free tools: always allow
+  if (FREE_TOOLS.has(toolId)) {
+    return c.json({
+      used: 0,
+      limit: null,
+      reset_at: resetAt(),
+      has_watermark: false,
+    })
   }
 
-  await c.env.DB
+  // Try to use credits first (priority: oldest pack first)
+  const creditPack = await c.env.DB
     .prepare(
-      'INSERT OR IGNORE INTO usage_log (user_id, tool_id, date, count, limit_hits) VALUES (?, ?, ?, 0, 0)'
+      `SELECT id
+       FROM credit_packs
+       WHERE user_id = ? AND credits_used < credits_total
+       ORDER BY purchased_at ASC
+       LIMIT 1`
     )
-    .bind(userId, toolId, date)
-    .run()
+    .bind(userId)
+    .first<{ id: number }>()
 
-  const updated = await c.env.DB
-    .prepare(
-      'UPDATE usage_log SET count = count + 1 WHERE user_id = ? AND tool_id = ? AND date = ? AND count < ? RETURNING count'
-    )
-    .bind(userId, toolId, date, FREE_LIMIT)
-    .first<{ count: number }>()
-
-  if (!updated) {
-    const row = await c.env.DB
+  if (creditPack) {
+    // Atomic deduction: only succeed if credits remain (race-safe)
+    const deducted = await c.env.DB
       .prepare(
-        `UPDATE usage_log SET limit_hits = limit_hits + 1
-         WHERE user_id = ? AND tool_id = ? AND date = ?
-         RETURNING count`
+        `UPDATE credit_packs SET credits_used = credits_used + 1
+         WHERE id = ? AND credits_used < credits_total
+         RETURNING credits_total, credits_used`
       )
-      .bind(userId, toolId, date)
-      .first<{ count: number }>()
+      .bind(creditPack.id)
+      .first<{ credits_total: number; credits_used: number }>()
 
-    return c.json(
-      { error: 'Daily limit reached', limit: FREE_LIMIT, used: row?.count ?? FREE_LIMIT, reset_at: resetAt() },
-      429
-    )
+    if (deducted) {
+      // Log credit usage
+      await c.env.DB
+        .prepare(
+          'INSERT INTO credit_usage (user_id, pack_id, tool_id, credits_spent) VALUES (?, ?, ?, 1)'
+        )
+        .bind(userId, creditPack.id, toolId)
+        .run()
+
+      const remaining = deducted.credits_total - deducted.credits_used
+
+      return c.json({
+        used: 0,
+        limit: null,
+        reset_at: resetAt(),
+        has_watermark: false,
+        credits_available: remaining,
+      })
+    }
+    // Race: last credit consumed by concurrent request. Fall through to daily limit.
   }
 
-  return c.json({ used: updated.count, limit: FREE_LIMIT, reset_at: resetAt() })
+  // No credits (or race consumed them): use daily limit
+  const limit = plan === 'pro' ? PRO_DAILY_LIMIT : FREE_DAILY_LIMIT
+  return await applyDailyLimit(c.env.DB, userId, toolId, date, limit, plan)
 })
 
 export default usage

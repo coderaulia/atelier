@@ -28,6 +28,8 @@ export interface UsageStatus {
   used: number
   limit: number | null
   reset_at: number
+  has_watermark?: boolean
+  credits_available?: number
 }
 
 export interface Session {

@@ -187,7 +187,7 @@ export default function PDFCompressTool() {
               <div className="pdfcompress-usage__track">
                 <div
                   className="pdfcompress-usage__fill"
-                  style={{ width: `${Math.min((used / limit) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((used / (limit ?? 1)) * 100, 100)}%` }}
                 />
               </div>
             </div>

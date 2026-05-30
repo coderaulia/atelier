@@ -210,7 +210,7 @@ export default function PDFMergeTool() {
               <div className="pdfmerge-usage__track">
                 <div
                   className="pdfmerge-usage__fill"
-                  style={{ width: `${Math.min((used / limit) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((used / (limit ?? 1)) * 100, 100)}%` }}
                 />
               </div>
             </div>

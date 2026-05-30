@@ -253,7 +253,7 @@ export default function CVTool() {
             <div className="cv-usage-bar__track">
               <div
                 className="cv-usage-bar__fill"
-                style={{ width: `${Math.min((used / limit) * 100, 100)}%` }}
+                style={{ width: `${Math.min((used / (limit ?? 1)) * 100, 100)}%` }}
               />
             </div>
           </div>

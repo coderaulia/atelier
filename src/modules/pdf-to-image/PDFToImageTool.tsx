@@ -326,7 +326,7 @@ export default function PDFToImageTool() {
               <div className="pdf2img-usage__track">
                 <div
                   className="pdf2img-usage__fill"
-                  style={{ width: `${Math.min((used / limit) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((used / (limit ?? 1)) * 100, 100)}%` }}
                 />
               </div>
             </div>

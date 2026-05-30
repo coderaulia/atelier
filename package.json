@@ -9,7 +9,8 @@
     "build:ssr": "vite build && vite build --ssr src/entry-server.tsx --outDir dist/server",
     "prerender": "npm run build:ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:flows": "node scripts/test-flows.mjs"
   },
   "dependencies": {
     "@jsquash/avif": "^2.1.1",

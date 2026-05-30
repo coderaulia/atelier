@@ -203,7 +203,7 @@ admin.get('/transactions', async (c) => {
   const limit = Math.min(100, Math.max(1, Number(c.req.query('limit') ?? 50)))
   const offset = (page - 1) * limit
 
-  const SORT_COLUMNS: Record<string, string> = { amount: 'amount', created_at: 'created_at', status: 'status' }
+  const SORT_COLUMNS: Record<string, string> = { amount: 't.amount', created_at: 't.created_at', status: 't.status' }
   const DIRS: Record<string, string> = { asc: 'ASC', desc: 'DESC' }
   const sort = c.req.query('sort') ?? 'created_at'
   const direction = c.req.query('direction') ?? 'desc'

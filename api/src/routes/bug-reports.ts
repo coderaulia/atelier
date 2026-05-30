@@ -7,11 +7,20 @@ import type { Bindings } from '../types'
 
 const bugReports = new Hono<{ Bindings: Bindings }>()
 
+const ALLOWED_SCREENSHOT_DOMAINS = [
+  'https://atelier.vanailadigital.com',
+  'https://i.imgur.com',
+  'https://cdn.imgur.com'
+]
+
 const createBugReportSchema = z.object({
   subject: z.string().min(5).max(200),
   description: z.string().min(10).max(5000),
   tool_id: z.string().optional(),
-  screenshot_url: z.string().url().optional(),
+  screenshot_url: z.string().url().refine(
+    (url) => ALLOWED_SCREENSHOT_DOMAINS.some(domain => url.startsWith(domain)),
+    { message: 'Screenshot must be from an allowed domain' }
+  ).optional(),
 })
 
 // Public endpoint - authenticated users can submit bug reports

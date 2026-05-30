@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
-import { authMiddleware } from '../middleware/auth'
+import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { Bindings } from '../types'
 
-const app = new Hono<{ Bindings: Bindings }>()
+const app = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
 
 // All AI routes require auth + Pro or credits
 app.use('*', authMiddleware)

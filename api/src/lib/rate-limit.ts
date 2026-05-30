@@ -6,6 +6,7 @@
  * This provides application-level protection against burst abuse.
  */
 import type { D1Database } from '@cloudflare/workers-types'
+import { checkCachedRateLimit, recordCachedRateLimit } from './rate-limit-cache'
 
 interface RateLimitResult {
   allowed: boolean
@@ -26,6 +27,14 @@ export async function checkRateLimit(
   windowSec: number,
   maxAttempts: number
 ): Promise<RateLimitResult> {
+  const cached = checkCachedRateLimit(key, windowSec, maxAttempts)
+  if (cached) {
+    if (cached.allowed) {
+      recordCachedRateLimit(key, windowSec)
+    }
+    return cached
+  }
+
   const now = Math.floor(Date.now() / 1000)
   const windowStart = now - windowSec
 
@@ -53,6 +62,8 @@ export async function checkRateLimit(
     .prepare('INSERT INTO rate_limit (key, window_start) VALUES (?, ?)')
     .bind(key, now)
     .run()
+
+  recordCachedRateLimit(key, windowSec)
 
   return { allowed: true, remaining: maxAttempts - count - 1, resetAt }
 }

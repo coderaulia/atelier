@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getUsage, incrementUsage, UsageLimitError } from '../lib/api'
+import { getUsage, incrementUsage, getAnonUsage, incrementAnonUsage, UsageLimitError } from '../lib/api'
 import { getAuthToken } from '../lib/auth'
 
 const ANON_LIMIT = 1
@@ -7,18 +7,6 @@ const FREE_LIMIT = 3
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10)
-}
-
-function lsKey(toolId: string): string {
-  return `usage_${toolId}_${todayStr()}`
-}
-
-function lsGet(toolId: string): number {
-  return parseInt(localStorage.getItem(lsKey(toolId)) ?? '0', 10)
-}
-
-function lsSet(toolId: string, count: number): void {
-  localStorage.setItem(lsKey(toolId), String(count))
 }
 
 export interface ToolLimitResult {
@@ -46,11 +34,20 @@ export function useToolLimit(toolId: string): ToolLimitResult {
 
   useEffect(() => {
     if (!isAuthed) {
-      setUsed(lsGet(toolId))
-      setLimit(ANON_LIMIT)
-      setHasWatermark(true)
-      setCreditsAvailable(undefined)
-      setIsLoading(false)
+      setIsLoading(true)
+      getAnonUsage(toolId)
+        .then((status) => {
+          setUsed(status.used)
+          setLimit(status.limit)
+          setResetAt(status.reset_at)
+          setHasWatermark(Boolean(status.has_watermark))
+        })
+        .catch(() => {
+          setUsed(ANON_LIMIT)
+          setLimit(ANON_LIMIT)
+          setHasWatermark(true)
+        })
+        .finally(() => setIsLoading(false))
       return
     }
 
@@ -74,12 +71,20 @@ export function useToolLimit(toolId: string): ToolLimitResult {
 
   const increment = useCallback(async (): Promise<boolean> => {
     if (!isAuthed) {
-      const current = lsGet(toolId)
-      if (current >= ANON_LIMIT) return false
-      const next = current + 1
-      lsSet(toolId, next)
-      setUsed(next)
-      return true
+      try {
+        const result = await incrementAnonUsage(toolId)
+        setUsed(result.used)
+        setLimit(result.limit)
+        setResetAt(result.reset_at)
+        setHasWatermark(Boolean(result.has_watermark))
+        return true
+      } catch (err) {
+        if (err instanceof UsageLimitError) {
+          setUsed(err.used)
+          return false
+        }
+        throw err
+      }
     }
 
     try {

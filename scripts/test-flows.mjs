@@ -22,6 +22,12 @@ const TEST_EMAIL = process.env.TEST_EMAIL || `flow-test-${stamp}@example.com`
 const TEST_PASSWORD = process.env.TEST_PASSWORD || 'FlowTest123!'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+const ANON_TEST_IP = process.env.ANON_TEST_IP || `203.0.113.${(stamp % 200) + 1}`
+const hasMidtransKey = Boolean(process.env.MIDTRANS_SERVER_KEY)
+
+function webhookSignature(body) {
+  return sha512(`${body.order_id}${body.transaction_status}${body.gross_amount}${process.env.MIDTRANS_SERVER_KEY}`)
+}
 
 const state = {
   token: '',
@@ -151,6 +157,133 @@ async function usageFlow() {
   assert(Array.isArray(history.payload?.usage), 'usage history array missing')
 }
 
+async function anonymousUsageFlow() {
+  const headers = { 'X-Forwarded-For': ANON_TEST_IP }
+
+  const free = await request('/anon-usage/pdf-merge', { headers })
+  assert(free.response.status === 200, `anonymous free tool expected 200, got ${free.response.status}`)
+  assert(free.payload?.limit === null, 'anonymous free tool should have no limit')
+
+  const check = await request('/anon-usage/cv-builder', { headers })
+  assert(check.response.status === 200, `anonymous usage check expected 200, got ${check.response.status}`)
+  assert(check.payload?.limit === 1, `anonymous limit expected 1, got ${check.payload?.limit}`)
+  assert(check.payload?.has_watermark === true, 'anonymous non-free tool should watermark')
+
+  const hit = await request('/anon-usage/cv-builder', { method: 'POST', headers })
+  assert(hit.response.status === 200, `anonymous hit expected 200, got ${hit.response.status}`)
+  assert(hit.payload?.used === 1, `anonymous used expected 1, got ${hit.payload?.used}`)
+
+  const over = await request('/anon-usage/cv-builder', { method: 'POST', headers })
+  assert(over.response.status === 429, `anonymous limit expected 429, got ${over.response.status}`)
+  assert(over.payload?.error === 'Daily limit reached', 'anonymous limit error mismatch')
+}
+
+async function emailVerificationFlow() {
+  const invalid = await request('/auth/verify-email?token=not-a-real-token')
+  assert(invalid.response.status === 400, `invalid verification expected 400, got ${invalid.response.status}`)
+  assert(invalid.payload?.error === 'Invalid or expired verification token', 'invalid verification error mismatch')
+
+  const resend = await request('/auth/verify-email', { method: 'POST', token: state.token })
+  assert(resend.response.status === 200, `resend verification expected 200, got ${resend.response.status}`)
+  assert(resend.payload?.ok === true, 'resend verification ok missing')
+}
+
+async function cvAiFreeGateFlow() {
+  const freeAi = await request('/api/cv/ai', {
+    method: 'POST',
+    token: state.token,
+    body: { action: 'rewrite_bullet', text: 'Did sales work and helped customers.' },
+  })
+  assert(freeAi.response.status === 403, `free AI expected 403, got ${freeAi.response.status}`)
+  assert(freeAi.payload?.error === 'Upgrade to Pro to use AI features', 'free AI error mismatch')
+}
+
+async function proPlanAndAiFlow() {
+  if (!hasMidtransKey) {
+    console.log('SKIP pro plan and AI flow — set MIDTRANS_SERVER_KEY to match API env')
+    return
+  }
+
+  const body = {
+    order_id: `flow-pro-${Date.now()}`,
+    transaction_status: 'capture',
+    payment_type: 'recurring',
+    gross_amount: '99000',
+    currency: 'IDR',
+    custom_field1: state.user.id,
+  }
+  const webhook = await request('/billing/webhook', {
+    method: 'POST',
+    headers: { 'X-Midtrans-Signature': webhookSignature(body) },
+    body,
+  })
+  assert(webhook.response.status === 200, `pro webhook expected 200, got ${webhook.response.status}: ${JSON.stringify(webhook.payload)}`)
+
+  const status = await request('/billing/status', { token: state.token })
+  assert(status.response.status === 200, `pro billing status expected 200, got ${status.response.status}`)
+  assert(status.payload?.plan === 'pro', `plan expected pro, got ${status.payload?.plan}`)
+  assert(typeof status.payload?.pro_expires_at === 'number', 'pro expiry missing')
+
+  const ai = await request('/api/cv/ai', {
+    method: 'POST',
+    token: state.token,
+    body: { action: 'cover_letter', text: 'Senior frontend engineer with React and accessibility wins.' },
+  })
+  const expected = process.env.GROQ_API_KEY ? 200 : 500
+  assert(ai.response.status === expected, `pro AI expected ${expected}, got ${ai.response.status}`)
+}
+
+async function subscriptionLifecycleFlow() {
+  if (!hasMidtransKey) {
+    console.log('SKIP subscription lifecycle flow — set MIDTRANS_SERVER_KEY to match API env')
+    return
+  }
+
+  const cancel = await request('/billing/cancel', { method: 'POST', token: state.token })
+  assert(cancel.response.status === 200, `pro cancel expected 200, got ${cancel.response.status}`)
+  assert(cancel.payload?.cancel_at_period_end === true, 'cancel_at_period_end missing')
+
+  const status = await request('/billing/status', { token: state.token })
+  assert(status.response.status === 200, `post-cancel status expected 200, got ${status.response.status}`)
+  assert(status.payload?.plan === 'pro', `cancelled subscription should remain pro, got ${status.payload?.plan}`)
+  assert(status.payload?.cancel_at_period_end === 1, 'cancel flag not persisted')
+
+  const failedBody = {
+    order_id: `flow-fail-${Date.now()}`,
+    transaction_status: 'expire',
+    payment_type: 'recurring',
+    gross_amount: '99000',
+    currency: 'IDR',
+    custom_field1: state.user.id,
+  }
+  const failed = await request('/billing/webhook', {
+    method: 'POST',
+    headers: { 'X-Midtrans-Signature': webhookSignature(failedBody) },
+    body: failedBody,
+  })
+  assert(failed.response.status === 200, `failed-payment webhook expected 200, got ${failed.response.status}`)
+
+  const grace = await request('/billing/status', { token: state.token })
+  assert(grace.response.status === 200, `grace status expected 200, got ${grace.response.status}`)
+  assert(grace.payload?.plan === 'pro', `grace subscription should remain pro, got ${grace.payload?.plan}`)
+  assert(typeof grace.payload?.grace_until === 'number', 'grace_until missing')
+}
+
+async function cronDowngradeFlow() {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.log('SKIP cron downgrade flow — set ADMIN_EMAIL and ADMIN_PASSWORD')
+    return
+  }
+  if (!state.adminToken) {
+    console.log('SKIP cron downgrade flow — admin login did not run')
+    return
+  }
+
+  const run = await request('/admin/cron/run', { method: 'POST', token: state.adminToken })
+  assert(run.response.status === 200, `cron run expected 200, got ${run.response.status}: ${JSON.stringify(run.payload)}`)
+  assert(run.payload?.ok === true, 'cron run ok missing')
+}
+
 async function bugReportFlow() {
   const invalid = await request('/bug-reports', {
     method: 'POST',
@@ -235,7 +368,7 @@ async function adminFlow() {
 }
 
 async function billingWebhookSignatureFlow() {
-  if (!process.env.MIDTRANS_SERVER_KEY) {
+  if (!hasMidtransKey) {
     console.log('SKIP webhook signature flow — set MIDTRANS_SERVER_KEY to match API env')
     return
   }
@@ -248,10 +381,9 @@ async function billingWebhookSignatureFlow() {
     currency: 'IDR',
     custom_field1: state.user.id,
   }
-  const signature = sha512(`${body.order_id}${body.transaction_status}${body.gross_amount}${process.env.MIDTRANS_SERVER_KEY}`)
   const webhook = await request('/billing/webhook', {
     method: 'POST',
-    headers: { 'X-Midtrans-Signature': signature },
+    headers: { 'X-Midtrans-Signature': webhookSignature(body) },
     body,
   })
   assert(webhook.response.status === 200, `webhook expected 200, got ${webhook.response.status}: ${JSON.stringify(webhook.payload)}`)
@@ -272,14 +404,20 @@ async function main() {
   console.log(`Test user: ${TEST_EMAIL}`)
 
   await test('health endpoint', healthFlow)
+  await test('anonymous usage limit flow', anonymousUsageFlow)
   await test('auth register/login/profile/session flow', authFlow)
+  await test('email verification endpoint flow', emailVerificationFlow)
   await test('negative auth checks', authNegativeFlow)
   await test('usage limits and history flow', usageFlow)
+  await test('free user AI gate flow', cvAiFreeGateFlow)
   await test('bug report flow', bugReportFlow)
   await test('billing status and transaction flow', billingFlow)
+  await test('billing webhook signature flow', billingWebhookSignatureFlow)
+  await test('pro plan and AI flow', proPlanAndAiFlow)
+  await test('subscription cancel/grace flow', subscriptionLifecycleFlow)
   await test('error logging flow', errorLogFlow)
   await test('admin dashboard flow', adminFlow)
-  await test('billing webhook signature flow', billingWebhookSignatureFlow)
+  await test('cron downgrade trigger flow', cronDowngradeFlow)
   await test('logout/session invalidation flow', cleanupFlow)
 
   const failed = results.filter((r) => !r.ok)

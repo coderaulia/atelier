@@ -236,6 +236,40 @@ admin.get('/errors', async (c) => {
   return c.json({ errors: rows.results ?? [], groups: groups.results ?? [] })
 })
 
+admin.post('/cron/run', async (c) => {
+  const now = Math.floor(Date.now() / 1000)
+  const thirtyDaysAgo = now - 30 * 24 * 60 * 60
+
+  const expiredGrace = await c.env.DB
+    .prepare('SELECT id FROM users WHERE plan = ? AND grace_until IS NOT NULL AND grace_until < ?')
+    .bind('pro', now)
+    .all<{ id: string }>()
+
+  for (const user of expiredGrace.results ?? []) {
+    await c.env.DB
+      .prepare('UPDATE users SET plan = ?, pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
+      .bind('free', user.id)
+      .run()
+  }
+
+  const deleted = await c.env.DB
+    .prepare('SELECT id FROM users WHERE deleted_at IS NOT NULL AND deleted_at < ?')
+    .bind(thirtyDaysAgo)
+    .all<{ id: string }>()
+
+  for (const user of deleted.results ?? []) {
+    await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(user.id).run()
+  }
+
+  await c.env.DB.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used = 1').bind(now).run()
+  await c.env.DB.prepare('DELETE FROM email_verifications WHERE expires_at < ? OR used = 1').bind(now).run()
+  await c.env.DB.prepare('DELETE FROM rate_limit WHERE window_start < ?').bind(now - 3600).run()
+  await c.env.DB.prepare('DELETE FROM failed_logins WHERE attempted_at < ?').bind(now - 24 * 60 * 60).run()
+  await c.env.DB.prepare('DELETE FROM anonymous_usage WHERE created_at < ?').bind(now - 7 * 24 * 60 * 60).run()
+
+  return c.json({ ok: true, downgraded: expiredGrace.results?.length ?? 0, deleted: deleted.results?.length ?? 0 })
+})
+
 admin.route('/bug-reports', bugReportsAdmin)
 admin.route('/subscriptions', subscriptionsAdmin)
 admin.route('/refunds', refundsAdmin)

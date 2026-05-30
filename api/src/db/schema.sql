@@ -167,3 +167,15 @@ CREATE TABLE IF NOT EXISTS admin_notifications (
 CREATE INDEX IF NOT EXISTS idx_admin_notif_unread ON admin_notifications(is_read, created_at);
 CREATE INDEX IF NOT EXISTS idx_admin_notif_type ON admin_notifications(type);
 
+CREATE TABLE IF NOT EXISTS anonymous_usage (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ip_address TEXT NOT NULL,
+  tool_id TEXT NOT NULL,
+  date TEXT NOT NULL,
+  count INTEGER NOT NULL DEFAULT 1,
+  fingerprint TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE (ip_address, tool_id, date)
+);
+CREATE INDEX IF NOT EXISTS idx_anon_usage_ip_date ON anonymous_usage(ip_address, date);
+CREATE INDEX IF NOT EXISTS idx_anon_usage_cleanup ON anonymous_usage(date);

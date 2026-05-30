@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { getClientIP } from '../../lib/rate-limit'
+import { sanitizeHtml } from '../../lib/sanitize'
 import type { Bindings } from '../../types'
 
 const contentAdmin = new Hono<{ Bindings: Bindings; Variables: AdminVariables }>()
@@ -59,11 +60,12 @@ contentAdmin.post('/announcements', async (c) => {
   const id = crypto.randomUUID()
   const now = Math.floor(Date.now() / 1000)
   const data = result.data
+  const sanitizedMessage = sanitizeHtml(data.message)
 
   await c.env.DB.prepare(
     `INSERT INTO announcements (id, title, message, type, target, is_active, start_at, end_at, created_by, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(id, data.title, data.message, data.type, data.target, data.is_active ? 1 : 0, data.start_at ?? null, data.end_at ?? null, c.var.userId, now, now).run()
+  ).bind(id, data.title, sanitizedMessage, data.type, data.target, data.is_active ? 1 : 0, data.start_at ?? null, data.end_at ?? null, c.var.userId, now, now).run()
 
   await c.env.DB.prepare('INSERT INTO admin_audit_log (admin_id, action, changes, ip_address) VALUES (?, ?, ?, ?)')
     .bind(c.var.userId, 'announcement.create', JSON.stringify({ id, ...data }), getClientIP(c)).run()
@@ -81,6 +83,10 @@ contentAdmin.patch('/announcements/:id', async (c) => {
   if (!existing) return c.json({ error: 'Announcement not found' }, 404)
 
   const data = result.data
+  if (data.message) {
+    data.message = sanitizeHtml(data.message)
+  }
+  
   const fields: string[] = ['updated_at = ?']
   const values: unknown[] = [Math.floor(Date.now() / 1000)]
   for (const [key, value] of Object.entries(data)) {

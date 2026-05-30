@@ -126,6 +126,18 @@ export async function incrementUsage(toolId: string, token: string): Promise<Usa
   return data
 }
 
+export function getAnonUsage(toolId: string) {
+  return request<UsageStatus>(`/anon-usage/${toolId}`)
+}
+
+export async function incrementAnonUsage(toolId: string): Promise<UsageStatus> {
+  const res = await fetch(`${API_URL}/anon-usage/${toolId}`, { method: 'POST' })
+  const data = await res.json() as UsageStatus & { error?: string }
+  if (res.status === 429) throw new UsageLimitError(data.used, data.limit ?? 1, data.reset_at)
+  if (!res.ok) throw new Error(data.error ?? 'Request failed')
+  return data
+}
+
 // ── Account management ──────────────────────────────────────────
 export function updateProfile(name: string | null) {
   return request<{ user: User }>('/auth/profile', {

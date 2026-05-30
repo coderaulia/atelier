@@ -7,6 +7,7 @@ import logError from './routes/log-error'
 import billing from './routes/billing'
 import bugReports from './routes/bug-reports'
 import cvAi from './routes/cv-ai'
+import anonUsage from './routes/anon-usage'
 import { contentPublic } from './routes/admin/content'
 import { checkRateLimit, getClientIP } from './lib/rate-limit'
 import type { Bindings } from './types'
@@ -67,6 +68,7 @@ app.route('/billing', billing)
 app.route('/bug-reports', bugReports)
 app.route('/content', contentPublic)
 app.route('/api', cvAi)
+app.route('/anon-usage', anonUsage)
 
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }))
 
@@ -99,11 +101,14 @@ async function handleScheduled(env: Bindings) {
   await env.DB.prepare('DELETE FROM email_verifications WHERE expires_at < ? OR used = 1').bind(now).run()
   await env.DB.prepare('DELETE FROM rate_limit WHERE window_start < ?').bind(now - 3600).run()
   await env.DB.prepare('DELETE FROM failed_logins WHERE attempted_at < ?').bind(now - 24 * 60 * 60).run()
+  await env.DB.prepare('DELETE FROM anonymous_usage WHERE created_at < ?').bind(now - 7 * 24 * 60 * 60).run()
 }
 
 export default {
   fetch: app.fetch,
-  scheduled(_event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
-    ctx.waitUntil(handleScheduled(env))
+  scheduled(event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
+    if (event.cron) {
+      ctx.waitUntil(handleScheduled(env))
+    }
   },
 }

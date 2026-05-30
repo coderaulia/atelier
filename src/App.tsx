@@ -24,8 +24,11 @@ const AdminOverview = lazy(() => import('./pages/Admin/Overview'))
 const AdminUsers = lazy(() => import('./pages/Admin/Users'))
 const AdminUserDetail = lazy(() => import('./pages/Admin/UserDetail'))
 const AdminTransactions = lazy(() => import('./pages/Admin/Transactions'))
+const AdminSubscriptions = lazy(() => import('./pages/Admin/Subscriptions'))
+const AdminRefunds = lazy(() => import('./pages/Admin/Refunds'))
 const AdminBugReports = lazy(() => import('./pages/Admin/BugReports'))
 const AdminBugReportDetail = lazy(() => import('./pages/Admin/BugReportDetail'))
+const AdminRevenue = lazy(() => import('./pages/Admin/Revenue'))
 const AdminErrors = lazy(() => import('./pages/Admin/Errors'))
 const Receipt = lazy(() => import('./pages/Receipt'))
 
@@ -136,6 +139,22 @@ export default function App() {
         }
       />
       <Route
+        path="/admin/subscriptions"
+        element={
+          <Suspense fallback={null}>
+            <AdminSubscriptions />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/refunds"
+        element={
+          <Suspense fallback={null}>
+            <AdminRefunds />
+          </Suspense>
+        }
+      />
+      <Route
         path="/admin/bug-reports"
         element={
           <Suspense fallback={null}>
@@ -148,6 +167,14 @@ export default function App() {
         element={
           <Suspense fallback={null}>
             <AdminBugReportDetail />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/revenue"
+        element={
+          <Suspense fallback={null}>
+            <AdminRevenue />
           </Suspense>
         }
       />

@@ -2,6 +2,9 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
 import bugReportsAdmin from './admin/bug-reports'
+import subscriptionsAdmin from './admin/subscriptions'
+import refundsAdmin from './admin/refunds'
+import analyticsAdmin from './admin/analytics'
 import { getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
@@ -210,6 +213,9 @@ admin.get('/errors', async (c) => {
 })
 
 admin.route('/bug-reports', bugReportsAdmin)
+admin.route('/subscriptions', subscriptionsAdmin)
+admin.route('/refunds', refundsAdmin)
+admin.route('/analytics', analyticsAdmin)
 
 // ── Notifications ─────────────────────────────────────────────────
 

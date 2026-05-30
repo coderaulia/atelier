@@ -433,3 +433,118 @@ export function markAllAdminNotificationsRead() {
   })
 }
 
+// ─── Admin Payment Management ─────────────────────────────────────
+
+export interface AdminSubscription extends User {
+  cancel_at_period_end?: boolean | number
+  grace_until?: number | null
+}
+
+export interface SubscriptionSummary {
+  active: number
+  expiring_soon: number
+  cancelled: number
+  in_grace: number
+}
+
+export function getAdminSubscriptions(params: { page?: number; limit?: number; filter?: string }) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => value && qs.set(key, String(value)))
+  return request<{ page: number; limit: number; total: number; subscriptions: AdminSubscription[] }>(
+    `/admin/subscriptions?${qs}`,
+    { headers: authHeaders() }
+  )
+}
+
+export function getAdminSubscriptionSummary() {
+  return request<SubscriptionSummary>('/admin/subscriptions/summary', { headers: authHeaders() })
+}
+
+export function patchAdminSubscription(
+  userId: string,
+  body: { action: 'extend' | 'cancel' | 'downgrade' | 'reactivate'; days?: number; reason?: string }
+) {
+  return request<{ user: User }>(`/admin/subscriptions/${userId}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  })
+}
+
+export interface AdminRefund {
+  id: string
+  transaction_id: number
+  user_id: string
+  user_email: string
+  amount: number
+  currency: string
+  reason: string
+  status: 'pending' | 'approved' | 'rejected' | 'completed'
+  usage_count: number
+  requested_at: number
+  processed_at?: number | null
+  notes?: string | null
+}
+
+export function getAdminRefunds(params: { page?: number; limit?: number; status?: string }) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => value && qs.set(key, String(value)))
+  return request<{ page: number; limit: number; total: number; refunds: AdminRefund[] }>(
+    `/admin/refunds?${qs}`,
+    { headers: authHeaders() }
+  )
+}
+
+export function createAdminRefund(payload: {
+  transaction_id: number
+  user_id: string
+  amount: number
+  reason: string
+}) {
+  return request<{ id: string; usage_count: number; eligible: boolean; message: string }>('/admin/refunds', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function processAdminRefund(id: string, body: { status: 'approved' | 'rejected' | 'completed'; notes?: string }) {
+  return request<{ refund: AdminRefund }>(`/admin/refunds/${id}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  })
+}
+
+export interface RevenueAnalytics {
+  mrr: number
+  total_revenue: number
+  avg_transaction: number
+  trend: { date: string; revenue: number; count: number }[]
+}
+
+export interface UserAnalytics {
+  total_users: number
+  plan_breakdown: { plan: string; count: number }[]
+  signups: { date: string; count: number }[]
+  conversion_rate: number
+  churn_rate: number
+}
+
+export interface ToolAnalytics {
+  top_tools: { tool_id: string; total_uses: number; unique_users: number }[]
+  daily_usage: { date: string; total: number }[]
+}
+
+export function getAdminRevenueAnalytics(days = 30) {
+  return request<RevenueAnalytics>(`/admin/analytics/revenue?days=${days}`, { headers: authHeaders() })
+}
+
+export function getAdminUserAnalytics(days = 30) {
+  return request<UserAnalytics>(`/admin/analytics/users?days=${days}`, { headers: authHeaders() })
+}
+
+export function getAdminToolAnalytics(days = 30) {
+  return request<ToolAnalytics>(`/admin/analytics/tools?days=${days}`, { headers: authHeaders() })
+}
+

@@ -1489,3 +1489,123 @@
   font-size: 11px;
   color: var(--shell-muted);
 }
+
+/* ---- Content library ---- */
+.cv-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+}
+
+.cv-modal-content {
+  width: min(880px, 92vw);
+  max-height: 86vh;
+  overflow: hidden;
+}
+
+.cv-library {
+  background: var(--shell-bg);
+  border: 1px solid var(--shell-rule);
+  border-radius: 16px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  max-height: 86vh;
+}
+
+.cv-library__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--shell-rule);
+}
+
+.cv-library__title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--shell-ink);
+}
+
+.cv-library__tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--shell-rule);
+}
+
+.cv-library__tab {
+  flex: 0 0 auto;
+  border: 1px solid var(--shell-rule);
+  background: var(--shell-bg-2);
+  color: var(--shell-muted);
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.cv-library__tab--active {
+  color: var(--shell-ink);
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cv-library__phrases {
+  overflow: auto;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.cv-library__phrase {
+  border: 1px solid var(--shell-rule);
+  background: linear-gradient(180deg, var(--shell-bg-2), var(--shell-bg));
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.cv-library__phrase:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cv-library__phrase-text {
+  color: var(--shell-ink);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.cv-library__phrase-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.cv-library__phrase-cat,
+.cv-library__phrase-copied {
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+
+.cv-library__phrase-cat {
+  color: var(--shell-muted);
+  text-transform: uppercase;
+}
+
+.cv-library__phrase-copied {
+  color: #50c878;
+}

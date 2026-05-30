@@ -43,7 +43,7 @@ export async function render(url: string) {
   )
 
   return renderToString(
-    <MemoryRouter location={url}>
+    <MemoryRouter initialEntries={[url]}>
       {element}
     </MemoryRouter>
   )

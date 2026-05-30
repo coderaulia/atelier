@@ -21,6 +21,7 @@
     "i18next": "^26.3.0",
     "jszip": "^3.10.1",
     "marked": "^18.0.4",
+    "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.7.284",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.7",
+    "@types/node": "^25.9.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.5.0",

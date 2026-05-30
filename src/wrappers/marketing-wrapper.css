@@ -1,0 +1,268 @@
+.marketing-wrapper {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.16), transparent 30%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 32%),
+    linear-gradient(180deg, #080d1a 0%, #111827 52%, #0b1020 100%);
+  color: #f8fafc;
+}
+
+.mw-hero,
+.mw-section,
+.mw-cta-banner,
+.mw-footer__content {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.mw-hero {
+  position: relative;
+  padding-top: 5rem;
+  padding-bottom: 4rem;
+  overflow: hidden;
+}
+
+.mw-hero__content {
+  max-width: 720px;
+  position: relative;
+  z-index: 1;
+}
+
+.mw-hero__badge,
+.mw-section__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 999px;
+  color: hsl(43 96% 68%);
+  background: rgba(251, 191, 36, 0.08);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mw-hero__title {
+  margin: 1.25rem 0 1rem;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.92;
+  letter-spacing: -0.07em;
+  font-weight: 950;
+}
+
+.mw-hero__description {
+  max-width: 620px;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.6;
+}
+
+.mw-hero__actions,
+.mw-cta-banner__actions,
+.mw-signup-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1.5rem;
+}
+
+.mw-hero__cta,
+.mw-cta-banner__btn,
+.mw-signup-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.78rem 1.15rem;
+  border-radius: 999px;
+  font-weight: 900;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mw-hero__cta--primary,
+.mw-cta-banner__btn--primary,
+.mw-signup-modal__btn--primary {
+  background: linear-gradient(135deg, hsl(43 96% 56%), hsl(18 92% 60%));
+  color: #111827;
+  box-shadow: 0 12px 36px rgba(251, 191, 36, 0.25);
+}
+
+.mw-hero__cta--ghost,
+.mw-cta-banner__btn--ghost,
+.mw-signup-modal__btn--ghost {
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mw-hero__cta:hover,
+.mw-cta-banner__btn:hover,
+.mw-signup-modal__btn:hover {
+  transform: translateY(-2px);
+}
+
+.mw-hero__orb {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  right: 8%;
+  top: 15%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.28), rgba(59, 130, 246, 0.08) 55%, transparent 70%);
+  filter: blur(18px);
+  animation: mw-float 7s ease-in-out infinite;
+}
+
+@keyframes mw-float {
+  50% { transform: translateY(-18px) scale(1.03); }
+}
+
+.mw-tool-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+}
+
+.mw-tool-container {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
+  background: rgba(15, 23, 42, 0.68);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.mw-tool-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.mw-tool-frame {
+  padding: 1.25rem;
+}
+
+.mw-section {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.mw-section__title {
+  margin: 1rem 0 1.5rem;
+  font-size: clamp(2rem, 4vw, 3.3rem);
+  letter-spacing: -0.05em;
+}
+
+.mw-steps,
+.mw-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mw-features { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.mw-step,
+.mw-feature,
+.mw-faq__item,
+.mw-cta-banner {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(14px);
+}
+
+.mw-step,
+.mw-feature { padding: 1.25rem; }
+
+.mw-step__number {
+  color: hsl(43 96% 62%);
+  font-weight: 900;
+  font-size: 0.8rem;
+}
+
+.mw-step__icon,
+.mw-feature__icon { font-size: 1.8rem; }
+
+.mw-step__title { margin: 0.8rem 0 0.4rem; }
+.mw-step__text,
+.mw-feature__text,
+.mw-faq__answer,
+.mw-cta-banner__text { color: rgba(226, 232, 240, 0.68); line-height: 1.6; }
+
+.mw-faq__list { display: grid; gap: 0.8rem; }
+.mw-faq__item { padding: 1rem 1.25rem; }
+.mw-faq__question { cursor: pointer; font-weight: 800; }
+.mw-faq__answer { margin-bottom: 0; }
+
+.mw-cta-banner {
+  margin-top: 2rem;
+  margin-bottom: 3rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  text-align: center;
+}
+
+.mw-cta-banner__title { font-size: clamp(1.8rem, 4vw, 3rem); margin: 0 0 0.75rem; }
+.mw-cta-banner__actions { justify-content: center; }
+
+.mw-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem 0;
+}
+
+.mw-footer__content {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 0.9rem;
+}
+
+.mw-footer__links { display: flex; gap: 1rem; }
+.mw-footer__links a { color: rgba(226, 232, 240, 0.72); text-decoration: none; }
+
+.mw-signup-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 80;
+}
+
+.mw-signup-modal__content {
+  position: fixed;
+  z-index: 81;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 440px);
+  padding: 1.5rem;
+  border-radius: 24px;
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
+}
+
+.mw-signup-modal__close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .mw-steps,
+  .mw-features { grid-template-columns: 1fr; }
+  .mw-footer__content { flex-direction: column; }
+  .mw-tool-frame { padding: 0.85rem; }
+}

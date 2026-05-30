@@ -189,7 +189,7 @@ function Hero() {
           </p>
           <div className="hero__ctas">
             <Link className="btn btn--accent btn--lg" to="/document-generator">Start free <ArrowIcon /></Link>
-            <a className="btn btn--ghost btn--lg" href="#tools">See all 6 tools</a>
+            <a className="btn btn--ghost btn--lg" href="#tools">See all 8 tools</a>
           </div>
           <div className="hero__proof">
             <div className="hero__proof-dots">
@@ -236,8 +236,8 @@ function ToolsGrid() {
     <section className="section" id="tools">
       <div className="container">
         <div className="section__head">
-          <span className="eyebrow eyebrow--accent">The Suite · 06 Tools</span>
-          <h2>Six tools that replace a <span className="accent">monthly stack</span> of seven.</h2>
+          <span className="eyebrow eyebrow--accent">The Suite · 08 Tools</span>
+          <h2>Eight tools that replace a <span className="accent">monthly stack</span> of subscriptions.</h2>
           <p className="section__lede">
             Each one solves a real, recurring annoyance. Use them standalone. Or as a chain — write the proposal, convert the PDF, post the win.
           </p>
@@ -346,6 +346,32 @@ function ToolsGrid() {
             </p>
             <div className="tool-card__foot">
               <span className="tool-card__cta">Open Social <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
+              <span className="tool-card__badge tool-card__badge--live">● Live</span>
+            </div>
+          </Link>
+
+          <Link className="tool-card tool-card--md" to="/pdf-merge">
+            <div className="tool-card__num">Tool 07 / PDF Merge</div>
+            <div className="tool-card__icon"><ConvertIcon /></div>
+            <h3 className="tool-card__title">Merge PDFs <span className="it">instantly.</span></h3>
+            <p className="tool-card__desc">
+              Combine up to 20 PDFs into one file. Drag to reorder. Done locally.
+            </p>
+            <div className="tool-card__foot">
+              <span className="tool-card__cta">Merge PDFs <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
+              <span className="tool-card__badge tool-card__badge--live">● Live</span>
+            </div>
+          </Link>
+
+          <Link className="tool-card tool-card--md" to="/pdf-compress">
+            <div className="tool-card__num">Tool 08 / PDF Compress</div>
+            <div className="tool-card__icon"><ConvertIcon /></div>
+            <h3 className="tool-card__title">Compress PDFs <span className="it">for sharing.</span></h3>
+            <p className="tool-card__desc">
+              Reduce PDF file size in-browser with light, balanced, or maximum compression.
+            </p>
+            <div className="tool-card__foot">
+              <span className="tool-card__cta">Compress PDFs <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
               <span className="tool-card__badge tool-card__badge--live">● Live</span>
             </div>
           </Link>

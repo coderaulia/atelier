@@ -1,0 +1,105 @@
+.marketing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(10, 15, 30, 0.72);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.marketing-nav__container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.marketing-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #f8fafc;
+  text-decoration: none;
+}
+
+.marketing-nav__logo {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, hsl(43 96% 56%), hsl(18 92% 60%));
+  color: #111;
+  font-weight: 900;
+  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.3);
+}
+
+.marketing-nav__brand strong {
+  display: block;
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.marketing-nav__brand small {
+  display: block;
+  font-size: 0.72rem;
+  color: rgba(226, 232, 240, 0.62);
+  line-height: 1;
+}
+
+.marketing-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.marketing-nav__link {
+  color: rgba(226, 232, 240, 0.75);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.marketing-nav__link:hover {
+  color: #f8fafc;
+}
+
+.marketing-nav__cta {
+  color: #111827;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 0.62rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, hsl(43 96% 56%), hsl(18 92% 60%));
+  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.marketing-nav__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(251, 191, 36, 0.36);
+}
+
+@media (max-width: 640px) {
+  .marketing-nav__container {
+    padding: 0.75rem 1rem;
+  }
+
+  .marketing-nav__links {
+    gap: 0.55rem;
+  }
+
+  .marketing-nav__link {
+    display: none;
+  }
+
+  .marketing-nav__cta {
+    padding: 0.55rem 0.8rem;
+    font-size: 0.78rem;
+  }
+}

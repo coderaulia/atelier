@@ -17,8 +17,14 @@ export default function Login() {
     try {
       const { token, user } = await login(email, password)
       setAuthToken(token)
-      setStoredUser(user as Record<string, unknown>)
-      navigate('/app')
+      setStoredUser(user as unknown as Record<string, unknown>)
+      const redirect = localStorage.getItem('vs_post_auth_redirect')
+      if (redirect) {
+        localStorage.removeItem('vs_post_auth_redirect')
+        navigate(redirect)
+      } else {
+        navigate('/app/dashboard')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {

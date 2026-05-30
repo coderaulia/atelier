@@ -4,6 +4,8 @@ import { type ToolPage, toolPages } from './toolPages'
 
 const toolShortNames: Record<string, string> = {
   'pdf-to-image': 'PDF→Img',
+  'pdf-merge': 'Merge',
+  'pdf-compress': 'Compress',
   'image-converter': 'Image',
   ocr: 'OCR',
   'cv-builder': 'CV',

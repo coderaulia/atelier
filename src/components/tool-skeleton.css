@@ -1,0 +1,87 @@
+.tool-skeleton {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+.tool-skeleton__panel {
+  min-height: 360px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 28px;
+  padding: 1.25rem;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(30, 41, 59, 0.48));
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+.tool-skeleton__line,
+.tool-skeleton__dropzone,
+.tool-skeleton__pill,
+.tool-skeleton__preview {
+  position: relative;
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.tool-skeleton__line::after,
+.tool-skeleton__dropzone::after,
+.tool-skeleton__pill::after,
+.tool-skeleton__preview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.tool-skeleton__line {
+  height: 14px;
+  border-radius: 999px;
+  margin-bottom: 0.85rem;
+}
+
+.tool-skeleton__line--title {
+  width: 52%;
+  height: 24px;
+}
+
+.tool-skeleton__line--short {
+  width: 64%;
+}
+
+.tool-skeleton__dropzone {
+  min-height: 190px;
+  border-radius: 24px;
+  margin: 1.4rem 0;
+}
+
+.tool-skeleton__controls {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.tool-skeleton__pill {
+  width: 120px;
+  height: 42px;
+  border-radius: 999px;
+}
+
+.tool-skeleton__preview {
+  min-height: 260px;
+  border-radius: 24px;
+  margin-bottom: 1rem;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (max-width: 767px) {
+  .tool-skeleton {
+    grid-template-columns: 1fr;
+  }
+}

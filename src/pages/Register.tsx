@@ -24,8 +24,14 @@ export default function Register() {
     try {
       const { token, user } = await register(email, password)
       setAuthToken(token)
-      setStoredUser(user as Record<string, unknown>)
-      navigate('/app')
+      setStoredUser(user as unknown as Record<string, unknown>)
+      const redirect = localStorage.getItem('vs_post_auth_redirect')
+      if (redirect) {
+        localStorage.removeItem('vs_post_auth_redirect')
+        navigate(redirect)
+      } else {
+        navigate('/app/dashboard')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {

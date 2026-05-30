@@ -13,7 +13,7 @@ export type ToolPage = {
 }
 
 export const siteUrl = 'https://studio.vanaila.com'
-export const allStaticRoutes = ['/', '/pricing', '/pdf-to-image', '/image-converter', '/ocr', '/cv-builder', '/document-generator', '/social-generator']
+export const allStaticRoutes = ['/', '/pricing', '/pdf-to-image', '/pdf-merge', '/pdf-compress', '/image-converter', '/ocr', '/cv-builder', '/document-generator', '/social-generator']
 
 export const toolPages: ToolPage[] = [
   {
@@ -158,6 +158,54 @@ export const toolPages: ToolPage[] = [
       { question: 'Can I use my own brand colors and logo?', answer: 'Yes. Vanaila Studio supports reusable brand assets across templates.' },
       { question: 'Are social exports watermarked?', answer: 'No. Exports never include Vanaila watermarks.' },
       { question: 'Is my social content uploaded?', answer: 'No. Editing and export happen locally in your browser.' },
+    ],
+  },
+  {
+    slug: 'pdf-merge',
+    path: '/pdf-merge',
+    name: 'PDF Merge Tool',
+    primaryKeyword: 'merge PDF files online',
+    title: 'Merge PDF Files Online Free | Vanaila Studio',
+    description: 'Combine multiple PDFs into one file in your browser. Private, fast, free for 3 files, Pro for bulk merging.',
+    valueProp: 'Merge up to 20 PDF files into one document without uploading to servers.',
+    ogImage: `${siteUrl}/og/pdf-merge.png`,
+    accent: 'hsl(18 92% 60%)',
+    features: [
+      { icon: '📑', text: 'Merge 2-20 PDF files into one.' },
+      { icon: '🎯', text: 'Drag and drop to reorder files.' },
+      { icon: '🔒', text: 'Files never leave your browser.' },
+      { icon: '⚡', text: 'Instant client-side merging.' },
+    ],
+    faqs: [
+      { question: 'Can I merge PDFs for free?', answer: 'Yes. Free plan allows merging up to 3 PDFs. Pro unlocks up to 20 PDFs per merge.' },
+      { question: 'How many PDFs can I combine?', answer: 'Free: 3 PDFs. Pro: 20 PDFs per merge operation.' },
+      { question: 'Are my PDF files uploaded?', answer: 'No. All merging happens in your browser using pdf-lib.' },
+      { question: 'Can I reorder PDFs before merging?', answer: 'Yes. Drag and drop files to change merge order.' },
+      { question: 'Does merging reduce PDF quality?', answer: 'No. Pages are copied exactly as-is with no quality loss.' },
+    ],
+  },
+  {
+    slug: 'pdf-compress',
+    path: '/pdf-compress',
+    name: 'PDF Compress Tool',
+    primaryKeyword: 'compress PDF online',
+    title: 'Compress PDF Online Free | Vanaila Studio',
+    description: 'Reduce PDF file size in your browser. Private compression with quality preview. Free for small files, Pro for unlimited.',
+    valueProp: 'Compress PDFs without uploading files to servers.',
+    ogImage: `${siteUrl}/og/pdf-compress.png`,
+    accent: 'hsl(266 92% 68%)',
+    features: [
+      { icon: '🗜️', text: 'Reduce file size with browser-side optimization.' },
+      { icon: '👁️', text: 'Compare before and after file size.' },
+      { icon: '🔒', text: 'Private compression; files stay on your device.' },
+      { icon: '⚙️', text: 'Choose light, balanced, or maximum compression.' },
+    ],
+    faqs: [
+      { question: 'How much can I compress a PDF?', answer: 'It depends on the PDF content. Files with unoptimized images usually shrink the most, while already-optimized PDFs may only reduce slightly.' },
+      { question: 'Will compression reduce quality?', answer: 'Light compression keeps quality closest to original. Maximum compression prioritizes smaller file size.' },
+      { question: 'Is PDF compression free?', answer: 'Yes. Free and anonymous users can compress within daily limits. Pro unlocks higher usage.' },
+      { question: 'Are my files uploaded?', answer: 'No. Compression runs locally in your browser.' },
+      { question: 'Can I compress password-protected PDFs?', answer: 'No. Remove password protection first, then compress the file.' },
     ],
   },
 ]

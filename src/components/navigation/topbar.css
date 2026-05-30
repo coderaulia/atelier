@@ -1,0 +1,202 @@
+/* ── App TopBar ────────────────────────────────── */
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 1.5rem;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-topbar__hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: rgba(148, 163, 184, 0.8);
+  font-size: 1.3rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.app-topbar__hamburger:hover {
+  background: rgba(148, 163, 184, 0.1);
+  color: #e2e8f0;
+}
+
+.app-topbar__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.app-topbar__bc-parent {
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.app-topbar__bc-sep {
+  color: rgba(148, 163, 184, 0.4);
+  font-size: 0.9rem;
+}
+
+.app-topbar__bc-current {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.app-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.app-topbar__upgrade-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, hsl(43 96% 56%), hsl(18 92% 60%));
+  border: none;
+  border-radius: 999px;
+  color: #111;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 2px 12px rgba(251, 191, 36, 0.3);
+}
+
+.app-topbar__upgrade-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+}
+
+.app-topbar__avatar-wrap {
+  position: relative;
+}
+
+.app-topbar__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(212 100% 56%), hsl(266 92% 68%));
+  border: none;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.app-topbar__avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
+
+.app-topbar__dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 200px;
+  background: rgba(30, 41, 59, 0.98);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: dropdown-fade-in 0.15s ease;
+}
+
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-topbar__dropdown-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.app-topbar__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: none;
+  border: none;
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 0.85rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.app-topbar__dropdown-item:hover {
+  background: rgba(148, 163, 184, 0.1);
+  color: #f1f5f9;
+}
+
+.app-topbar__dropdown-item--danger {
+  color: hsl(0 84% 60%);
+}
+
+.app-topbar__dropdown-item--danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: hsl(0 84% 68%);
+}
+
+.app-topbar__dropdown-divider {
+  height: 1px;
+  background: rgba(148, 163, 184, 0.12);
+  margin: 0.25rem 0;
+}
+
+@media (max-width: 1023px) {
+  .app-topbar__hamburger {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-topbar {
+    padding: 0 1rem;
+  }
+
+  .app-topbar__upgrade-btn {
+    font-size: 0.75rem;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .app-topbar__bc-parent {
+    display: none;
+  }
+
+  .app-topbar__bc-sep {
+    display: none;
+  }
+}

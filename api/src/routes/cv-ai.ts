@@ -37,6 +37,8 @@ app.post('/cv/ai', async (c) => {
         'Adjust the tone of the following CV text to sound more professional and confident. Remove weak language, passive voice, and boost impact.',
       tailor_cv:
         'Given the CV text and job description context, suggest how to tailor the CV bullet points to better match the role. Focus on transferable skills and relevant keywords.',
+      cover_letter:
+        'Generate a concise, tailored cover letter using the provided CV context and target role details. Use warm professional tone, 3-4 paragraphs, no markdown, no placeholders.',
     }
 
     const systemPrompt = prompts[action] || prompts.rewrite_bullet

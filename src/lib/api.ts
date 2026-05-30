@@ -710,7 +710,7 @@ export function getAdminAuditActions() {
   return request<{ actions: { action: string; count: number }[] }>('/admin/audit/actions', { headers: authHeaders() })
 }
 
-export type CVAIAction = 'rewrite_bullet' | 'generate_summary' | 'improve_tone' | 'tailor_cv'
+export type CVAIAction = 'rewrite_bullet' | 'generate_summary' | 'improve_tone' | 'tailor_cv' | 'cover_letter'
 
 export function generateCVAI(payload: { action: CVAIAction; text?: string; context?: string }) {
   return request<{ result: string }>('/api/cv/ai', {

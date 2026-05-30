@@ -6,6 +6,8 @@ import CVStepEditor from './CVStepEditor';
 import CVATSPanel from './CVATSPanel';
 import CVRegionalToggle from './CVRegionalToggle';
 import CVContentLibrary from './CVContentLibrary';
+import CoverLetterEditor from './CoverLetterEditor';
+import { DEFAULT_COVER_LETTER, type CoverLetterData } from './coverLetterTypes';
 import CVWizard from './CVWizard';
 import {
   ClassicTemplate,
@@ -104,6 +106,8 @@ export default function CVTool() {
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showCoverLetter, setShowCoverLetter] = useState(false);
+  const [coverLetter, setCoverLetter] = useLocalStorage<CoverLetterData>('cv_cover_letter_v1', DEFAULT_COVER_LETTER);
   const [useStepEditor, setUseStepEditor] = useLocalStorage<boolean>('cv_step_editor_v1', true);
   const [regionalMode, setRegionalMode] = useLocalStorage<CVRegionalMode>('cv_regional_mode_v1', 'international');
   const [jdKeywordInput, setJdKeywordInput] = useLocalStorage<string>('cv_jd_keywords_v1', '');
@@ -296,6 +300,13 @@ export default function CVTool() {
               >
                 📚 Library
               </button>
+              <button
+                className="cv-btn cv-btn--ghost cv-btn--sm"
+                onClick={() => setShowCoverLetter(true)}
+                title="Generate a cover letter"
+              >
+                ✉️ Cover
+              </button>
             </div>
           </div>
           {/* Usage indicator */}
@@ -393,6 +404,20 @@ export default function CVTool() {
                 setToast({ message: 'Copied to clipboard! Paste into your CV.', type: 'info' });
               }}
               onClose={() => setShowLibrary(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {showCoverLetter && (
+        <div className="cv-modal-overlay" onClick={() => setShowCoverLetter(false)}>
+          <div className="cv-modal-content cv-modal-content--wide" onClick={(e) => e.stopPropagation()}>
+            <CoverLetterEditor
+              cvData={cvData}
+              value={coverLetter}
+              onChange={setCoverLetter}
+              onClose={() => setShowCoverLetter(false)}
+              onToast={(message, type = 'info') => setToast({ message, type })}
             />
           </div>
         </div>

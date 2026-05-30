@@ -12,7 +12,8 @@ Freemium browser-based toolkit with 8 professional tools: documents, social cont
 - Storage: Cloudflare R2 (Pro cloud save)
 - Email: Resend (bilingual EN/ID templates)
 - Payments: Midtrans (recurring subscriptions + one-time credit packs)
-- Client-side processing: pdf.js, Tesseract.js, Canvas API, JSZip, pdf-lib, @jsquash/webp, @jsquash/avif
+- AI: Groq API (`llama-3.3-70b-versatile`) for Pro-gated CV suggestions
+- Client-side processing: pdf.js, Tesseract.js, Canvas API, JSZip, pdf-lib, mammoth, docx, @jsquash/webp, @jsquash/avif
 
 ## File Structure
 
@@ -54,6 +55,24 @@ src/
     documents/                    # Document generator (ported Atelier)
     social/                       # Social content generator
     cv/                           # CV/Resume builder
+      types.ts                    # Data types, regional configs, templates
+      CVTool.tsx                  # Main CV builder shell with sidebar/center/preview
+      CVEditor.tsx                # Full-form editor with regional fields
+      CVStepEditor.tsx            # Step-by-step section editor with progress
+      CVWizard.tsx                # Guided start (role / experience / industry)
+      CVImportModal.tsx           # Upload modal (PDF/DOCX parsing)
+      cvParser.ts                 # Text, DOCX, PDF parsing logic
+      CVATSPanel.tsx              # ATS score + linting + JD keywords
+      AIButton.tsx                # Reusable Pro-gated AI rewrite button
+      useCVAI.ts                  # AI hook wrapping generateCVAI API
+      CVRegionalToggle.tsx        # International vs Indonesia mode
+      CVContentLibrary.tsx        # Phrase library browser modal
+      cvContentLibrary.ts         # ~60 curated phrases by role/seniority
+      CoverLetterEditor.tsx       # Cover letter generator modal
+      coverLetterTypes.ts         # Cover letter data types
+      cvDocxExport.ts             # DOCX document export via docx library
+      templates/                  # 6 PDF templates (Classic, Modern, Minimal, ATS, Executive, Creative)
+      cv.css                      # All CV builder styles
     pdf-to-image/                 # PDF→Image converter
     pdf-merge/                    # PDF merger
     pdf-compress/                 # PDF compressor
@@ -88,6 +107,7 @@ api/
       billing.ts                  # GET /status, POST /cancel, POST /webhook, credit packs, transactions
       admin.ts                    # Admin API: stats, users, subscriptions, refunds, analytics, errors
       log-error.ts                # POST /api/log-error
+      cv-ai.ts                    # POST /api/cv/ai (Pro-gated Groq integration)
     middleware/
       auth.ts                     # JWT + session auth (checks deleted_at)
       admin.ts                    # Admin role gate
@@ -187,6 +207,12 @@ wrangler d1 execute vanaila-studio --local --file=api/src/db/migrations/001_admi
 - Lazy-load Tesseract.js WASM — do not bundle at startup
 - New user-facing docs belong in `src/pages/Manual.tsx` and route `/manual`
 - Add new tools only through `src/lib/tools.tsx`; routes are generated from registry
+- CV AI features require Pro plan — gated via `plan === 'pro'` check in cv-ai.ts
+- CV content library lives in `cvContentLibrary.ts`; add phrases as arrays by role
+- Cover letter uses same `generateCVAI` API with `action: 'cover_letter'`
+- DOCX export uses `docx` library; import from `cvDocxExport.ts`
+- Regional mode persisted via `useLocalStorage<CVRegionalMode>`
+- CV import handles PDF text layer + OCR fallback + DOCX via mammoth
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

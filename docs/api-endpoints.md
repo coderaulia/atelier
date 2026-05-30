@@ -67,3 +67,29 @@ Do not send PII, file names, file content, or source documents.
 ## User usage
 
 - `GET /usage/me` — last 30 days usage for current user
+
+## CV AI (Pro-gated)
+
+- `POST /api/cv/ai`
+
+Requires `Authorization: Bearer <token>` and `plan === 'pro'`.
+
+Payload:
+
+```json
+{
+  "action": "rewrite_bullet" | "generate_summary" | "improve_tone" | "tailor_cv" | "cover_letter",
+  "text": "optional text to rewrite",
+  "context": "optional context (CV data, job description, etc.)"
+}
+```
+
+Response:
+
+```json
+{
+  "result": "AI-generated text"
+}
+```
+
+Backend uses Groq API with Llama 3.3 70B model. Free users receive 403 error.

@@ -23,6 +23,22 @@ Implemented routes:
 - `/admin/transactions`
 - `/admin/errors`
 
+## CV Builder
+
+Fully-featured CV/resume builder with 8 major phases implemented:
+
+1. **Guided wizard** — Pre-structures CV based on role/experience/industry
+2. **Step-by-step editor** — Section-by-section flow with progress tracking
+3. **Smart import** — Parses PDF (text + OCR) and DOCX files into structured fields
+4. **ATS checker** — Scores CV 0-100, detects weak verbs, checks formatting, matches JD keywords
+5. **AI suggestions** — Pro-gated Groq/Llama 3.3 rewrites for bullets and summary generation
+6. **Regional mode** — Toggle International (ATS-safe) vs Indonesia (photo/DOB/marital/religion)
+7. **Content library** — ~60 curated phrases by role/seniority/industry with copy-to-clipboard
+8. **Cover letter generator** — Pro-gated AI generation from CV data with editable preview
+9. **DOCX export** — Structured Word document export via docx library
+
+Export formats: PDF (6 templates) + DOCX
+
 ## Backend
 
 Implemented API routes:
@@ -40,6 +56,7 @@ Implemented API routes:
 - `GET /admin/transactions`
 - `GET /admin/errors`
 - `POST /api/log-error`
+- `POST /api/cv/ai` (Pro-gated Groq integration for CV rewrites and cover letters)
 
 ## Database
 

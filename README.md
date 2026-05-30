@@ -2,20 +2,20 @@
 
 A freemium browser-based toolkit for documents, CVs, PDF/image conversions, OCR, and social media content. Built for freelancers, small teams, and job seekers.
 
-**Live at:** [app.vanailadigital.com](https://app.vanaila.com)
+**Live at:** [app.vanaila.com](https://app.vanaila.com)
 
-Built and open-sourced by **[Vanaila Digital](https://vanaila.com)**.
+Built by **[Vanaila Digital](https://vanaila.com)**.
 
 ---
 
 ## What it does
 
-Atelier provides 8 professional-grade tools that run entirely in your browser:
+Atelier provides 9 professional-grade tools that run entirely in your browser:
 
 ### Documents & Content
 - **Document Generator** — Agreements, invoices, proposals, PRDs, retainers, receipts, onboarding sheets, and handover documents with 3 style variants each (Classic, Modern, Editorial)
 - **Social Generator** — Instagram, TikTok, and Threads content with 31+ templates for quotes, stats, launches, carousels, and more
-- **CV Builder** — ATS-friendly resume builder with Editorial, Modern, and Mono templates
+- **CV Builder** — Full-featured CV/resume builder with ATS optimization, AI-powered rewrites, content library, cover letter generator, regional mode (International/Indonesia), and dual PDF + DOCX export
 
 ### PDF Tools
 - **PDF to Image** — Convert PDF pages to PNG or JPG
@@ -28,9 +28,18 @@ Atelier provides 8 professional-grade tools that run entirely in your browser:
 
 All file processing happens **client-side** — your files never leave your browser.
 
----
-
-## Features
+### CV Builder Features
+- **Guided wizard** — Answer 3 questions (role, experience, industry) to get a pre-structured CV
+- **Step-by-step editor** — Section-by-section flow with progress tracking (plus full-form toggle)
+- **Smart import** — Upload existing CV (PDF/DOCX) to auto-parse into fields
+- **ATS checker** — Score your CV (0-100) with section breakdown, weak verb detection, and JD keyword matching
+- **AI suggestions** — Pro-gated rewrites for experience bullets, summary generation via Groq (Llama 3.3)
+- **Content library** — ~60 curated phrases by role/seniority/industry with click-to-copy
+- **Cover letter generator** — Pro-gated AI generation from CV data, editable preview, copy-to-clipboard
+- **Regional mode** — Toggle between International (ATS-safe) and Indonesia (photo, DOB, marital, religion)
+- **Export** — PDF (6 templates) + DOCX (structured Word document)
+- **Free tier:** 5 PDF exports/day
+- **Pro tier:** Unlimited exports, premium templates, AI features
 
 ### Free Tier
 - 5 daily uses for documents/social/CV tools
@@ -62,6 +71,7 @@ All file processing happens **client-side** — your files never leave your brow
 - **Framework:** Vite + React 19 + React Router v7
 - **Styling:** Tailwind CSS 4
 - **Processing:** pdf.js, Tesseract.js, html-to-image, JSZip, pdf-lib
+- **DOCX generation:** docx library (structured Word documents)
 - **Deployment:** Cloudflare Pages
 
 ### Backend
@@ -291,6 +301,7 @@ RESEND_API_KEY=re_xxxxx
 MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxx
 MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxx
 MIDTRANS_IS_PRODUCTION=false
+GROQ_API_KEY=gsk_xxxxx
 ```
 
 ### Frontend (vite.config.ts or .env)

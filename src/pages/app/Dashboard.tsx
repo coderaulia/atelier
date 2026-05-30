@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { getAuthToken } from '@/lib/auth'
 import { getUsage } from '@/lib/api'
+import AnnouncementsBanner from '@/components/AnnouncementsBanner'
 import './dashboard.css'
 
 interface UsageItem {
@@ -67,6 +68,8 @@ export default function Dashboard() {
         </div>
         <div className="dashboard-hero__glow" aria-hidden="true" />
       </section>
+
+      <AnnouncementsBanner />
 
       {!isPro && upsellVisible && (
         <section className="dashboard-upsell">

@@ -1,54 +1,80 @@
-# Vanaila Studio — Agent Instructions
+# Atelier by Vanaila — Agent Instructions
 
 ## Project
 
-Browser-based freemium generator suite. Frontend on Cloudflare Pages, backend on Cloudflare Workers.
+Freemium browser-based toolkit with 8 professional tools: documents, social content, CV builder, PDF tools (convert/merge/compress), image converter, and OCR. Frontend on Cloudflare Pages, backend on Cloudflare Workers.
 
 ## Stack
 
-- Frontend: Vite + React 19 + React Router v7 + Tailwind CSS
+- Frontend: Vite + React 19 + React Router v7 + Tailwind CSS 4
 - Backend: Cloudflare Workers + Hono + Zod
 - Database: Cloudflare D1 (SQLite)
 - Storage: Cloudflare R2 (Pro cloud save)
-- Email: Resend
-- Payments: Midtrans
-- Client-side processing: pdf.js, Tesseract.js, Canvas API, JSZip
+- Email: Resend (bilingual EN/ID templates)
+- Payments: Midtrans (recurring subscriptions + one-time credit packs)
+- Client-side processing: pdf.js, Tesseract.js, Canvas API, JSZip, pdf-lib, @jsquash/webp, @jsquash/avif
 
 ## File Structure
 
 src/
-  App.tsx                         # Main routes (lazy tool imports)
-  main.tsx                        # Entry point with admin + app routes
+  App.tsx                         # Main routes (public, app, admin, manual)
+  main.tsx                        # Entry point with BrowserRouter
   pages/
     Landing.tsx                   # Marketing landing page
+    Manual.tsx                    # Public user manual / help center
     Login.tsx                     # Auth login
     Register.tsx                  # Auth register
-    ToolLanding.tsx               # Per-tool landing page wrapper
-    toolPages.tsx                 # Tool page registry
+    Pricing.tsx                   # Pricing + credit packs
+    Account.tsx                   # User account + billing state
+    Receipt.tsx                   # Payment receipt page
+    ToolLanding.tsx               # Legacy per-tool landing wrapper
+    toolPages.ts                  # Tool page registry
+    app/
+      Dashboard.tsx               # Authenticated dashboard
+    legal/
+      PrivacyPolicy.tsx
+      TermsOfService.tsx
+      RefundPolicy.tsx
     Admin/
       AdminLayout.tsx             # Admin sidebar + auth guard
-      Overview.tsx                # Stats, charts, revenue
+      Overview.tsx                # Stats and KPIs
       Users.tsx                   # User list + search + actions
       UserDetail.tsx              # User detail + transactions + usage
       Transactions.tsx            # Payment records table
+      Subscriptions.tsx           # Subscription management
+      Refunds.tsx                 # Manual refund review
+      BugReports.tsx              # Bug report queue
+      Revenue.tsx                 # Revenue metrics
+      AnalyticsDashboard.tsx      # Usage analytics
+      SystemConfig.tsx            # Runtime config
+      FeatureFlags.tsx            # Feature toggles
+      HealthMonitor.tsx           # System health
       Errors.tsx                  # Error log viewer
   modules/
     documents/                    # Document generator (ported Atelier)
     social/                       # Social content generator
     cv/                           # CV/Resume builder
     pdf-to-image/                 # PDF→Image converter
+    pdf-merge/                    # PDF merger
+    pdf-compress/                 # PDF compressor
     image-converter/              # Image format converter
     ocr/                          # OCR tool (Tesseract.js)
   components/
     ErrorBoundary.tsx
+    ToolSkeleton.tsx
     UpgradeModal.tsx
     UsageBadge.tsx
+  wrappers/
+    AppShell.tsx                  # Authenticated /app shell
+    MarketingWrapper.tsx          # Public tool page wrapper
   hooks/
     useAuth.ts
     useToolLimit.ts               # Usage gate hook
     usePlan.ts
   lib/
     api.ts                        # Typed fetch wrapper (auth, usage, admin)
+    tools.tsx                     # Single source of truth for tool routes
+    i18n.ts                       # EN/ID localization bootstrap
     midtrans.ts
 
 api/
@@ -59,8 +85,8 @@ api/
       routes.ts                   # Register, login, /me, forgot-password, reset-password, verify-email, logout, delete account, change-password
     routes/
       usage.ts                    # GET/POST usage limits
-      billing.ts                  # GET /status, POST /cancel, POST /webhook (Midtrans recurring), GET /transactions
-      admin.ts                    # Admin API: stats, users, transactions, errors
+      billing.ts                  # GET /status, POST /cancel, POST /webhook, credit packs, transactions
+      admin.ts                    # Admin API: stats, users, subscriptions, refunds, analytics, errors
       log-error.ts                # POST /api/log-error
     middleware/
       auth.ts                     # JWT + session auth (checks deleted_at)
@@ -73,9 +99,15 @@ api/
     db/
       schema.sql                  # Full schema
       migrations/
-        001_admin_dashboard.sql   # Migration: roles, transactions, error_log
-        002_account_management.sql # Migration: name, deleted_at, sessions tracking
-        003_auth_lifecycle.sql    # Migration: password_resets, email_verifications, billing fields
+        001_admin_dashboard.sql
+        002_account_management.sql
+        002_security_tables.sql
+        003_auth_lifecycle.sql
+        003_bug_reports.sql
+        004_refunds_and_analytics.sql
+        005_system_config.sql
+        006_geo_analytics.sql
+        007_credit_packs.sql
   wrangler.toml                   # Includes cron trigger for daily grace/cleanup
 ```
 
@@ -146,12 +178,15 @@ wrangler d1 execute vanaila-studio --local --file=api/src/db/migrations/001_admi
 - Commit after each phase milestone
 - Update docs/project-status.md and docs/commit-log.md after each commit
 - All Zod validation on backend routes — never trust client input
-- Free daily limits: 5/day authenticated, 2/day anonymous (localStorage)
+- Free daily limits: authenticated limits come from `src/lib/tools.tsx`; anonymous uses localStorage
 - Pro gates: premium templates, bulk export, cloud save, unlimited daily use
-- No watermarks on any plan — ever
+- Credit packs are one-time purchases; subscriptions remain recurring
+- No watermarks on any plan unless explicit product decision changes this
 - IDR and USD both supported in Midtrans integration
 - Mobile responsive required for all pages and tools
 - Lazy-load Tesseract.js WASM — do not bundle at startup
+- New user-facing docs belong in `src/pages/Manual.tsx` and route `/manual`
+- Add new tools only through `src/lib/tools.tsx`; routes are generated from registry
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

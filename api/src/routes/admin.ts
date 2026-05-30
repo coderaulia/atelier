@@ -6,6 +6,8 @@ import subscriptionsAdmin from './admin/subscriptions'
 import refundsAdmin from './admin/refunds'
 import analyticsAdmin from './admin/analytics'
 import systemAdmin from './admin/system'
+import { contentAdmin } from './admin/content'
+import auditAdmin from './admin/audit'
 import { getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
@@ -218,6 +220,8 @@ admin.route('/subscriptions', subscriptionsAdmin)
 admin.route('/refunds', refundsAdmin)
 admin.route('/analytics', analyticsAdmin)
 admin.route('/system', systemAdmin)
+admin.route('/content', contentAdmin)
+admin.route('/audit', auditAdmin)
 
 // ── Notifications ─────────────────────────────────────────────────
 

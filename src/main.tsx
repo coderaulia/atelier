@@ -12,6 +12,7 @@ import './modules/image-converter/image-converter.css'
 import './modules/ocr/ocr.css'
 import './landing.css'
 import './tool-landing.css'
+import './pages/manual.css'
 import './lib/i18n'
 import './marketing-demo.css'
 

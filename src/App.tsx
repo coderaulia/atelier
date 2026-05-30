@@ -17,7 +17,8 @@ import RefundPolicy from './pages/legal/RefundPolicy'
 import Dashboard from './pages/app/Dashboard'
 import Pricing from './pages/Pricing'
 
-const Account = lazy(() => import('./pages/Account'))
+import Account from './pages/Account'
+import Manual from './pages/Manual'
 
 // Admin pages (per-page AdminLayout, no shared shell)
 const AdminOverview = lazy(() => import('./pages/Admin/Overview'))
@@ -33,6 +34,9 @@ const AdminAnalytics = lazy(() => import('./pages/Admin/AnalyticsDashboard'))
 const AdminSystemConfig = lazy(() => import('./pages/Admin/SystemConfig'))
 const AdminFeatureFlags = lazy(() => import('./pages/Admin/FeatureFlags'))
 const AdminHealthMonitor = lazy(() => import('./pages/Admin/HealthMonitor'))
+const AdminAnnouncements = lazy(() => import('./pages/Admin/Announcements'))
+const AdminEmailTemplates = lazy(() => import('./pages/Admin/EmailTemplates'))
+const AdminAuditLogs = lazy(() => import('./pages/Admin/AuditLogs'))
 const AdminErrors = lazy(() => import('./pages/Admin/Errors'))
 const Receipt = lazy(() => import('./pages/Receipt'))
 
@@ -50,6 +54,7 @@ export default function App() {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/refund" element={<RefundPolicy />} />
+      <Route path="/manual" element={<Manual />} />
       <Route
         path="/receipt"
         element={
@@ -211,6 +216,30 @@ export default function App() {
         element={
           <Suspense fallback={null}>
             <AdminHealthMonitor />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/content/announcements"
+        element={
+          <Suspense fallback={null}>
+            <AdminAnnouncements />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/content/email-templates"
+        element={
+          <Suspense fallback={null}>
+            <AdminEmailTemplates />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/audit-logs"
+        element={
+          <Suspense fallback={null}>
+            <AdminAuditLogs />
           </Suspense>
         }
       />

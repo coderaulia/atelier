@@ -1,6 +1,8 @@
-# Atelier
+# Atelier by Vanaila
 
-A browser-based document, social media, and quote generator for independent studios and freelancers. No build step, no server, no accounts - just open `index.html` and start making polished client-facing work.
+A freemium browser-based toolkit for documents, CVs, PDF/image conversions, OCR, and social media content. Built for freelancers, small teams, and job seekers.
+
+**Live at:** [app.vanailadigital.com](https://app.vanaila.com)
 
 Built and open-sourced by **[Vanaila Digital](https://vanaila.com)**.
 
@@ -8,176 +10,318 @@ Built and open-sourced by **[Vanaila Digital](https://vanaila.com)**.
 
 ## What it does
 
-Atelier gives you a design-quality toolkit for the documents, posts, and estimates that surround client work:
+Atelier provides 8 professional-grade tools that run entirely in your browser:
 
-**Documents**
+### Documents & Content
+- **Document Generator** — Agreements, invoices, proposals, PRDs, retainers, receipts, onboarding sheets, and handover documents with 3 style variants each (Classic, Modern, Editorial)
+- **Social Generator** — Instagram, TikTok, and Threads content with 31+ templates for quotes, stats, launches, carousels, and more
+- **CV Builder** — ATS-friendly resume builder with Editorial, Modern, and Mono templates
 
-- Agreements / contracts
-- Invoices with line items, tax, and discount
-- Project proposals
-- Product requirement documents (PRDs)
-- Monthly retainers
-- Receipts
-- Client onboarding sheets
-- Scope guard documents
-- Project handover sheets
+### PDF Tools
+- **PDF to Image** — Convert PDF pages to PNG or JPG
+- **PDF Merge** — Combine multiple PDFs into one file
+- **PDF Compress** — Reduce PDF file size with adjustable compression levels
 
-Every document ships in three visual styles: **Classic**, **Modern**, and **Editorial**.
+### Image & Text
+- **Image Converter** — Convert between PNG, JPG, WebP, AVIF, and HEIC formats
+- **OCR** — Extract text from images and PDFs using Tesseract.js
 
-**Social media posts**
-
-- Instagram 1:1 single posts and carousels
-- TikTok / Threads 9:16 vertical posts
-- Pricing cards, testimonials, launches, photo posts, case studies, weekly digests, tutorials, and more
-- Dynamic carousels with slide counts, per-slide download controls, and optional CTA slides
-
-**Tools**
-
-- Quick quote calculator with hours, hourly rate, discount, tax, and currency support
-- Copyable plain-text quote summary
-- Live quote preview
-
-Everything is filled from a form, previewed live, and exported as PDF for documents or PNG / JPG for social assets. No design software required.
-
----
-
-## Getting started
-
-```bash
-git clone https://github.com/vanaila-digital/atelier.git
-cd atelier
-open index.html          # macOS
-start index.html         # Windows
-xdg-open index.html      # Linux
-```
-
-No dependencies to install. No build step. Works offline after first load, except for fonts loaded from Google Fonts.
+All file processing happens **client-side** — your files never leave your browser.
 
 ---
 
 ## Features
 
-### Documents
+### Free Tier
+- 5 daily uses for documents/social/CV tools
+- 3 daily uses for PDF/image/OCR tools
+- All templates and formats available
+- No watermarks
+- No account required (anonymous usage tracked via localStorage)
 
-- 9 document types with 3 templates each, for 27 document layouts total
-- Markdown support in long-form fields: headings, bold, italic, lists, and tables
-- Shared studio details across every document
-- Logo support in document headers
-- Letter and A4 paper modes
-- PDF export through the browser print dialog with print-optimised layout
+### Pro Tier
+- Unlimited daily usage
+- Cloud save (R2 storage)
+- Premium templates
+- Bulk export
+- Priority support
+- IDR 99,000/month or USD $9/month via Midtrans
 
-### Social
-
-- 31 templates across square and vertical formats
-- Square templates for quotes, stats, announcements, processes, before/after posts, manifestos, frameworks, stories, tips, booking CTAs, link-in-bio posts, launches, mistakes, mini guides, news, digests, photos, showcases, pricing, and testimonials
-- Vertical templates for hot takes, top lists, big questions, stats, Threads posts, tutorials, portfolio covers, case studies, POV posts, schedules, and case study carousels
-- Template picker with live thumbnails grouped by format and kind
-- Per-template content forms with text, textarea, select, and image fields
-- Export a single post, all carousel slides, or individual carousel slides as PNG / JPG at 2x pixel ratio
-
-### Brand identity
-
-- Studio name, full name, handle, email, address, tax ID, and payment details stored in Studio Settings
-- Upload a company logo as PNG, SVG, or JPG
-- Logo on/off toggle for templates
-- Logo used across document headers and brand marks where templates support it
-- Accent colour, header font, body font, and paper size customisable via the Tweaks panel
-
-### Quote calculator
-
-- Calculates subtotal, discount, tax, and total from hours and rate
-- Supports USD, IDR, EUR, and GBP formatting
-- Copies a plain-text estimate summary to the clipboard
-- Stored locally alongside the rest of the app state
-
-### No lock-in
-
-- All data stored in browser `localStorage`; nothing leaves your device
-- Export to standard formats at any time
-- Fork and self-host with zero infrastructure
+### Technical Highlights
+- **Client-side processing** — pdf.js, Tesseract.js, Canvas API, JSZip
+- **Dual routing** — Public marketing pages + authenticated app shell
+- **Responsive design** — Mobile-friendly across all tools
+- **i18n support** — English and Indonesian (Bahasa Indonesia)
+- **Admin dashboard** — User management, analytics, revenue tracking, refund handling
 
 ---
 
-## File structure
+## Tech Stack
 
-```text
-index.html            Entry point; loads React, Babel, marked, html-to-image, and app scripts
-styles.css            App shell, document, social, quote calculator, and responsive styles
-utils.jsx             Shared icons, markdown helpers, formatters, fields, image upload, exports
-editors.jsx           Form editors for document and social content
-doc-templates.jsx     Document templates: 9 document types x 3 variants
-social-templates.jsx  Instagram / square social templates and registry
-tiktok-templates.jsx  TikTok / Threads / vertical templates and registry
-quote-calculator.jsx  Quick quote calculator panel and preview
-tweaks-panel.jsx      Reusable Tweaks panel and controls
-app.jsx               App shell, state, settings modal, navigation, preview, export flow
+### Frontend
+- **Framework:** Vite + React 19 + React Router v7
+- **Styling:** Tailwind CSS 4
+- **Processing:** pdf.js, Tesseract.js, html-to-image, JSZip, pdf-lib
+- **Deployment:** Cloudflare Pages
+
+### Backend
+- **Runtime:** Cloudflare Workers
+- **Framework:** Hono
+- **Database:** Cloudflare D1 (SQLite)
+- **Storage:** Cloudflare R2 (Pro cloud save)
+- **Email:** Resend
+- **Payments:** Midtrans (IDR & USD)
+- **Validation:** Zod
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+ and npm
+- Cloudflare account (for deployment)
+- Wrangler CLI (`npm install -g wrangler`)
+
+### Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/vanaila-digital/atelier.git
+cd atelier
+
+# Install frontend dependencies
+npm install
+
+# Install backend dependencies
+cd api
+npm install
+
+# Set up local database
+npm run db:apply
+
+# Configure environment variables
+# Create api/.dev.vars with:
+# JWT_SECRET=your-secret-key
+# RESEND_API_KEY=your-resend-key
+# MIDTRANS_SERVER_KEY=your-midtrans-key
+# MIDTRANS_CLIENT_KEY=your-midtrans-client-key
+
+# Start backend (in api/ directory)
+npm run dev
+
+# Start frontend (in root directory)
+npm run dev
 ```
 
-Scripts are loaded with `<script type="text/babel">` tags. Babel standalone transpiles JSX in the browser, and React 18 is loaded from CDN as a UMD build.
+Frontend runs on `http://localhost:5173`  
+Backend runs on `http://localhost:8787`
 
----
+### Database Setup
 
-## Customising
+```bash
+# Apply schema locally
+cd api
+npm run db:apply
 
-### Adding a social template
+# Apply schema to production
+npm run db:apply:remote
 
-1. Define a template object in `social-templates.jsx` for square templates or `tiktok-templates.jsx` for vertical templates:
-
-```js
-{
-  id: "my-template",
-  name: "My Template",
-  kind: "Single",           // or "Carousel", "CTA", "News", etc.
-  category: "square",       // use "vertical" for 1080x1920 templates
-  width: 1080,
-  height: 1080,
-  fields: [
-    { key: "headline", label: "Headline", type: "text", placeholder: "..." },
-    { key: "body", label: "Body", type: "textarea" },
-  ],
-  slides: ({ data, brand }) => [
-    <div className="social-frame" key="0">
-      {/* template JSX */}
-    </div>
-  ],
-}
+# Seed admin user
+npm run seed:admin
 ```
 
-2. Add it to `SocialTemplates` or `TikTokTemplates`.
+### Deployment
 
-The picker, form renderer, preview, and export buttons use the template registry automatically.
+```bash
+# Deploy backend
+cd api
+wrangler deploy
 
-### Adding a document type
-
-1. Add default data in `app.jsx`.
-2. Add an editor component in `editors.jsx`.
-3. Add Classic, Modern, and Editorial template components in `doc-templates.jsx`.
-4. Register the template set in `DocTemplates`.
-5. Add the document definition to `DOC_TYPES` in `app.jsx`.
-
-### Changing brand defaults
-
-Edit `DEFAULT_BRAND` in `app.jsx`. Users can overwrite those values in Studio Settings, and the saved values stay in `localStorage`.
+# Build and deploy frontend
+cd ..
+npm run build
+# Deploy dist/ to Cloudflare Pages
+```
 
 ---
 
-## Tech stack
+## Project Structure
 
-| Layer        | Choice                                                                  |
-| ------------ | ----------------------------------------------------------------------- |
-| UI           | React 18 CDN / UMD                                                      |
-| JSX          | Babel standalone                                                        |
-| Markdown     | marked.js                                                               |
-| Image export | html-to-image                                                           |
-| Fonts        | Google Fonts: Source Serif 4, Instrument Serif, Manrope, JetBrains Mono |
-| Storage      | localStorage                                                            |
-| Build        | None                                                                    |
+```
+atelier/
+├── src/                          # Frontend source
+│   ├── App.tsx                   # Main router
+│   ├── main.tsx                  # Entry point
+│   ├── pages/                    # Page components
+│   │   ├── Landing.tsx           # Marketing landing
+│   │   ├── Login.tsx, Register.tsx
+│   │   ├── Pricing.tsx
+│   │   ├── Account.tsx
+│   │   ├── app/
+│   │   │   └── Dashboard.tsx     # App dashboard
+│   │   ├── legal/                # Privacy, Terms, Refund
+│   │   └── Admin/                # Admin dashboard pages
+│   ├── modules/                  # Tool implementations
+│   │   ├── documents/
+│   │   ├── social/
+│   │   ├── cv/
+│   │   ├── pdf-to-image/
+│   │   ├── pdf-merge/
+│   │   ├── pdf-compress/
+│   │   ├── image-converter/
+│   │   └── ocr/
+│   ├── components/               # Shared components
+│   ├── wrappers/
+│   │   ├── AppShell.tsx          # Authenticated app wrapper
+│   │   └── MarketingWrapper.tsx  # Public page wrapper
+│   ├── hooks/                    # Custom hooks
+│   │   ├── useAuth.ts
+│   │   ├── useToolLimit.ts
+│   │   └── usePlan.ts
+│   ├── lib/
+│   │   ├── api.ts                # API client
+│   │   ├── tools.tsx             # Tool registry
+│   │   └── i18n.ts               # Internationalization
+│   └── locales/                  # Translation files
+│
+├── api/                          # Backend source
+│   ├── src/
+│   │   ├── index.ts              # Hono app + cron handler
+│   │   ├── types.ts              # TypeScript types
+│   │   ├── auth/
+│   │   │   └── routes.ts         # Auth endpoints
+│   │   ├── routes/
+│   │   │   ├── usage.ts          # Usage tracking
+│   │   │   ├── billing.ts        # Midtrans integration
+│   │   │   ├── admin.ts          # Admin API
+│   │   │   └── log-error.ts      # Error logging
+│   │   ├── middleware/
+│   │   │   ├── auth.ts           # JWT verification
+│   │   │   └── admin.ts          # Admin role check
+│   │   ├── lib/
+│   │   │   ├── jwt.ts
+│   │   │   ├── password.ts
+│   │   │   ├── tokens.ts
+│   │   │   └── email.ts          # Resend + templates
+│   │   └── db/
+│   │       ├── schema.sql        # Full schema
+│   │       └── migrations/       # Migration files
+│   └── wrangler.toml             # Cloudflare config
+│
+├── docs/                         # Documentation
+├── scripts/                      # Build/utility scripts
+└── public/                       # Static assets
+```
 
 ---
 
-## Browser support
+## Core Patterns
 
-Any modern browser: Chrome, Firefox, Safari, or Edge. Image export uses `html-to-image`, which requires browser support for `Canvas` and `Blob` APIs.
+### Tool Registry
+All tools are defined in `src/lib/tools.tsx` with:
+- Tool metadata (name, description, icon, category)
+- Public and app paths
+- Daily usage limits
+- Pro-only flag
+
+Routes are auto-generated from the registry for both public and authenticated contexts.
+
+### Usage Limits
+Every tool uses `useToolLimit(toolId)` hook:
+```tsx
+const { canUse, used, limit, increment } = useToolLimit('cv-builder')
+// Check canUse before export
+// Call increment() after successful generation
+```
+
+### Client-Side Processing
+All file operations run in the browser:
+- PDF parsing: pdf.js
+- OCR: Tesseract.js (lazy-loaded WASM)
+- Image conversion: Canvas API, @jsquash/webp, @jsquash/avif
+- PDF manipulation: pdf-lib
+
+**Trust signal:** Files never uploaded to servers.
+
+### Authentication Flow
+1. Register → Email verification required
+2. Login → JWT token stored in httpOnly cookie (backend) + localStorage (frontend)
+3. Session tracking in `sessions` table
+4. Soft deletion: `deleted_at` field, 30-day grace period
+
+### Billing Integration
+- Midtrans Snap.js for payment UI
+- Webhook validation with signature check
+- Subscription states: active, grace_period, cancelled
+- One-time credit packs supported
+- Refund requests with usage threshold checks
+
+---
+
+## Admin Dashboard
+
+Access at `/admin` (requires `role='admin'` in database).
+
+**Features:**
+- User management (search, view details, modify subscriptions)
+- Transaction history
+- Subscription management (renewals, cancellations, grace periods)
+- Refund request approval (auto-flags high-usage users)
+- Bug report tracking
+- Revenue analytics and charts
+- System configuration
+- Feature flags
+- Health monitoring
+- Error log viewer
+
+**Set admin role:**
+```bash
+wrangler d1 execute vanaila-studio --local \
+  --command "UPDATE users SET role='admin' WHERE email='your@email.com';"
+```
+
+---
+
+## Environment Variables
+
+### Backend (.dev.vars for local, Cloudflare dashboard for production)
+```
+JWT_SECRET=your-secret-key
+RESEND_API_KEY=re_xxxxx
+MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxx
+MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxx
+MIDTRANS_IS_PRODUCTION=false
+```
+
+### Frontend (vite.config.ts or .env)
+```
+VITE_API_URL=http://localhost:8787
+```
+
+---
+
+## Commands
+
+```bash
+# Frontend
+npm run dev              # Start dev server
+npm run build            # Build for production
+npm run preview          # Preview production build
+npm run typecheck        # TypeScript check
+
+# Backend
+cd api
+npm run dev              # Start Wrangler dev server
+npm run deploy           # Deploy to Cloudflare Workers
+npm run typecheck        # TypeScript check
+npm run db:apply         # Apply schema locally
+npm run db:apply:remote  # Apply schema to production
+npm run seed:admin       # Seed admin user
+
+# Database migrations
+wrangler d1 execute vanaila-studio --local --file=api/src/db/migrations/001_admin_dashboard.sql
+wrangler d1 execute vanaila-studio --file=api/src/db/migrations/001_admin_dashboard.sql
+```
 
 ---
 
@@ -185,16 +329,37 @@ Any modern browser: Chrome, Firefox, Safari, or Edge. Image export uses `html-to
 
 Pull requests are welcome. For significant changes, open an issue first to discuss what you would like to change.
 
-Please keep the no-build-step constraint. This project is intentionally simple to fork and self-host.
+**Guidelines:**
+- Maintain client-side processing for all file operations
+- Follow existing code patterns (tool registry, usage hooks)
+- Update documentation when adding features
+- Test both free and Pro tier flows
+- Ensure mobile responsiveness
+
+---
+
+## Security
+
+- All passwords hashed with bcrypt
+- JWT tokens with httpOnly cookies
+- CORS configured for frontend domain only
+- Rate limiting on auth endpoints
+- Input validation with Zod on all API routes
+- No PII in error logs
+- Session tracking for security audits
+
+**Report security issues:** security@vanaila.com
 
 ---
 
 ## License
 
-MIT - free to use, fork, and modify. Attribution appreciated but not required.
+MIT — free to use, fork, and modify. Attribution appreciated but not required.
 
 ---
 
 ## Made by
 
-**[Vanaila Digital](https://vanaila.com)** - a digital agency creating website, custom tools for creators, small business, and enterprises.
+**[Vanaila Digital](https://vanaila.com)** — a digital agency creating websites and custom tools for creators, small businesses, and enterprises.
+
+**Contact:** hello@vanaila.com

@@ -620,3 +620,92 @@ export function updateFeatureFlag(
 export function getHealthStatus() {
   return request<HealthStatus>('/admin/system/health', { headers: authHeaders() })
 }
+
+// ─── Admin Content Management ─────────────────────────────────────
+
+export interface Announcement {
+  id: string
+  title: string
+  message: string
+  type: 'info' | 'warning' | 'success' | 'error'
+  target: 'all' | 'free' | 'pro'
+  is_active: number
+  start_at?: number | null
+  end_at?: number | null
+  created_at: number
+  updated_at: number
+}
+
+export interface EmailTemplate {
+  template_key: string
+  subject?: string | null
+  html_body?: string | null
+  updated_at?: number
+}
+
+export function getAdminAnnouncements() {
+  return request<{ announcements: Announcement[] }>('/admin/content/announcements', { headers: authHeaders() })
+}
+
+export function createAdminAnnouncement(payload: Partial<Announcement>) {
+  return request<{ id: string; message: string }>('/admin/content/announcements', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateAdminAnnouncement(id: string, payload: Partial<Announcement> & { is_active?: boolean }) {
+  return request<{ announcement: Announcement }>(`/admin/content/announcements/${id}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteAdminAnnouncement(id: string) {
+  return request<{ ok: true }>(`/admin/content/announcements/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+}
+
+export function getActiveAnnouncements() {
+  return request<{ announcements: Announcement[] }>('/content/announcements', { headers: authHeaders() })
+}
+
+export function getAdminEmailTemplates() {
+  return request<{ templates: EmailTemplate[] }>('/admin/content/email-templates', { headers: authHeaders() })
+}
+
+export function updateAdminEmailTemplate(key: string, payload: { subject: string; html_body: string }) {
+  return request<{ ok: true }>(`/admin/content/email-templates/${key}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+}
+
+// ─── Admin Audit Logs ─────────────────────────────────────────────
+
+export interface AuditLogEntry {
+  id: number
+  admin_id: string
+  admin_email?: string | null
+  action: string
+  target_user_id?: string | null
+  target_email?: string | null
+  changes?: string | null
+  ip_address?: string | null
+  created_at: number
+}
+
+export function getAdminAuditLogs(params: { page?: number; limit?: number; action?: string; admin_id?: string; target_user_id?: string }) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => value && qs.set(key, String(value)))
+  return request<{ page: number; limit: number; total: number; logs: AuditLogEntry[] }>(`/admin/audit?${qs}`, { headers: authHeaders() })
+}
+
+export function getAdminAuditActions() {
+  return request<{ actions: { action: string; count: number }[] }>('/admin/audit/actions', { headers: authHeaders() })
+}

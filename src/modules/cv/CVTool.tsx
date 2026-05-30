@@ -17,6 +17,7 @@ import {
   ExecutiveTemplate,
   CreativeTemplate,
 } from './templates';
+import { exportCVToDocx } from './cvDocxExport';
 import { useLocalStorage } from '../documents/utils';
 import { useToolLimit } from '../../hooks/useToolLimit';
 import { usePlan } from '../../hooks/usePlan';
@@ -221,6 +222,21 @@ export default function CVTool() {
     setShowImportModal(true);
   };
 
+  const handleExportDocx = async () => {
+    try {
+      const blob = await exportCVToDocx(cvData);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${cvData.personal.fullName || 'cv'}.docx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      setRenderError('Failed to export DOCX. Please try again.');
+    }
+  };
+
   const handleApplyImport = useCallback((parsedData: Partial<CVData>) => {
     setCvData((prev: CVData) => ({
       ...prev,
@@ -348,6 +364,13 @@ export default function CVTool() {
               disabled={isRendering}
             >
               {isRendering ? 'Rendering…' : '↺ Refresh Preview'}
+            </button>
+            <button
+              className="cv-btn cv-btn--ghost"
+              onClick={handleExportDocx}
+              title="Download Word document"
+            >
+              ↓ Export DOCX
             </button>
             <button
               className={`cv-btn cv-btn--primary ${!canUse ? 'cv-btn--locked' : ''}`}

@@ -1,217 +1,143 @@
 import { useState, useCallback, useRef } from 'react';
 import type { CVData } from './types';
-
-// Lazy-loaded dependencies
-let Tesseract: any = null;
-let pdfjsLib: any = null;
-
-async function loadTesseract() {
-  if (Tesseract) return Tesseract;
-  const module = await import('tesseract.js');
-  Tesseract = module;
-  return Tesseract;
-}
-
-async function loadPdfJs() {
-  if (pdfjsLib) return pdfjsLib;
-  const pdfjs = await import('pdfjs-dist');
-  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-  pdfjsLib = pdfjs;
-  return pdfjs;
-}
+import { parseCVText, parseDOCX, extractPDFText } from './cvParser';
 
 interface Props {
   onClose: () => void;
   onApply: (data: Partial<CVData>) => void;
 }
 
+type FileType = 'pdf' | 'docx' | 'image' | null;
+
 export default function CVImportModal({ onClose, onApply }: Props) {
   const [file, setFile] = useState<File | null>(null);
+  const [fileType, setFileType] = useState<FileType>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState('');
-  const [extractedText, setExtractedText] = useState('');
+  const [parsedData, setParsedData] = useState<Partial<CVData> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const workerRef = useRef<any>(null);
 
   // ---------- File handling ----------
   const handleFileSelect = useCallback((selectedFile: File | null) => {
     if (!selectedFile) return;
+
+    let detected: FileType = null;
     const type = selectedFile.type;
-    if (!type.startsWith('image/') && type !== 'application/pdf') {
-      setError('Please upload an image (PNG/JPG) or PDF file');
+    const name = selectedFile.name.toLowerCase();
+
+    if (type === 'application/pdf' || name.endsWith('.pdf')) {
+      detected = 'pdf';
+    } else if (type.includes('word') || name.endsWith('.docx') || name.endsWith('.doc')) {
+      detected = 'docx';
+    } else if (type.startsWith('image/')) {
+      detected = 'image';
+    } else {
+      setError('Unsupported file type. Please upload PDF, DOCX, or image files (PNG/JPG).');
       return;
     }
+
     setFile(selectedFile);
-    setExtractedText('');
+    setFileType(detected);
+    setParsedData(null);
     setError(null);
   }, []);
 
-  // ---------- OCR Recognition ----------
-  const runOCR = useCallback(async () => {
-    if (!file) return;
+  // ---------- Run extraction ----------
+  const runExtraction = useCallback(async () => {
+    if (!file || !fileType) return;
 
     setIsProcessing(true);
     setError(null);
     setProgress(0);
-    setProgressText('Initializing OCR...');
 
     try {
-      const tesseract = await loadTesseract();
-      
-      const worker = await tesseract.createWorker('eng', 1, {
-        workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-        langPath: 'https://cdn.jsdelivr.net/npm/tesseract.js-data@1.0.0',
-        corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
-        logger: (m: any) => {
-          if (m.status === 'recognizing text') {
-            setProgress(Math.round(m.progress * 100));
-            setProgressText(`Recognizing text... ${Math.round(m.progress * 100)}%`);
-          } else if (m.status) {
-            setProgressText(m.status);
-          }
-        },
-      });
-      
-      workerRef.current = worker;
-
       let text = '';
 
-      if (file.type === 'application/pdf') {
-        // Render first page of PDF
-        setProgressText('Loading PDF...');
-        const pdfjs = await loadPdfJs();
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 2.0 });
-
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d')!;
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        await page.render({ canvasContext: context, viewport }).promise;
-        
-        const { data } = await worker.recognize(canvas);
-        text = data.text;
+      if (fileType === 'pdf') {
+        setProgressText('Extracting PDF text...');
+        text = await extractPDFText(file, (page, total) => {
+          const pct = Math.round((page / total) * 100);
+          setProgress(pct);
+          setProgressText(`Reading page ${page} of ${total}...`);
+        });
+      } else if (fileType === 'docx') {
+        setProgressText('Parsing DOCX...');
+        setProgress(30);
+        text = await parseDOCX(file);
+        setProgress(100);
       } else {
-        // Process image
+        // Image — use Tesseract OCR
+        setProgressText('Running OCR on image...');
+        const tesseract = await import('tesseract.js');
+        const worker = await tesseract.createWorker('eng', 1, {
+          workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+          langPath: 'https://cdn.jsdelivr.net/npm/tesseract.js-data@1.0.0',
+          corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
+          logger: (m: any) => {
+            if (m.status === 'recognizing text') {
+              setProgress(Math.round(m.progress * 100));
+              setProgressText(`OCR: ${Math.round(m.progress * 100)}%`);
+            } else if (m.status) {
+              setProgressText(m.status);
+            }
+          },
+        });
         const { data } = await worker.recognize(file);
-        text = data.text;
+        text = data.text || '';
+        await worker.terminate();
       }
 
-      setExtractedText(text.trim());
-      
-      await worker.terminate();
-      workerRef.current = null;
+      if (!text.trim()) {
+        setError('No text could be extracted from this file. Try using a higher-quality scan or PDF with selectable text.');
+        setIsProcessing(false);
+        return;
+      }
+
+      setProgressText('Parsing CV structure...');
+      const parsed = parseCVText(text);
+      setParsedData(parsed);
     } catch (err: any) {
-      setError(err?.message || 'OCR recognition failed');
+      setError(err?.message || 'Extraction failed');
     } finally {
       setIsProcessing(false);
       setProgress(0);
       setProgressText('');
     }
-  }, [file]);
-
-  // ---------- Parse CV text ----------
-  const parseCV = useCallback((): Partial<CVData> => {
-    const lines = extractedText.split('\n').map(l => l.trim()).filter(Boolean);
-    
-    const parsed: Partial<CVData> = {
-      personal: {
-        fullName: '',
-        title: '',
-        email: '',
-        phone: '',
-        location: '',
-        website: '',
-        linkedin: '',
-        github: '',
-      },
-      summary: '',
-      experience: [],
-      education: [],
-      skills: [],
-      certifications: [],
-    };
-
-    // Extract email
-    const emailMatch = extractedText.match(/[\w.-]+@[\w.-]+\.\w+/);
-    if (emailMatch) parsed.personal!.email = emailMatch[0];
-
-    // Extract phone
-    const phoneMatch = extractedText.match(/[\+\(]?[0-9][0-9\s\-\(\)]{7,}[0-9]/);
-    if (phoneMatch) parsed.personal!.phone = phoneMatch[0];
-
-    // Extract LinkedIn
-    const linkedinMatch = extractedText.match(/linkedin\.com\/in\/[\w-]+/i);
-    if (linkedinMatch) parsed.personal!.linkedin = linkedinMatch[0];
-
-    // Extract GitHub
-    const githubMatch = extractedText.match(/github\.com\/[\w-]+/i);
-    if (githubMatch) parsed.personal!.github = githubMatch[0];
-
-    // Extract website
-    const websiteMatch = extractedText.match(/(?:https?:\/\/)?(?:www\.)?[\w-]+\.[\w.-]+/);
-    if (websiteMatch && !websiteMatch[0].includes('linkedin') && !websiteMatch[0].includes('github')) {
-      parsed.personal!.website = websiteMatch[0].replace(/^https?:\/\//, '');
-    }
-
-    // First line is likely the name
-    if (lines.length > 0) {
-      const firstLine = lines[0];
-      // Check if it looks like a name (not too long, mostly letters)
-      if (firstLine.length < 50 && /^[A-Za-z\s]+$/.test(firstLine)) {
-        parsed.personal!.fullName = firstLine;
-      }
-    }
-
-    // Second line might be title
-    if (lines.length > 1) {
-      const secondLine = lines[1];
-      if (secondLine.length < 80 && !secondLine.includes('@') && !secondLine.includes('http')) {
-        parsed.personal!.title = secondLine;
-      }
-    }
-
-    // Extract skills (look for common skill keywords)
-    const skillKeywords = ['Skills', 'Technical Skills', 'Expertise', 'Technologies'];
-    const skillSectionIndex = lines.findIndex(l => 
-      skillKeywords.some(k => l.toLowerCase().includes(k.toLowerCase()))
-    );
-    
-    if (skillSectionIndex !== -1) {
-      // Get next few lines after skills header
-      const skillLines = lines.slice(skillSectionIndex + 1, skillSectionIndex + 10);
-      skillLines.forEach((line, idx) => {
-        // Stop if we hit another section
-        if (line.match(/^(Experience|Education|Certifications)/i)) return;
-        
-        // Split by common delimiters
-        const skills = line.split(/[,•·|]/);
-        skills.forEach(skill => {
-          const trimmed = skill.trim();
-          if (trimmed && trimmed.length < 30) {
-            parsed.skills!.push({
-              id: `skill-${Date.now()}-${idx}-${Math.random()}`,
-              name: trimmed,
-              category: 'Technical',
-            });
-          }
-        });
-      });
-    }
-
-    return parsed;
-  }, [extractedText]);
+  }, [file, fileType]);
 
   const handleApply = useCallback(() => {
-    const parsed = parseCV();
-    onApply(parsed);
+    if (parsedData) {
+      onApply(parsedData);
+    }
     onClose();
-  }, [parseCV, onApply, onClose]);
+  }, [parsedData, onApply, onClose]);
+
+  // ---------- Render field summary ----------
+  function FieldsPreview({ data }: { data: Partial<CVData> }) {
+    const fields: { label: string; value: string; filled: boolean }[] = [
+      { label: 'Name', value: data.personal?.fullName || '', filled: !!data.personal?.fullName },
+      { label: 'Email', value: data.personal?.email || '', filled: !!data.personal?.email },
+      { label: 'Phone', value: data.personal?.phone || '', filled: !!data.personal?.phone },
+      { label: 'Summary', value: data.summary ? data.summary.slice(0, 100) + (data.summary.length > 100 ? '...' : '') : '', filled: !!data.summary },
+      { label: 'Experience', value: `${data.experience?.length || 0} entries found`, filled: (data.experience?.length || 0) > 0 },
+      { label: 'Education', value: `${data.education?.length || 0} entries found`, filled: (data.education?.length || 0) > 0 },
+      { label: 'Skills', value: `${data.skills?.length || 0} skills found`, filled: (data.skills?.length || 0) > 0 },
+    ];
+
+    return (
+      <div className="cv-import-fields">
+        {fields.map((f) => (
+          <div key={f.label} className={`cv-import-field ${f.filled ? 'cv-import-field--ok' : ''}`}>
+            <span className="cv-import-field__icon">{f.filled ? '✅' : '❌'}</span>
+            <span className="cv-import-field__label">{f.label}</span>
+            <span className="cv-import-field__value">{f.value || '—'}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -224,40 +150,45 @@ export default function CVImportModal({ onClose, onApply }: Props) {
         <div className="modal__body">
           {!file && (
             <>
-              <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--shell-muted)', marginBottom: 16 }}>
-                Upload your existing CV (PDF or image) and we'll extract the text using OCR.
-                You can then edit the extracted text and apply it to your CV fields.
+              <p className="cv-import-desc">
+                Upload your existing CV — we support <strong>PDF</strong>, <strong>DOCX</strong>, and image files (PNG/JPG).
+                Text is extracted locally and parsed into structured CV fields.
               </p>
-              
+
               <div className="cv-import-privacy">
                 <span className="cv-import-privacy__icon">🔒</span>
-                <span>OCR runs locally in your browser. No file upload.</span>
+                <span>All processing is local. No files leave your device.</span>
               </div>
 
               <button
                 className="cv-import-upload-btn"
                 onClick={() => fileInputRef.current?.click()}
               >
-                📄 Choose File
+                📁 Choose PDF, DOCX, or Image
               </button>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/jpg,application/pdf"
+                accept=".pdf,.docx,.doc,image/png,image/jpeg,image/jpg"
                 hidden
                 onChange={(e) => handleFileSelect(e.target.files?.[0] || null)}
               />
             </>
           )}
 
-          {file && !extractedText && !isProcessing && (
+          {file && !parsedData && !isProcessing && (
             <>
               <div className="cv-import-file">
                 <span className="cv-import-file__icon">📄</span>
-                <span className="cv-import-file__name">{file.name}</span>
-                <button 
+                <div className="cv-import-file__info">
+                  <span className="cv-import-file__name">{file.name}</span>
+                  <span className="cv-import-file__size">
+                    {(file.size / 1024).toFixed(0)} KB
+                  </span>
+                </div>
+                <button
                   className="cv-import-file__clear"
-                  onClick={() => setFile(null)}
+                  onClick={() => { setFile(null); setFileType(null); }}
                 >
                   ×
                 </button>
@@ -265,10 +196,10 @@ export default function CVImportModal({ onClose, onApply }: Props) {
 
               <button
                 className="btn btn--accent"
-                onClick={runOCR}
+                onClick={runExtraction}
                 style={{ width: '100%', marginTop: 16 }}
               >
-                🔍 Extract Text
+                🔍 Extract & Parse
               </button>
             </>
           )}
@@ -291,55 +222,43 @@ export default function CVImportModal({ onClose, onApply }: Props) {
             </div>
           )}
 
-          {extractedText && (
+          {parsedData && (
             <>
-              <p style={{ fontSize: 12, color: 'var(--shell-muted)', marginBottom: 8 }}>
-                Extracted text (editable):
+              <p className="cv-import-result-heading">
+                ✓ Text extracted and parsed
               </p>
-              <textarea
-                className="cv-import-textarea"
-                value={extractedText}
-                onChange={(e) => setExtractedText(e.target.value)}
-                rows={12}
-              />
 
-              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+              <FieldsPreview data={parsedData} />
+
+              <div className="cv-import-actions">
                 <button
                   className="btn btn--ghost"
                   onClick={() => {
                     setFile(null);
-                    setExtractedText('');
+                    setFileType(null);
+                    setParsedData(null);
                   }}
                   style={{ flex: 1 }}
                 >
-                  ← Start Over
+                  ← Try another file
                 </button>
                 <button
                   className="btn btn--accent"
                   onClick={handleApply}
                   style={{ flex: 1 }}
                 >
-                  ✓ Parse & Fill
+                  ✓ Apply to CV
                 </button>
               </div>
 
-              <p style={{ fontSize: 11, color: 'var(--shell-muted)', marginTop: 12, lineHeight: 1.5 }}>
-                We'll attempt to auto-fill your CV fields from the extracted text.
-                You can review and edit the results after applying.
+              <p className="cv-import-hint">
+                Fields will be filled with extracted data. Review and adjust in the editor.
               </p>
             </>
           )}
 
           {error && (
-            <div style={{ 
-              fontSize: 11.5, 
-              color: '#ff8080', 
-              background: '#3a1a1a', 
-              border: '1px solid #5c2a2a', 
-              borderRadius: 6, 
-              padding: '10px 14px', 
-              marginTop: 12 
-            }}>
+            <div className="cv-import-error">
               {error}
             </div>
           )}

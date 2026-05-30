@@ -6,6 +6,7 @@ import admin from './routes/admin'
 import logError from './routes/log-error'
 import billing from './routes/billing'
 import bugReports from './routes/bug-reports'
+import cvAi from './routes/cv-ai'
 import { contentPublic } from './routes/admin/content'
 import { checkRateLimit, getClientIP } from './lib/rate-limit'
 import type { Bindings } from './types'
@@ -65,6 +66,7 @@ app.route('/api/log-error', logError)
 app.route('/billing', billing)
 app.route('/bug-reports', bugReports)
 app.route('/content', contentPublic)
+app.route('/api', cvAi)
 
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }))
 

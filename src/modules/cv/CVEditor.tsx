@@ -1,5 +1,6 @@
 import React from 'react';
 import { CVData, WorkExperience, Education, Skill, Certification } from './types';
+import AIButton from './AIButton';
 
 // ---- tiny uid ----
 let _uid = 0;
@@ -139,6 +140,15 @@ function SummarySection({
   return (
     <div className="cv-section">
       <SectionHead label="Professional Summary" />
+      <div className="cv-section__ai-row">
+        <AIButton
+          action="generate_summary"
+          text={value}
+          context="Generate a strong professional summary for this CV."
+          onResult={onChange}
+          label="✨ Generate summary"
+        />
+      </div>
       <Textarea
         value={value}
         onChange={onChange}
@@ -218,6 +228,16 @@ function ExperienceSection({
             <span>Currently working here</span>
           </label>
           <Field label="Description (use - for bullet points)">
+            <div className="cv-section__ai-row cv-section__ai-row--right">
+              <AIButton
+                action="rewrite_bullet"
+                text={exp.description}
+                context={`Role: ${exp.role || 'Unknown'} at ${exp.company || 'Unknown company'}`}
+                onResult={(result) => update(exp.id, { description: result })}
+                label="✨ Rewrite"
+                small
+              />
+            </div>
             <Textarea
               value={exp.description}
               onChange={(v) => update(exp.id, { description: v })}

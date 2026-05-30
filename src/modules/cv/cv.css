@@ -1301,3 +1301,111 @@
   background: rgba(80, 200, 120, 0.08);
 }
 
+/* ---- AI button ---- */
+.cv-ai-btn-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cv-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid rgba(168, 130, 255, 0.3);
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(168, 130, 255, 0.1), rgba(100, 180, 255, 0.1));
+  color: #a882ff;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.cv-ai-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(168, 130, 255, 0.2), rgba(100, 180, 255, 0.2));
+  border-color: rgba(168, 130, 255, 0.5);
+}
+
+.cv-ai-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cv-ai-btn--sm {
+  padding: 3px 8px;
+  font-size: 10.5px;
+  border-radius: 5px;
+}
+
+.cv-ai-error {
+  font-size: 10px;
+  color: #ff8080;
+  white-space: nowrap;
+}
+
+.cv-section__ai-row {
+  margin-bottom: 8px;
+}
+
+.cv-section__ai-row--right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ---- AI button ---- */
+.cv-ai-btn-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cv-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid rgba(168, 130, 255, 0.3);
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(168, 130, 255, 0.1), rgba(100, 180, 255, 0.1));
+  color: #a882ff;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.cv-ai-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(168, 130, 255, 0.2), rgba(100, 180, 255, 0.2));
+  border-color: rgba(168, 130, 255, 0.5);
+}
+
+.cv-ai-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cv-ai-btn--sm {
+  padding: 3px 8px;
+  font-size: 10.5px;
+  border-radius: 5px;
+}
+
+.cv-ai-error {
+  font-size: 10px;
+  color: #ff8080;
+  white-space: nowrap;
+}
+
+.cv-section__ai-row {
+  margin-bottom: 8px;
+}
+
+.cv-section__ai-row--right {
+  display: flex;
+  justify-content: flex-end;
+}
+

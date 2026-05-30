@@ -140,4 +140,25 @@ analyticsAdmin.get('/tools', async (c) => {
   })
 })
 
+// Geo analytics
+analyticsAdmin.get('/geo', async (c) => {
+  const days = Number(c.req.query('days') ?? 30)
+  const now = Math.floor(Date.now() / 1000)
+  const since = now - days * 86400
+  const sinceDate = new Date(since * 1000).toISOString().slice(0, 10)
+
+  const geoData = await c.env.DB.prepare(
+    `SELECT country_code, COUNT(DISTINCT user_id) AS unique_users
+     FROM user_geo_daily
+     WHERE date >= ?
+     GROUP BY country_code
+     ORDER BY unique_users DESC
+     LIMIT 20`
+  )
+    .bind(sinceDate)
+    .all<{ country_code: string; unique_users: number }>()
+
+  return c.json({ geo: geoData.results ?? [] })
+})
+
 export default analyticsAdmin

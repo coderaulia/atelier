@@ -48,5 +48,17 @@ export const authMiddleware = createMiddleware<{ Bindings: Bindings; Variables: 
     c.set('userId', userId)
     c.set('plan', user.plan as 'free' | 'pro')
     await next()
+
+    // Capture geo data from Cloudflare header (fire-and-forget)
+    const country = c.req.header('CF-IPCountry') ?? 'XX'
+    const today = new Date().toISOString().slice(0, 10)
+    const now = Math.floor(Date.now() / 1000)
+    c.env.DB.prepare(
+      `INSERT INTO user_geo_daily (user_id, date, country_code, last_seen) VALUES (?, ?, ?, ?)
+       ON CONFLICT (user_id, date) DO UPDATE SET country_code = ?, last_seen = ?`
+    )
+      .bind(userId, today, country, now, country, now)
+      .run()
+      .catch(() => {}) // Non-blocking, don't fail request
   }
 )

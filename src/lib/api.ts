@@ -548,6 +548,14 @@ export function getAdminToolAnalytics(days = 30) {
   return request<ToolAnalytics>(`/admin/analytics/tools?days=${days}`, { headers: authHeaders() })
 }
 
+export interface GeoAnalytics {
+  geo: { country_code: string; unique_users: number }[]
+}
+
+export function getAdminGeoAnalytics(days = 30) {
+  return request<GeoAnalytics>(`/admin/analytics/geo?days=${days}`, { headers: authHeaders() })
+}
+
 // ─── Admin System Management ──────────────────────────────────────
 
 export interface SystemConfig {

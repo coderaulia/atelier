@@ -5,7 +5,7 @@ import { getAuthToken } from '../../lib/auth'
 
 interface AdminLayoutProps {
   children: ReactNode
-  active: 'overview' | 'users' | 'transactions' | 'subscriptions' | 'refunds' | 'bug-reports' | 'revenue' | 'system-config' | 'feature-flags' | 'health' | 'errors'
+  active: 'overview' | 'users' | 'transactions' | 'subscriptions' | 'refunds' | 'bug-reports' | 'revenue' | 'analytics' | 'system-config' | 'feature-flags' | 'health' | 'errors'
 }
 
 export default function AdminLayout({ children, active }: AdminLayoutProps) {
@@ -57,6 +57,7 @@ export default function AdminLayout({ children, active }: AdminLayoutProps) {
           <NavLink to="/admin/subscriptions" active={active === 'subscriptions'}>Subscriptions</NavLink>
           <NavLink to="/admin/refunds" active={active === 'refunds'}>Refunds</NavLink>
           <NavLink to="/admin/bug-reports" active={active === 'bug-reports'}>Bug Reports</NavLink>
+          <NavLink to="/admin/analytics" active={active === 'analytics'}>Analytics</NavLink>
           <NavLink to="/admin/revenue" active={active === 'revenue'}>Revenue</NavLink>
           <NavLink to="/admin/system/config" active={active === 'system-config'}>Config</NavLink>
           <NavLink to="/admin/system/features" active={active === 'feature-flags'}>Features</NavLink>

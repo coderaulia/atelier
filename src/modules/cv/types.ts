@@ -51,6 +51,32 @@ export interface Certification {
   url?: string;
 }
 
+// ---- Guided Start ----
+export interface CVStartupConfig {
+  targetRole: string;
+  experienceLevel: 'entry' | 'mid' | 'senior' | 'executive';
+  industry: 'tech' | 'finance' | 'creative' | 'healthcare' | 'education' | 'other';
+}
+
+// ---- Custom Sections ----
+export interface CustomSectionItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  date: string;
+  description: string;
+}
+
+export interface CustomSection {
+  id: string;
+  title: string;
+  items: CustomSectionItem[];
+  order: number;
+}
+
+// ---- Regional Mode ----
+export type CVRegionalMode = 'international' | 'indonesia';
+
 export interface CVData {
   personal: PersonalInfo;
   summary: string;
@@ -153,3 +179,79 @@ export const DEFAULT_CV: CVData = {
     },
   ],
 };
+
+export function generateCVFromStartupConfig(config: CVStartupConfig): CVData {
+  const role = config.targetRole || 'Professional';
+  const isEntry = config.experienceLevel === 'entry';
+  const isExecutive = config.experienceLevel === 'executive';
+  const isSenior = config.experienceLevel === 'senior' || isExecutive;
+
+  const industrySkills: Record<CVStartupConfig['industry'], string[]> = {
+    tech: ['JavaScript', 'TypeScript', 'React', 'API Design', 'Agile Delivery', 'Problem Solving'],
+    finance: ['Financial Analysis', 'Forecasting', 'Excel', 'Risk Assessment', 'Reporting', 'Stakeholder Management'],
+    creative: ['Brand Strategy', 'Visual Design', 'Figma', 'Creative Direction', 'Typography', 'Client Presentation'],
+    healthcare: ['Patient Care', 'Compliance', 'Documentation', 'Process Improvement', 'Team Coordination', 'Quality Standards'],
+    education: ['Curriculum Design', 'Student Assessment', 'Lesson Planning', 'Classroom Management', 'Communication', 'Learning Technology'],
+    other: ['Communication', 'Project Coordination', 'Problem Solving', 'Research', 'Reporting', 'Stakeholder Management'],
+  };
+
+  const summary = isEntry
+    ? `Motivated ${role} candidate with strong foundation in ${config.industry} and hands-on project experience. Eager to apply analytical thinking, collaboration, and continuous learning to deliver measurable results.`
+    : isExecutive
+      ? `Executive ${role} with 10+ years leading teams, strategy, and cross-functional initiatives in ${config.industry}. Known for building high-performing organizations, improving operational performance, and delivering measurable business outcomes.`
+      : isSenior
+        ? `Senior ${role} with 5+ years driving complex initiatives in ${config.industry}. Experienced in leading cross-functional work, improving processes, and delivering measurable impact across teams.`
+        : `${role} with 3+ years of experience in ${config.industry}. Skilled at translating goals into practical execution, collaborating across teams, and delivering reliable results.`;
+
+  return {
+    personal: {
+      fullName: 'Your Name',
+      title: role,
+      email: 'you@example.com',
+      phone: '+62 812 0000 0000',
+      location: 'Jakarta, Indonesia',
+      website: '',
+      linkedin: 'linkedin.com/in/yourname',
+      github: config.industry === 'tech' ? 'github.com/yourname' : '',
+    },
+    summary,
+    experience: isEntry
+      ? []
+      : [
+          {
+            id: 'exp1',
+            company: 'Company Name',
+            role,
+            location: 'Jakarta, Indonesia',
+            startDate: '2021-01',
+            endDate: '',
+            current: true,
+            description: isExecutive
+              ? '- Led cross-functional organization to deliver strategic initiatives across multiple business units\n- Improved operational performance by [X]% through process redesign and stakeholder alignment\n- Managed team of [X] leaders and [X] total contributors across [regions/functions]'
+              : '- Delivered [project/result] that improved [metric] by [X]%\n- Collaborated with [teams/stakeholders] to launch [initiative] on time\n- Reduced [cost/time/errors] by [X]% through [method/process/tool]',
+          },
+        ],
+    education: [
+      {
+        id: 'edu1',
+        institution: 'University Name',
+        degree: isEntry ? 'Bachelor of Science' : 'Degree',
+        field: config.industry === 'tech' ? 'Computer Science' : 'Field of Study',
+        location: 'City, Country',
+        startDate: isEntry ? '2020-08' : '2014-08',
+        endDate: isEntry ? '2024-05' : '2018-05',
+        current: false,
+        gpa: isEntry ? '3.7' : '',
+        description: isEntry ? 'Relevant coursework, honors, or campus leadership.' : '',
+      },
+    ],
+    skills: industrySkills[config.industry].map((skill, index) => ({
+      id: `sk${index + 1}`,
+      name: skill,
+      level: index < 3 ? 'advanced' : 'intermediate',
+      category: config.industry === 'tech' ? 'Technical' : 'Professional',
+    })),
+    certifications: [],
+  };
+}
+

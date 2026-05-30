@@ -6,6 +6,267 @@
    --accent-ink, --font-sans, --font-serif
 ====================================================== */
 
+/* ---- Wizard ---- */
+.cv-wizard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--shell-bg);
+  padding: 40px 20px;
+}
+
+.cv-wizard__header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.cv-wizard__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--shell-ink);
+  margin: 0 0 8px;
+}
+
+.cv-wizard__subtitle {
+  font-size: 14px;
+  color: var(--shell-muted);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.cv-wizard__skip {
+  font-size: 12px;
+  color: var(--shell-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: var(--font-sans);
+  padding: 0;
+}
+
+.cv-wizard__skip:hover {
+  color: var(--accent);
+}
+
+.cv-wizard__progress {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 36px;
+}
+
+.cv-wizard__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.cv-wizard__step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--shell-rule);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--shell-muted);
+  transition: all 0.2s;
+}
+
+.cv-wizard__step--active .cv-wizard__step-number {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cv-wizard__step--completed .cv-wizard__step-number {
+  border-color: #2a8a4a;
+  background: #2a8a4a;
+  color: #fff;
+}
+
+.cv-wizard__step-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--shell-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cv-wizard__content {
+  width: 100%;
+  max-width: 520px;
+  margin-bottom: 36px;
+}
+
+.cv-wizard__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: cv-wizard-fade 0.25s ease;
+}
+
+@keyframes cv-wizard-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cv-wizard__label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--shell-ink);
+  text-align: center;
+}
+
+.cv-wizard__input {
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 15px;
+  color: var(--shell-ink);
+  font-family: var(--font-sans);
+  width: 100%;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+
+.cv-wizard__input:focus {
+  border-color: var(--accent);
+}
+
+.cv-wizard__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.cv-wizard__suggestion {
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: var(--font-sans);
+  color: var(--shell-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cv-wizard__suggestion:hover {
+  border-color: var(--accent);
+  color: var(--shell-ink);
+}
+
+.cv-wizard__suggestion--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+
+.cv-wizard__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cv-wizard__options--grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.cv-wizard__option {
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  font-family: var(--font-sans);
+  color: var(--shell-ink);
+}
+
+.cv-wizard__option:hover {
+  border-color: var(--accent);
+}
+
+.cv-wizard__option--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.cv-wizard__option-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.cv-wizard__option-desc {
+  font-size: 11px;
+  color: var(--shell-muted);
+}
+
+.cv-wizard__option-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.cv-wizard__option--icon {
+  text-align: center;
+}
+
+.cv-wizard__footer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.cv-wizard__btn {
+  padding: 10px 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: opacity 0.15s;
+}
+
+.cv-wizard__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cv-wizard__btn--primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cv-wizard__btn--primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.cv-wizard__btn--secondary {
+  background: var(--shell-bg-2);
+  color: var(--shell-muted);
+  border: 1px solid var(--shell-rule);
+}
+
+.cv-wizard__btn--secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--shell-ink);
+}
+
 /* ---- Layout ---- */
 .cv-tool {
   display: grid;

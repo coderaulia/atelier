@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import { pdf } from '@react-pdf/renderer';
-import { CVData, CVTemplate, CV_TEMPLATES, DEFAULT_CV } from './types';
+import { CVData, CVTemplate, CV_TEMPLATES, DEFAULT_CV, generateCVFromStartupConfig, type CVStartupConfig } from './types';
 import { CVEditor } from './CVEditor';
+import CVWizard from './CVWizard';
 import {
   ClassicTemplate,
   ModernTemplate,
@@ -91,6 +92,7 @@ function TemplatePicker({
 export default function CVTool() {
   const [cvData, setCvData] = useLocalStorage<CVData>('cv_data_v1', DEFAULT_CV);
   const [template, setTemplate] = useLocalStorage<CVTemplate>('cv_template_v1', 'classic');
+  const [hasCompletedWizard, setHasCompletedWizard] = useLocalStorage<boolean>('cv_wizard_done_v1', false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
   const [renderError, setRenderError] = useState<string | null>(null);
@@ -213,8 +215,26 @@ export default function CVTool() {
       skills: parsedData.skills?.length ? parsedData.skills : prev.skills,
       certifications: parsedData.certifications?.length ? parsedData.certifications : prev.certifications,
     }));
+    setHasCompletedWizard(true);
     setBlobUrl(null); // Invalidate preview
-  }, [setCvData]);
+  }, [setCvData, setHasCompletedWizard]);
+
+  const handleWizardComplete = useCallback((config: CVStartupConfig) => {
+    const tailoredCv = generateCVFromStartupConfig(config);
+    setCvData(tailoredCv);
+    setTemplate(config.experienceLevel === 'executive' && isPro ? 'executive' : 'classic');
+    setHasCompletedWizard(true);
+    setBlobUrl(null);
+  }, [isPro, setCvData, setHasCompletedWizard, setTemplate]);
+
+  if (!hasCompletedWizard) {
+    return (
+      <CVWizard
+        onComplete={handleWizardComplete}
+        onSkip={() => setHasCompletedWizard(true)}
+      />
+    );
+  }
 
   return (
     <div className="cv-tool">
@@ -224,6 +244,13 @@ export default function CVTool() {
           <div className="cv-sidebar__title-row">
             <span className="cv-sidebar__title">CV Builder</span>
             <div className="cv-sidebar__actions">
+              <button
+                className="cv-btn cv-btn--ghost cv-btn--sm"
+                onClick={() => setHasCompletedWizard(false)}
+                title="Restart guided setup"
+              >
+                Guide
+              </button>
               {/* Import menu */}
               <div className="cv-import-wrap">
                 <button

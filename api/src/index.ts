@@ -12,8 +12,23 @@ import type { Bindings } from './types'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
+app.use('*', cors({
+  origin: (origin) => {
+    if (!origin) return ''
+    // Allow any localhost port in development
+    if (/^http:\/\/localhost:\d+$/.test(origin)) return origin
+    const allowed = ['https://atelier.vanailadigital.com']
+    return allowed.includes(origin) ? origin : ''
+  },
+  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400,
+}))
+
 // Global rate limiter - first layer DDoS protection (100 req/min per IP)
+// Skip OPTIONS preflight requests
 app.use('*', async (c, next) => {
+  if (c.req.method === 'OPTIONS') return next()
   const ip = getClientIP(c)
   const limit = await checkRateLimit(c.env.DB, `global:${ip}`, 60, 100)
   if (!limit.allowed) {
@@ -30,19 +45,6 @@ app.use('*', async (c, next) => {
   }
   await next()
 })
-
-app.use('*', cors({
-  origin: (origin) => {
-    if (!origin) return ''
-    // Allow any localhost port in development
-    if (/^http:\/\/localhost:\d+$/.test(origin)) return origin
-    const allowed = ['https://atelier.vanailadigital.com']
-    return allowed.includes(origin) ? origin : ''
-  },
-  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400,
-}))
 
 app.use('*', async (c, next) => {
   c.header('Content-Security-Policy', "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://app.midtrans.com https://*.midtrans.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.midtrans.com https://app.midtrans.com https://*.midtrans.com; frame-src https://app.midtrans.com https://*.midtrans.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")

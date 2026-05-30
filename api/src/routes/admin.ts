@@ -36,49 +36,64 @@ const patchUserSchema = z.object({
 })
 
 admin.get('/stats', async (c) => {
-  const today = todayUTC()
-  const monthStart = monthStartUnix()
-  const since7 = dayOffset(6)
-  const since30Unix = Math.floor(Date.now() / 1000) - 30 * 86400
+  try {
+    const today = todayUTC()
+    const monthStart = monthStartUnix()
+    const since7 = dayOffset(6)
+    const since30Unix = Math.floor(Date.now() / 1000) - 30 * 86400
 
-  const [totals, usersToday, revenue, topTools, limitHits, dailyTools, dailySignups] = await Promise.all([
-    c.env.DB.prepare(
-      `SELECT
-        COUNT(*) AS total_users,
-        SUM(CASE WHEN plan = 'pro' THEN 1 ELSE 0 END) AS pro_users,
-        SUM(CASE WHEN plan = 'free' THEN 1 ELSE 0 END) AS free_users
-       FROM users`
-    ).first<{ total_users: number; pro_users: number; free_users: number }>(),
-    c.env.DB.prepare('SELECT COUNT(*) AS count FROM users WHERE date(created_at, \"unixepoch\") = ?')
-      .bind(today)
-      .first<{ count: number }>(),
-    c.env.DB.prepare('SELECT COALESCE(SUM(amount), 0) AS revenue FROM transactions WHERE status = ? AND created_at >= ?')
-      .bind('success', monthStart)
-      .first<{ revenue: number }>(),
-    c.env.DB.prepare('SELECT tool_id, SUM(count) AS count FROM usage_log GROUP BY tool_id ORDER BY count DESC LIMIT 5')
-      .all<{ tool_id: string; count: number }>(),
-    c.env.DB.prepare('SELECT tool_id, SUM(limit_hits) AS count FROM usage_log WHERE date = ? GROUP BY tool_id ORDER BY count DESC')
-      .bind(today)
-      .all<{ tool_id: string; count: number }>(),
-    c.env.DB.prepare('SELECT date, tool_id, SUM(count) AS count FROM usage_log WHERE date >= ? GROUP BY date, tool_id ORDER BY date ASC')
-      .bind(since7)
-      .all<{ date: string; tool_id: string; count: number }>(),
-    c.env.DB.prepare('SELECT date(created_at, \"unixepoch\") AS date, COUNT(*) AS count FROM users WHERE created_at >= ? GROUP BY date ORDER BY date ASC')
-      .bind(since30Unix)
-      .all<{ date: string; count: number }>(),
-  ])
+    const [totals, usersToday, revenue, topTools, limitHits, dailyTools, dailySignups] = await Promise.all([
+      c.env.DB.prepare(
+        `SELECT
+          COUNT(*) AS total_users,
+          SUM(CASE WHEN plan = 'pro' THEN 1 ELSE 0 END) AS pro_users,
+          SUM(CASE WHEN plan = 'free' THEN 1 ELSE 0 END) AS free_users
+         FROM users`
+      ).first<{ total_users: number; pro_users: number; free_users: number }>(),
+      c.env.DB.prepare(`SELECT COUNT(*) AS count FROM users WHERE date(created_at, 'unixepoch') = ?`)
+        .bind(today)
+        .first<{ count: number }>(),
+      c.env.DB.prepare('SELECT COALESCE(SUM(amount), 0) AS revenue FROM transactions WHERE status = ? AND created_at >= ?')
+        .bind('success', monthStart)
+        .first<{ revenue: number }>(),
+      c.env.DB.prepare('SELECT tool_id, SUM(count) AS count FROM usage_log GROUP BY tool_id ORDER BY count DESC LIMIT 5')
+        .all<{ tool_id: string; count: number }>(),
+      c.env.DB.prepare('SELECT tool_id, SUM(limit_hits) AS count FROM usage_log WHERE date = ? GROUP BY tool_id ORDER BY count DESC')
+        .bind(today)
+        .all<{ tool_id: string; count: number }>(),
+      c.env.DB.prepare("SELECT date, tool_id, SUM(count) AS count FROM usage_log WHERE date >= ? GROUP BY date, tool_id ORDER BY date ASC")
+        .bind(since7)
+        .all<{ date: string; tool_id: string; count: number }>(),
+      c.env.DB.prepare("SELECT date(created_at, 'unixepoch') AS date, COUNT(*) AS count FROM users WHERE created_at >= ? GROUP BY date ORDER BY date ASC")
+        .bind(since30Unix)
+        .all<{ date: string; count: number }>(),
+    ])
 
-  return c.json({
-    total_users: totals?.total_users ?? 0,
-    users_today: usersToday?.count ?? 0,
-    pro_users: totals?.pro_users ?? 0,
-    free_users: totals?.free_users ?? 0,
-    revenue_this_month: revenue?.revenue ?? 0,
-    top_tools: topTools.results ?? [],
-    limit_hits_today: limitHits.results ?? [],
-    daily_tool_usage: dailyTools.results ?? [],
-    daily_signups: dailySignups.results ?? [],
-  })
+    return c.json({
+      total_users: totals?.total_users ?? 0,
+      users_today: usersToday?.count ?? 0,
+      pro_users: totals?.pro_users ?? 0,
+      free_users: totals?.free_users ?? 0,
+      revenue_this_month: revenue?.revenue ?? 0,
+      top_tools: topTools.results ?? [],
+      limit_hits_today: limitHits.results ?? [],
+      daily_tool_usage: dailyTools.results ?? [],
+      daily_signups: dailySignups.results ?? [],
+    })
+  } catch (err) {
+    console.error('admin stats error:', err)
+    return c.json({
+      total_users: 0,
+      users_today: 0,
+      pro_users: 0,
+      free_users: 0,
+      revenue_this_month: 0,
+      top_tools: [],
+      limit_hits_today: [],
+      daily_tool_usage: [],
+      daily_signups: [],
+    })
+  }
 })
 
 admin.get('/users', async (c) => {

@@ -22,6 +22,8 @@ export default function Login() {
       if (redirect) {
         localStorage.removeItem('vs_post_auth_redirect')
         navigate(redirect)
+      } else if (user.role === 'admin') {
+        navigate('/admin')
       } else {
         navigate('/app/dashboard')
       }

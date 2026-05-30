@@ -16,6 +16,7 @@ export default function AdminLayout({ children, active }: AdminLayoutProps) {
   useEffect(() => {
     const token = getAuthToken()
     if (!token) {
+      localStorage.setItem('vs_post_auth_redirect', '/admin')
       navigate('/login')
       return
     }
@@ -28,7 +29,10 @@ export default function AdminLayout({ children, active }: AdminLayoutProps) {
         setEmail(user.email)
         setLoading(false)
       })
-      .catch(() => navigate('/login'))
+      .catch(() => {
+        localStorage.setItem('vs_post_auth_redirect', '/admin')
+        navigate('/login')
+      })
   }, [navigate])
 
   if (loading) {

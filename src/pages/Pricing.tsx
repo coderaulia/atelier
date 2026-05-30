@@ -146,7 +146,7 @@ export default function Pricing() {
 
       <section className="pricing-hero">
         <div className="pricing-hero__badge"><SparkIcon /> No subscription needed</div>
-        <h1>Pay for output, not access.</h1>
+        <h1>Pay for output, <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400 }}>not access.</span></h1>
         <p>
           Free tools stay useful. Paid packs remove watermarks and unlock higher-value exports.
           Buy CV or social credits when you need them — subscribe only if you produce every week.

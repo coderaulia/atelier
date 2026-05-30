@@ -548,3 +548,65 @@ export function getAdminToolAnalytics(days = 30) {
   return request<ToolAnalytics>(`/admin/analytics/tools?days=${days}`, { headers: authHeaders() })
 }
 
+// ─── Admin System Management ──────────────────────────────────────
+
+export interface SystemConfig {
+  key: string
+  value: string
+  type: 'string' | 'number' | 'boolean' | 'json'
+  description?: string | null
+  updated_at?: number | null
+}
+
+export interface FeatureFlag {
+  key: string
+  enabled: number
+  description?: string | null
+  rollout_percentage: number
+  user_whitelist?: string | null
+  created_at: number
+  updated_at: number
+}
+
+export interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  timestamp: number
+  checks: { database: string; api: string }
+  metrics: {
+    errors_last_hour: number
+    active_sessions_24h: number
+    pending_refunds: number
+    unread_notifications: number
+  }
+}
+
+export function getSystemConfig() {
+  return request<{ config: SystemConfig[] }>('/admin/system/config', { headers: authHeaders() })
+}
+
+export function updateSystemConfig(key: string, value: string) {
+  return request<{ config: SystemConfig }>(`/admin/system/config/${key}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ value }),
+  })
+}
+
+export function getFeatureFlags() {
+  return request<{ features: FeatureFlag[] }>('/admin/system/features', { headers: authHeaders() })
+}
+
+export function updateFeatureFlag(
+  key: string,
+  body: { enabled?: boolean; rollout_percentage?: number; user_whitelist?: string[] }
+) {
+  return request<{ feature: FeatureFlag }>(`/admin/system/features/${key}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  })
+}
+
+export function getHealthStatus() {
+  return request<HealthStatus>('/admin/system/health', { headers: authHeaders() })
+}

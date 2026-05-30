@@ -5,6 +5,7 @@ import bugReportsAdmin from './admin/bug-reports'
 import subscriptionsAdmin from './admin/subscriptions'
 import refundsAdmin from './admin/refunds'
 import analyticsAdmin from './admin/analytics'
+import systemAdmin from './admin/system'
 import { getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
@@ -216,6 +217,7 @@ admin.route('/bug-reports', bugReportsAdmin)
 admin.route('/subscriptions', subscriptionsAdmin)
 admin.route('/refunds', refundsAdmin)
 admin.route('/analytics', analyticsAdmin)
+admin.route('/system', systemAdmin)
 
 // ── Notifications ─────────────────────────────────────────────────
 

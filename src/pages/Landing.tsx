@@ -522,11 +522,11 @@ interface DocThumbProps {
 
 function DocThumb({ type, variant, children }: DocThumbProps) {
   const dark = variant === 'accent'
-  const orange = variant === 'orange'
-  const bg = dark ? '#14130d' : orange ? '#e3582c' : '#fff'
-  const fg = (dark || orange) ? '#faf8f3' : '#14130d'
-  const muted = (dark || orange) ? 'rgba(255,255,255,0.45)' : 'var(--ink-3)'
-  const borderC = dark ? '#2a261c' : orange ? '#c84a23' : 'var(--border)'
+  const blue = variant === 'orange'
+  const bg = dark ? '#1a2332' : blue ? '#2c4a6b' : '#fff'
+  const fg = (dark || blue) ? '#f8f9fb' : '#0f1419'
+  const muted = (dark || blue) ? 'rgba(255,255,255,0.48)' : 'var(--ink-3)'
+  const borderC = dark ? '#2d3847' : blue ? '#243d59' : 'var(--border)'
   return (
     <div style={{ width: 240, height: 320, flexShrink: 0, background: bg, color: fg, borderRadius: 10, border: `1px solid ${borderC}`, padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: muted, marginBottom: 12 }}>{type}</div>
@@ -535,7 +535,7 @@ function DocThumb({ type, variant, children }: DocThumbProps) {
   )
 }
 
-const linesBg = (dark: boolean, orange: boolean) => dark ? 'rgba(255,255,255,0.12)' : orange ? 'rgba(255,255,255,0.2)' : 'var(--border)'
+const linesBg = (dark: boolean, blue: boolean) => dark ? 'rgba(255,255,255,0.12)' : blue ? 'rgba(255,255,255,0.2)' : 'var(--border)'
 
 function DocThumbAgreement() {
   return (
@@ -681,7 +681,7 @@ const ROW_2_DOC: DocRow2Item[] = [
 /* Social gallery thumbnails */
 function SocialThumbQuote() {
   return (
-    <div style={{ width: 240, height: 240, flexShrink: 0, background: '#14130d', color: '#faf8f3', borderRadius: 10, border: '1px solid #2a261c', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 240, height: 240, flexShrink: 0, background: '#1a2332', color: '#f8f9fb', borderRadius: 10, border: '1px solid #2d3847', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 'auto' }}>A Better Future</div>
       <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 20, lineHeight: 1.2, marginBottom: 16 }}>"The secret to social media success? Authenticity &amp; consistency."</div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 9, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -693,10 +693,10 @@ function SocialThumbQuote() {
 
 function SocialThumbStat() {
   return (
-    <div style={{ width: 240, height: 240, flexShrink: 0, background: '#faf8f3', color: '#14130d', borderRadius: 10, border: '1px solid var(--border)', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 240, height: 240, flexShrink: 0, background: '#f8f9fb', color: '#0f1419', borderRadius: 10, border: '1px solid var(--border)', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 6 }}>By the numbers</div>
       <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-2)', marginBottom: 10 }}>Why do most posts fail?</div>
-      <div style={{ fontFamily: 'var(--sans)', fontSize: 56, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, color: '#14130d', marginBottom: 4 }}>91%</div>
+      <div style={{ fontFamily: 'var(--sans)', fontSize: 56, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, color: '#0f1419', marginBottom: 4 }}>91%</div>
       <div style={{ fontSize: 11, color: 'var(--ink-2)', lineHeight: 1.4, marginBottom: 'auto' }}>of posts get zero meaningful engagement.</div>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Stat · 1080×1080</div>
     </div>
@@ -705,7 +705,7 @@ function SocialThumbStat() {
 
 function SocialThumbHotTake() {
   return (
-    <div style={{ width: 240, height: 320, flexShrink: 0, background: '#e3582c', color: 'white', borderRadius: 10, border: '1px solid #c84a23', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 240, height: 320, flexShrink: 0, background: '#2c4a6b', color: 'white', borderRadius: 10, border: '1px solid #243d59', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', marginBottom: 'auto' }}>Hot Take</div>
       <div style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 26, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: 10 }}>You don't need another tool.</div>
       <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'rgba(255,255,255,0.82)', lineHeight: 1.4, marginBottom: 18 }}>You need to <em style={{ fontWeight: 700 }}>finish one</em> of the seven tabs already open.</div>
@@ -716,7 +716,7 @@ function SocialThumbHotTake() {
 
 function SocialThumbLaunch() {
   return (
-    <div style={{ width: 240, height: 240, flexShrink: 0, background: '#14130d', color: '#faf8f3', borderRadius: 10, border: '1px solid #2a261c', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 240, height: 240, flexShrink: 0, background: '#1a2332', color: '#f8f9fb', borderRadius: 10, border: '1px solid #2d3847', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Launching</div>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 14 }}>A document generator</div>
       <div style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 30, letterSpacing: '-0.025em', lineHeight: 1 }}>Atelier</div>
@@ -730,9 +730,9 @@ function SocialThumbLaunch() {
 
 function SocialThumbThreads() {
   return (
-    <div style={{ width: 240, height: 240, flexShrink: 0, background: 'white', color: '#14130d', borderRadius: 10, border: '1px solid var(--border)', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 240, height: 240, flexShrink: 0, background: 'white', color: '#0f1419', borderRadius: 10, border: '1px solid var(--border)', padding: '22px 20px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 12 }}>From the Feed</div>
-      <div style={{ fontFamily: 'var(--sans)', fontSize: 13, lineHeight: 1.55, color: '#14130d', marginBottom: 8 }}>the hardest part of freelancing isn't the work. it's deciding the work is <em>finished</em> and sending the invoice.</div>
+      <div style={{ fontFamily: 'var(--sans)', fontSize: 13, lineHeight: 1.55, color: '#0f1419', marginBottom: 8 }}>the hardest part of freelancing isn't the work. it's deciding the work is <em>finished</em> and sending the invoice.</div>
       <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--accent)', marginBottom: 'auto' }}>yes, this is a personal attack.</div>
       <div style={{ display: 'flex', gap: 14, fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-3)', marginTop: 10 }}>
         <span>184 replies</span><span>1.2k likes</span>
@@ -895,7 +895,7 @@ function Pricing() {
               <li>Settings stored locally on your device</li>
             </ul>
             <div>
-              <Link className="btn btn--ghost" to="/document-generator" style={{ background: 'rgba(255,255,255,0.1)', color: '#faf8f3', borderColor: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+              <Link className="btn btn--ghost" to="/document-generator" style={{ background: 'rgba(255,255,255,0.1)', color: '#f8f9fb', borderColor: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
                 Start with Free <ArrowSmIcon />
               </Link>
             </div>

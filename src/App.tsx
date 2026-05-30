@@ -29,6 +29,9 @@ const AdminRefunds = lazy(() => import('./pages/Admin/Refunds'))
 const AdminBugReports = lazy(() => import('./pages/Admin/BugReports'))
 const AdminBugReportDetail = lazy(() => import('./pages/Admin/BugReportDetail'))
 const AdminRevenue = lazy(() => import('./pages/Admin/Revenue'))
+const AdminSystemConfig = lazy(() => import('./pages/Admin/SystemConfig'))
+const AdminFeatureFlags = lazy(() => import('./pages/Admin/FeatureFlags'))
+const AdminHealthMonitor = lazy(() => import('./pages/Admin/HealthMonitor'))
 const AdminErrors = lazy(() => import('./pages/Admin/Errors'))
 const Receipt = lazy(() => import('./pages/Receipt'))
 
@@ -175,6 +178,30 @@ export default function App() {
         element={
           <Suspense fallback={null}>
             <AdminRevenue />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/system/config"
+        element={
+          <Suspense fallback={null}>
+            <AdminSystemConfig />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/system/features"
+        element={
+          <Suspense fallback={null}>
+            <AdminFeatureFlags />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/system/health"
+        element={
+          <Suspense fallback={null}>
+            <AdminHealthMonitor />
           </Suspense>
         }
       />

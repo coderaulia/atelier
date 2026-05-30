@@ -2,7 +2,7 @@
 
 /* Reuse all landing.css tokens — these pages live on the same site */
 .tool-seo-page {
-  --tool-accent: var(--accent, #ff6b3d);
+  --tool-accent: var(--accent, #2c4a6b);
   background: var(--bg);
   color: var(--ink);
   font-family: var(--sans);

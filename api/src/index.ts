@@ -5,18 +5,17 @@ import usage from './routes/usage'
 import admin from './routes/admin'
 import logError from './routes/log-error'
 import billing from './routes/billing'
+import bugReports from './routes/bug-reports'
 import type { Bindings } from './types'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
 app.use('*', cors({
   origin: (origin) => {
-    const allowed = [
-      'http://localhost:5173',
-      'http://localhost:5176',
-      'http://localhost:4173',
-      'https://atelier.vanailadigital.com',
-    ]
+    if (!origin) return ''
+    // Allow any localhost port in development
+    if (/^http:\/\/localhost:\d+$/.test(origin)) return origin
+    const allowed = ['https://atelier.vanailadigital.com']
     return allowed.includes(origin) ? origin : ''
   },
   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -39,6 +38,7 @@ app.route('/usage', usage)
 app.route('/admin', admin)
 app.route('/api/log-error', logError)
 app.route('/billing', billing)
+app.route('/bug-reports', bugReports)
 
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }))
 

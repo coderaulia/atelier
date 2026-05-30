@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AppContextProvider } from '@/context/AppContext'
 import MarketingNav from '@/components/navigation/MarketingNav'
@@ -17,6 +17,17 @@ export default function MarketingWrapper({ tool, children }: MarketingWrapperPro
 
   // Find matching toolPage for SEO content
   const toolPage = toolPages.find((tp) => tp.slug === tool.id)
+
+  // Set document title and meta description for SEO
+  useEffect(() => {
+    if (toolPage) {
+      document.title = toolPage.title
+      const metaDesc = document.querySelector('meta[name="description"]')
+      if (metaDesc) {
+        metaDesc.setAttribute('content', toolPage.description)
+      }
+    }
+  }, [toolPage])
 
   const handleAuthRequired = () => {
     localStorage.setItem('vs_post_auth_redirect', tool.appPath)

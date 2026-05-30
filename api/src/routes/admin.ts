@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
+import bugReportsAdmin from './admin/bug-reports'
 import { getClientIP } from '../lib/rate-limit'
 import type { Bindings } from '../types'
 
@@ -206,6 +207,40 @@ admin.get('/errors', async (c) => {
     'SELECT tool_id, error_type, COUNT(*) AS count FROM error_log GROUP BY tool_id, error_type ORDER BY count DESC'
   ).all()
   return c.json({ errors: rows.results ?? [], groups: groups.results ?? [] })
+})
+
+admin.route('/bug-reports', bugReportsAdmin)
+
+// ── Notifications ─────────────────────────────────────────────────
+
+admin.get('/notifications', async (c) => {
+  const unreadOnly = c.req.query('unread') === '1'
+  const where = unreadOnly ? 'WHERE is_read = 0' : ''
+
+  const [rows, unread] = await Promise.all([
+    c.env.DB.prepare(`SELECT * FROM admin_notifications ${where} ORDER BY created_at DESC LIMIT 50`).all(),
+    c.env.DB.prepare('SELECT COUNT(*) AS count FROM admin_notifications WHERE is_read = 0').first<{ count: number }>(),
+  ])
+
+  return c.json({ notifications: rows.results ?? [], unread_count: unread?.count ?? 0 })
+})
+
+admin.patch('/notifications/:id/read', async (c) => {
+  const id = c.req.param('id')
+  await c.env.DB
+    .prepare('UPDATE admin_notifications SET is_read = 1, read_at = ? WHERE id = ?')
+    .bind(Math.floor(Date.now() / 1000), id)
+    .run()
+  return c.json({ ok: true })
+})
+
+admin.patch('/notifications/read-all', async (c) => {
+  const now = Math.floor(Date.now() / 1000)
+  await c.env.DB
+    .prepare('UPDATE admin_notifications SET is_read = 1, read_at = ? WHERE is_read = 0')
+    .bind(now)
+    .run()
+  return c.json({ ok: true })
 })
 
 export default admin

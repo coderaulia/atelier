@@ -403,6 +403,62 @@ auth.post('/logout', authMiddleware, async (c) => {
   return c.json({ ok: true })
 })
 
+// ─── PATCH /profile ────────────────────────────────────────────────
+auth.patch('/profile', authMiddleware, async (c) => {
+  const userId = c.var.userId
+  const body = await c.req.json().catch(() => null) as { name?: string | null } | null
+  const name = typeof body?.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 120) : null
+
+  await c.env.DB
+    .prepare('UPDATE users SET name = ? WHERE id = ?')
+    .bind(name, userId)
+    .run()
+
+  const user = await c.env.DB
+    .prepare('SELECT id, email, name, plan, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
+    .bind(userId)
+    .first()
+
+  return c.json({ user })
+})
+
+// ─── GET /sessions ─────────────────────────────────────────────────
+auth.get('/sessions', authMiddleware, async (c) => {
+  const authHeader = c.req.header('Authorization')
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  const currentHash = token ? await sha256Hex(token) : ''
+
+  const rows = await c.env.DB
+    .prepare('SELECT token, expires_at, last_used, user_agent FROM sessions WHERE user_id = ? ORDER BY last_used DESC')
+    .bind(c.var.userId)
+    .all<{ token: string; expires_at: number; last_used: number | null; user_agent: string | null }>()
+
+  const sessions = (rows.results ?? []).map((session) => ({
+    expires_at: session.expires_at,
+    last_used: session.last_used,
+    user_agent: session.user_agent,
+    current: session.token === currentHash,
+  }))
+
+  return c.json({ sessions })
+})
+
+// ─── DELETE /sessions/all ──────────────────────────────────────────
+auth.delete('/sessions/all', authMiddleware, async (c) => {
+  const authHeader = c.req.header('Authorization')
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  const currentHash = token ? await sha256Hex(token) : ''
+
+  if (currentHash) {
+    await c.env.DB
+      .prepare('DELETE FROM sessions WHERE user_id = ? AND token != ?')
+      .bind(c.var.userId, currentHash)
+      .run()
+  }
+
+  return c.json({ ok: true })
+})
+
 // ─── POST /change-password ────────────────────────────────────────
 auth.post('/change-password', authMiddleware, async (c) => {
   const userId = c.var.userId

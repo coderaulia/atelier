@@ -15,6 +15,7 @@ import PrivacyPolicy from './pages/legal/PrivacyPolicy'
 import TermsOfService from './pages/legal/TermsOfService'
 import RefundPolicy from './pages/legal/RefundPolicy'
 import Dashboard from './pages/app/Dashboard'
+import Pricing from './pages/Pricing'
 
 const Account = lazy(() => import('./pages/Account'))
 
@@ -23,6 +24,8 @@ const AdminOverview = lazy(() => import('./pages/Admin/Overview'))
 const AdminUsers = lazy(() => import('./pages/Admin/Users'))
 const AdminUserDetail = lazy(() => import('./pages/Admin/UserDetail'))
 const AdminTransactions = lazy(() => import('./pages/Admin/Transactions'))
+const AdminBugReports = lazy(() => import('./pages/Admin/BugReports'))
+const AdminBugReportDetail = lazy(() => import('./pages/Admin/BugReportDetail'))
 const AdminErrors = lazy(() => import('./pages/Admin/Errors'))
 const Receipt = lazy(() => import('./pages/Receipt'))
 
@@ -31,7 +34,7 @@ export default function App() {
     <Routes>
       {/* ── Public marketing ─────────────────────── */}
       <Route path="/" element={<Landing />} />
-      <Route path="/pricing" element={<Landing />} />
+      <Route path="/pricing" element={<Pricing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -129,6 +132,22 @@ export default function App() {
         element={
           <Suspense fallback={null}>
             <AdminTransactions />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/bug-reports"
+        element={
+          <Suspense fallback={null}>
+            <AdminBugReports />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/bug-reports/:id"
+        element={
+          <Suspense fallback={null}>
+            <AdminBugReportDetail />
           </Suspense>
         }
       />

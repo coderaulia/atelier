@@ -293,3 +293,143 @@ export function getBillingStatus() {
   return request<BillingStatus>('/billing/status', { headers: authHeaders() })
 }
 
+// ─── Bug Reports ──────────────────────────────────────────────────
+
+export interface BugReport {
+  id: string
+  user_id?: string
+  email: string
+  subject: string
+  description: string
+  tool_id?: string | null
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  status: 'new' | 'in_progress' | 'resolved' | 'closed' | 'wont_fix'
+  priority: number
+  assigned_to?: string | null
+  user_agent?: string | null
+  screenshot_url?: string | null
+  source: 'app' | 'email'
+  created_at: number
+  updated_at: number
+  resolved_at?: number | null
+  resolved_by?: string | null
+  resolution_notes?: string | null
+}
+
+export interface BugReportComment {
+  id: string
+  bug_report_id: string
+  user_id: string
+  user_email?: string
+  comment: string
+  is_internal: number
+  created_at: number
+}
+
+export function submitBugReport(payload: {
+  subject: string
+  description: string
+  tool_id?: string
+  screenshot_url?: string
+}) {
+  return request<{ id: string; message: string }>('/bug-reports', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+}
+
+// Admin bug report functions
+export function getAdminBugReports(params: {
+  page?: number
+  limit?: number
+  status?: string
+  severity?: string
+  tool_id?: string
+}) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => value && qs.set(key, String(value)))
+  return request<{
+    page: number
+    limit: number
+    total: number
+    bug_reports: BugReport[]
+  }>(`/admin/bug-reports?${qs}`, { headers: authHeaders() })
+}
+
+export function getAdminBugReport(id: string) {
+  return request<{ bug_report: BugReport; comments: BugReportComment[] }>(
+    `/admin/bug-reports/${id}`,
+    { headers: authHeaders() }
+  )
+}
+
+export function patchAdminBugReport(
+  id: string,
+  body: {
+    severity?: BugReport['severity']
+    status?: BugReport['status']
+    priority?: number
+    assigned_to?: string | null
+    resolution_notes?: string
+  }
+) {
+  return request<{ bug_report: BugReport }>(`/admin/bug-reports/${id}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  })
+}
+
+export function addBugReportComment(id: string, comment: string, is_internal = false) {
+  return request<{ id: string; message: string }>(`/admin/bug-reports/${id}/comments`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ comment, is_internal }),
+  })
+}
+
+export function getAdminBugReportStats() {
+  return request<{
+    by_status: { status: string; count: number }[]
+    by_severity: { severity: string; count: number }[]
+    by_tool: { tool_id: string; count: number }[]
+  }>('/admin/bug-reports/stats/summary', { headers: authHeaders() })
+}
+
+// ─── Admin Notifications ──────────────────────────────────────────
+
+export interface AdminNotification {
+  id: string
+  type: string
+  title: string
+  message: string
+  severity: 'info' | 'warning' | 'critical'
+  link?: string | null
+  is_read: number
+  created_at: number
+  read_at?: number | null
+}
+
+export function getAdminNotifications(unreadOnly = false) {
+  const qs = unreadOnly ? '?unread=1' : ''
+  return request<{
+    notifications: AdminNotification[]
+    unread_count: number
+  }>(`/admin/notifications${qs}`, { headers: authHeaders() })
+}
+
+export function markAdminNotificationRead(id: string) {
+  return request<{ ok: true }>(`/admin/notifications/${id}/read`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+  })
+}
+
+export function markAllAdminNotificationsRead() {
+  return request<{ ok: true }>('/admin/notifications/read-all', {
+    method: 'PATCH',
+    headers: authHeaders(),
+  })
+}
+

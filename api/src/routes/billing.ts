@@ -63,6 +63,24 @@ billing.post('/cancel', authMiddleware, async (c) => {
   return c.json({ ok: true, pro_expires_at: user.pro_expires_at, cancel_at_period_end: true })
 })
 
+billing.post('/reactivate', authMiddleware, async (c) => {
+  const user = await c.env.DB
+    .prepare('SELECT plan, cancel_at_period_end FROM users WHERE id = ?')
+    .bind(c.var.userId)
+    .first<{ plan: string; cancel_at_period_end: number }>()
+
+  if (!user) return c.json({ error: 'User not found' }, 404)
+  if (user.plan !== 'pro') return c.json({ error: 'No active Pro subscription' }, 400)
+  if (!user.cancel_at_period_end) return c.json({ error: 'Subscription not cancelled' }, 400)
+
+  await c.env.DB
+    .prepare('UPDATE users SET cancel_at_period_end = 0 WHERE id = ?')
+    .bind(c.var.userId)
+    .run()
+
+  return c.json({ ok: true })
+})
+
 billing.post('/transactions', authMiddleware, async (c) => {
   const rows = await c.env.DB
     .prepare('SELECT id, amount, currency, plan_type, status, midtrans_order_id, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC')

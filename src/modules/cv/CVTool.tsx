@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import { pdf } from '@react-pdf/renderer';
-import { CVData, CVTemplate, CV_TEMPLATES, DEFAULT_CV, generateCVFromStartupConfig, type CVStartupConfig } from './types';
+import { CVData, CVTemplate, CV_TEMPLATES, DEFAULT_CV, generateCVFromStartupConfig, type CVStartupConfig, type CVRegionalMode } from './types';
 import { CVEditor } from './CVEditor';
 import CVStepEditor from './CVStepEditor';
 import CVATSPanel from './CVATSPanel';
+import CVRegionalToggle from './CVRegionalToggle';
 import CVWizard from './CVWizard';
 import {
   ClassicTemplate,
@@ -102,6 +103,7 @@ export default function CVTool() {
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [useStepEditor, setUseStepEditor] = useLocalStorage<boolean>('cv_step_editor_v1', true);
+  const [regionalMode, setRegionalMode] = useLocalStorage<CVRegionalMode>('cv_regional_mode_v1', 'international');
   const [jdKeywordInput, setJdKeywordInput] = useLocalStorage<string>('cv_jd_keywords_v1', '');
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'info' } | null>(null);
   const prevBlobRef = useRef<string | null>(null);
@@ -303,9 +305,9 @@ export default function CVTool() {
 
         <div className="cv-sidebar__scroll">
           {useStepEditor ? (
-            <CVStepEditor data={cvData} onChange={setCvData} />
+            <CVStepEditor data={cvData} onChange={setCvData} regionalMode={regionalMode} />
           ) : (
-            <CVEditor data={cvData} onChange={setCvData} />
+            <CVEditor data={cvData} onChange={setCvData} regionalMode={regionalMode} />
           )}
         </div>
       </div>
@@ -339,6 +341,8 @@ export default function CVTool() {
           {renderError && (
             <div className="cv-error">{renderError}</div>
           )}
+
+          <CVRegionalToggle value={regionalMode} onChange={setRegionalMode} />
 
           <div className="cv-jd-keywords">
             <label className="cv-jd-keywords__label">Job description keywords</label>

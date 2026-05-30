@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { CVData } from './types';
+import { CVData, CVRegionalMode } from './types';
 import { CVEditor } from './CVEditor';
 
 interface Props {
   data: CVData;
   onChange: (data: CVData) => void;
+  regionalMode?: CVRegionalMode;
 }
 
 type Step = 'personal' | 'summary' | 'experience' | 'education' | 'skills' | 'certifications';
@@ -18,7 +19,7 @@ const STEPS: { id: Step; label: string; icon: string }[] = [
   { id: 'certifications', label: 'Certifications', icon: '🏆' },
 ];
 
-export default function CVStepEditor({ data, onChange }: Props) {
+export default function CVStepEditor({ data, onChange, regionalMode }: Props) {
   const [currentStep, setCurrentStep] = useState<Step>('personal');
   const currentIndex = STEPS.findIndex((s) => s.id === currentStep);
 
@@ -50,7 +51,7 @@ export default function CVStepEditor({ data, onChange }: Props) {
       </div>
 
       <div className="cv-step-content">
-        <CVEditor data={data} onChange={onChange} activeSection={currentStep} />
+        <CVEditor data={data} onChange={onChange} activeSection={currentStep} regionalMode={regionalMode} />
       </div>
 
       <div className="cv-step-nav">

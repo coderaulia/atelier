@@ -1,5 +1,5 @@
 import React from 'react';
-import { CVData, WorkExperience, Education, Skill, Certification } from './types';
+import { CVData, CVRegionalMode, WorkExperience, Education, Skill, Certification } from './types';
 import AIButton from './AIButton';
 
 // ---- tiny uid ----
@@ -87,9 +87,11 @@ function RemoveBtn({ onClick }: { onClick: () => void }) {
 function PersonalSection({
   data,
   onChange,
+  regionalMode = 'international',
 }: {
   data: CVData['personal'];
   onChange: (p: CVData['personal']) => void;
+  regionalMode?: CVRegionalMode;
 }) {
   const set = (k: keyof CVData['personal']) => (v: string) =>
     onChange({ ...data, [k]: v });
@@ -125,6 +127,36 @@ function PersonalSection({
       <Field label="GitHub">
         <Input value={data.github} onChange={set('github')} placeholder="github.com/you" />
       </Field>
+
+      {regionalMode === 'indonesia' && (
+        <>
+          <Field label="Photo (Indonesia mode)">
+            <input
+              type="file"
+              accept="image/*"
+              className="cv-regional-photo-input"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => onChange({ ...data, photo: reader.result as string });
+                reader.readAsDataURL(file);
+              }}
+            />
+          </Field>
+          <div className="cv-row-2">
+            <Field label="Date of Birth">
+              <Input value={data.dateOfBirth ?? ''} onChange={(v) => onChange({ ...data, dateOfBirth: v })} placeholder="1990-01-15" />
+            </Field>
+            <Field label="Marital Status">
+              <Input value={data.maritalStatus ?? ''} onChange={(v) => onChange({ ...data, maritalStatus: v })} placeholder="Single / Married" />
+            </Field>
+          </div>
+          <Field label="Religion (optional)">
+            <Input value={data.religion ?? ''} onChange={(v) => onChange({ ...data, religion: v })} placeholder="Islam, Christianity, Hinduism, etc." />
+          </Field>
+        </>
+      )}
     </div>
   );
 }
@@ -441,16 +473,18 @@ export function CVEditor({
   data,
   onChange,
   activeSection,
+  regionalMode = 'international',
 }: {
   data: CVData;
   onChange: (data: CVData) => void;
   activeSection?: string;
+  regionalMode?: CVRegionalMode;
 }) {
   const show = (name: string) => !activeSection || activeSection === name;
 
   return (
     <div className="cv-editor">
-      {show('personal') && <PersonalSection data={data.personal} onChange={(p) => onChange({ ...data, personal: p })} />}
+      {show('personal') && <PersonalSection data={data.personal} onChange={(p) => onChange({ ...data, personal: p })} regionalMode={regionalMode} />}
       {show('summary') && <SummarySection value={data.summary} onChange={(s) => onChange({ ...data, summary: s })} />}
       {show('experience') && <ExperienceSection items={data.experience} onChange={(ex) => onChange({ ...data, experience: ex })} />}
       {show('education') && <EducationSection items={data.education} onChange={(ed) => onChange({ ...data, education: ed })} />}

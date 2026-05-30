@@ -8,6 +8,10 @@ export interface PersonalInfo {
   linkedin: string;
   github: string;
   avatar?: string; // base64 data URL
+  photo?: string; // base64 data URL for regional mode
+  dateOfBirth?: string;
+  maritalStatus?: string;
+  religion?: string;
 }
 
 export interface WorkExperience {
@@ -76,6 +80,40 @@ export interface CustomSection {
 
 // ---- Regional Mode ----
 export type CVRegionalMode = 'international' | 'indonesia';
+
+export interface CVRegionalConfig {
+  id: CVRegionalMode;
+  label: string;
+  showPhoto: boolean;
+  showDob: boolean;
+  showMaritalStatus: boolean;
+  showReligion: boolean;
+  sectionOrder: string[];
+  description: string;
+}
+
+export const CV_REGIONAL_CONFIGS: CVRegionalConfig[] = [
+  {
+    id: 'international',
+    label: 'International',
+    showPhoto: false,
+    showDob: false,
+    showMaritalStatus: false,
+    showReligion: false,
+    sectionOrder: ['personal', 'summary', 'experience', 'education', 'skills', 'certifications'],
+    description: 'ATS-optimized, Western-style CV. No photo, no personal details.',
+  },
+  {
+    id: 'indonesia',
+    label: 'Indonesia',
+    showPhoto: true,
+    showDob: true,
+    showMaritalStatus: true,
+    showReligion: true,
+    sectionOrder: ['personal', 'summary', 'experience', 'education', 'skills', 'certifications'],
+    description: 'Indonesia-style CV with photo, DOB, marital status, religion.',
+  },
+]
 
 export interface CVData {
   personal: PersonalInfo;

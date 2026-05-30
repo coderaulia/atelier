@@ -230,6 +230,12 @@ auth.post('/forgot-password', async (c) => {
 
 // ─── POST /reset-password ─────────────────────────────────────────
 auth.post('/reset-password', async (c) => {
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `reset-password:${ip}`, 60, 5)
+  if (!limit.allowed) {
+    return c.json({ error: 'Too many password reset attempts', reset_at: limit.resetAt }, 429)
+  }
+
   const body = await c.req.json().catch(() => null)
   const result = resetPasswordSchema.safeParse(body)
   if (!result.success) {
@@ -272,6 +278,12 @@ auth.post('/reset-password', async (c) => {
 
 // ─── GET /verify-email?token=xxx ──────────────────────────────────
 auth.get('/verify-email', async (c) => {
+  const ip = getClientIP(c)
+  const limit = await checkRateLimit(c.env.DB, `verify-email-get:${ip}`, 60, 10)
+  if (!limit.allowed) {
+    return c.json({ error: 'Too many verification attempts', reset_at: limit.resetAt }, 429)
+  }
+
   const token = c.req.query('token')
   if (!token) {
     return c.json({ error: 'Missing token' }, 400)

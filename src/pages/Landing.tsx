@@ -164,7 +164,7 @@ function HeroConvWindow() {
         <div className="hp-conv__drop">
           <div className="hp-conv__drop-icon"><UploadIcon /></div>
           <div className="hp-conv__drop-text">Drop file or click to browse</div>
-          <div className="hp-conv__drop-meta">PDF · JPG · PNG · WebP · HEIC</div>
+          <div className="hp-conv__drop-meta">PDF · JPG · PNG · WebP · AVIF</div>
         </div>
       </div>
     </div>
@@ -327,7 +327,7 @@ function ToolsGrid() {
           <Link className="tool-card tool-card--md" to="/image-converter">
             <div className="tool-card__num">Tool 05 / Image Lab</div>
             <div className="tool-card__icon"><ImageIcon /></div>
-            <h3 className="tool-card__title">HEIC, WebP, <span className="it">whatever.</span></h3>
+            <h3 className="tool-card__title">WebP, AVIF, <span className="it">whatever.</span></h3>
             <p className="tool-card__desc">
               Convert, resize, compress. Match the format your CMS, client, or aunt's iPhone needs.
             </p>
@@ -856,7 +856,7 @@ function UseCases() {
             <ul className="usecase__list">
               <li>PDF ↔ image conversions</li>
               <li>OCR on receipts &amp; scans</li>
-              <li>HEIC, WebP, batch resize</li>
+              <li>WebP, AVIF, batch resize</li>
             </ul>
           </div>
         </div>
@@ -902,10 +902,10 @@ function Pricing() {
           </div>
 
           <div className="price-tier price-tier--pro">
-            <div className="price-tier__name">Pro · $8 / mo</div>
+            <div className="price-tier__name">Pro · $9 / mo</div>
             <div className="price-tier__price">
-              <span className="num">$8</span>
-              <span className="per">/ month — or $72 yearly</span>
+              <span className="num">$9</span>
+              <span className="per">/ month — or $81 yearly</span>
             </div>
             <div className="price-tier__tag">For people running a business.</div>
             <ul className="price-tier__list">

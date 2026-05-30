@@ -23,7 +23,7 @@ Atelier provides 9 professional-grade tools that run entirely in your browser:
 - **PDF Compress** — Reduce PDF file size with adjustable compression levels
 
 ### Image & Text
-- **Image Converter** — Convert between PNG, JPG, WebP, AVIF, and HEIC formats
+- **Image Converter** — Convert between PNG, JPG, WebP, and AVIF formats
 - **OCR** — Extract text from images and PDFs using Tesseract.js
 
 All file processing happens **client-side** — your files never leave your browser.

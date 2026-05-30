@@ -82,7 +82,7 @@ const PACKS: Pack[] = [
     id: 'all-access',
     eyebrow: 'Power User',
     title: 'Unlimited workspace',
-    price: '$8',
+    price: '$9',
     unit: 'per month',
     note: 'Only if you use everything',
     description: 'For freelancers who generate documents, content, OCR, and conversions every week.',
@@ -197,7 +197,7 @@ export default function Pricing() {
         <div className="pricing-guidance__cards">
           <div><strong>$4 CV pack</strong><p>Low friction. Converts job seekers who only need outcome, not account commitment.</p></div>
           <div><strong>$12 social pack</strong><p>Higher perceived value. Clear campaign-sized bundle for creators and small businesses.</p></div>
-          <div><strong>$8/mo unlimited</strong><p>Keep subscription for power users only. It becomes convenience, not forced commitment.</p></div>
+          <div><strong>$9/mo unlimited</strong><p>Keep subscription for power users only. It becomes convenience, not forced commitment.</p></div>
         </div>
       </section>
 

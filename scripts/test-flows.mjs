@@ -22,7 +22,7 @@ const TEST_EMAIL = process.env.TEST_EMAIL || `flow-test-${stamp}@example.com`
 const TEST_PASSWORD = process.env.TEST_PASSWORD || 'FlowTest123!'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
-const ANON_TEST_IP = process.env.ANON_TEST_IP || `203.0.113.${(stamp % 200) + 1}`
+const ANON_TEST_IP = process.env.ANON_TEST_IP || `10.${stamp % 250}.${Math.floor(Math.random() * 250)}.${process.pid % 250}`
 const hasMidtransKey = Boolean(process.env.MIDTRANS_SERVER_KEY)
 
 function webhookSignature(body) {
@@ -158,7 +158,7 @@ async function usageFlow() {
 }
 
 async function anonymousUsageFlow() {
-  const headers = { 'X-Forwarded-For': ANON_TEST_IP }
+  const headers = { 'CF-Connecting-IP': ANON_TEST_IP, 'X-Forwarded-For': ANON_TEST_IP }
 
   const free = await request('/anon-usage/pdf-merge', { headers })
   assert(free.response.status === 200, `anonymous free tool expected 200, got ${free.response.status}`)

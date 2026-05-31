@@ -141,7 +141,7 @@ auth.post('/login', async (c) => {
   const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)
   const tokenHash = await sha256Hex(token)
   await c.env.DB
-    .prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
+    .prepare('INSERT OR REPLACE INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
     .bind(tokenHash, user.id, expiresAt)
     .run()
   await c.env.DB.prepare('DELETE FROM failed_logins WHERE email = ?').bind(email.toLowerCase()).run()

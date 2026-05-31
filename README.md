@@ -10,7 +10,7 @@ Built by **[Vanaila Digital](https://vanaila.com)**.
 
 ## What it does
 
-Atelier provides 9 professional-grade tools that run entirely in your browser:
+Atelier provides 8 professional-grade tools that run entirely in your browser:
 
 ### Documents & Content
 - **Document Generator** — Agreements, invoices, proposals, PRDs, retainers, receipts, onboarding sheets, and handover documents with 3 style variants each (Classic, Modern, Editorial)
@@ -42,11 +42,11 @@ All file processing happens **client-side** — your files never leave your brow
 - **Pro tier:** Unlimited exports, premium templates, AI features
 
 ### Free Tier
-- 5 daily uses for documents/social/CV tools
-- 3 daily uses for PDF/image/OCR tools
+- 3 daily uses for metered document/social/CV/OCR/PDF-to-image tools
+- PDF Merge, PDF Compress, and Image Converter are currently unmetered
+- Anonymous users get 1 daily use via backend anonymous usage tracking
 - All templates and formats available
-- No watermarks
-- No account required (anonymous usage tracked via localStorage)
+- Watermark applies to free/anonymous metered output where supported
 
 ### Pro Tier
 - Unlimited daily usage
@@ -199,18 +199,27 @@ atelier/
 │   │   ├── auth/
 │   │   │   └── routes.ts         # Auth endpoints
 │   │   ├── routes/
-│   │   │   ├── usage.ts          # Usage tracking
+│   │   │   ├── usage.ts          # Authenticated usage tracking
+│   │   │   ├── anon-usage.ts     # Anonymous usage tracking
 │   │   │   ├── billing.ts        # Midtrans integration
-│   │   │   ├── admin.ts          # Admin API
+│   │   │   ├── bug-reports.ts    # Bug report submission
+│   │   │   ├── admin.ts          # Admin API aggregator
+│   │   │   ├── admin/            # Admin subroutes
+│   │   │   ├── cv-ai.ts          # Pro-gated Groq CV AI
 │   │   │   └── log-error.ts      # Error logging
 │   │   ├── middleware/
 │   │   │   ├── auth.ts           # JWT verification
 │   │   │   └── admin.ts          # Admin role check
 │   │   ├── lib/
+│   │   │   ├── config.ts
+│   │   │   ├── email.ts          # Resend + templates
 │   │   │   ├── jwt.ts
 │   │   │   ├── password.ts
-│   │   │   ├── tokens.ts
-│   │   │   └── email.ts          # Resend + templates
+│   │   │   ├── pricing.ts        # Pricing source of truth
+│   │   │   ├── rate-limit.ts
+│   │   │   ├── rate-limit-cache.ts
+│   │   │   ├── sanitize.ts
+│   │   │   └── tokens.ts
 │   │   └── db/
 │   │       ├── schema.sql        # Full schema
 │   │       └── migrations/       # Migration files
@@ -237,9 +246,10 @@ Routes are auto-generated from the registry for both public and authenticated co
 ### Usage Limits
 Every tool uses `useToolLimit(toolId)` hook:
 ```tsx
-const { canUse, used, limit, increment } = useToolLimit('cv-builder')
+const { canUse, used, limit, increment, has_watermark, credits_available } = useToolLimit('cv-builder')
 // Check canUse before export
 // Call increment() after successful generation
+// limit === null means unmetered or credit-backed usage
 ```
 
 ### Client-Side Processing
@@ -253,7 +263,7 @@ All file operations run in the browser:
 
 ### Authentication Flow
 1. Register → Email verification required
-2. Login → JWT token stored in httpOnly cookie (backend) + localStorage (frontend)
+2. Login → JWT token returned to frontend and stored by auth helpers
 3. Session tracking in `sessions` table
 4. Soft deletion: `deleted_at` field, 30-day grace period
 

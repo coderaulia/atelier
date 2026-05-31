@@ -44,11 +44,15 @@ src/
       Subscriptions.tsx           # Subscription management
       Refunds.tsx                 # Manual refund review
       BugReports.tsx              # Bug report queue
+      BugReportDetail.tsx         # Bug report detail view
       Revenue.tsx                 # Revenue metrics
       AnalyticsDashboard.tsx      # Usage analytics
       SystemConfig.tsx            # Runtime config
       FeatureFlags.tsx            # Feature toggles
       HealthMonitor.tsx           # System health
+      Announcements.tsx           # System announcements
+      EmailTemplates.tsx          # Email template management
+      AuditLogs.tsx               # Audit log viewer
       Errors.tsx                  # Error log viewer
   modules/
     documents/                    # Document generator (ported Atelier)
@@ -103,29 +107,46 @@ api/
       routes.ts                   # Register, login, /me, forgot-password, reset-password, verify-email, logout, delete account, change-password
     routes/
       usage.ts                    # GET/POST usage limits
+      anon-usage.ts               # Anonymous usage tracking
       billing.ts                  # GET /status, POST /cancel, POST /webhook, transactions
-      admin.ts                    # Admin API: stats, users, subscriptions, refunds, analytics, errors
+      bug-reports.ts              # Bug report submission
+      admin.ts                    # Admin API aggregator
+      admin/
+        analytics.ts              # Analytics endpoints
+        audit.ts                  # Audit log endpoints
+        bug-reports.ts            # Bug report management
+        content.ts                # Content management (announcements, email templates)
+        refunds.ts                # Refund management
+        subscriptions.ts          # Subscription management
+        system.ts                 # System config, features, health
       log-error.ts                # POST /api/log-error
       cv-ai.ts                    # POST /api/cv/ai (Pro-gated Groq integration)
     middleware/
       auth.ts                     # JWT + session auth (checks deleted_at)
       admin.ts                    # Admin role gate
     lib/
+      config.ts                   # Configuration helpers
       jwt.ts
       password.ts
       tokens.ts                   # Token generation + SHA256 hashing
       email.ts                    # Resend integration + bilingual templates (EN/ID)
+      pricing.ts                  # Pricing configuration
+      rate-limit.ts               # Rate limiting logic
+      rate-limit-cache.ts         # Rate limit caching
+      sanitize.ts                 # Input sanitization
     db/
       schema.sql                  # Full schema
       migrations/
         001_admin_dashboard.sql
         002_account_management.sql
         002_security_tables.sql
+        003_anonymous_usage.sql
         003_auth_lifecycle.sql
         003_bug_reports.sql
         004_refunds_and_analytics.sql
         005_system_config.sql
         006_geo_analytics.sql
+        007_content_management.sql
         007_credit_packs.sql
   wrangler.toml                   # Includes cron trigger for daily grace/cleanup
 ```
@@ -172,7 +193,7 @@ Webhook route validates signature before any plan update.
 
 ### Admin Dashboard
 
-- Routes: `/admin`, `/admin/users`, `/admin/users/:id`, `/admin/transactions`, `/admin/errors`
+- Routes: `/admin`, `/admin/users`, `/admin/users/:id`, `/admin/transactions`, `/admin/subscriptions`, `/admin/refunds`, `/admin/bug-reports`, `/admin/bug-reports/:id`, `/admin/revenue`, `/admin/analytics`, `/admin/system/config`, `/admin/system/features`, `/admin/system/health`, `/admin/content/announcements`, `/admin/content/email-templates`, `/admin/audit-logs`, `/admin/errors`
 - Protected by `adminMiddleware` — verifies JWT + `role === 'admin'`
 - Set admin: `wrangler d1 execute vanaila-studio --command "UPDATE users SET role='admin' WHERE email='your@email.com';"`
 - Error logging: POST `/api/log-error` with `{ tool_id, error_type, user_agent?, plan? }` — no PII, no file data
@@ -197,9 +218,9 @@ wrangler d1 execute vanaila-studio --local --file=api/src/db/migrations/001_admi
 - Commit after each phase milestone
 - Update docs/project-status.md and docs/commit-log.md after each commit
 - All Zod validation on backend routes — never trust client input
-- Free daily limits: authenticated limits come from `src/lib/tools.tsx`; anonymous uses localStorage
-- Pro gates: premium templates, bulk export, unlimited daily use
-- No watermarks on any plan unless explicit product decision changes this
+- Free daily limits: authenticated free 3/day (metered), Pro 100/day; anonymous 1/day via backend anon-usage; pdf-merge, pdf-compress, image-converter are unmetered
+- Pro gates: premium templates, bulk export, 100/day usage cap
+- Watermark applies to free/anonymous metered output where supported; no watermark on Pro
 - IDR and USD both supported in Midtrans integration
 - Mobile responsive required for all pages and tools
 - Lazy-load Tesseract.js WASM — do not bundle at startup

@@ -2,7 +2,7 @@
 
 ## Current state
 
-Vanaila Studio is a Vite + React 19 frontend with a Cloudflare Workers API built on Hono. Frontend builds successfully, backend typechecks successfully, and launch-critical API flows are covered by `scripts/test-flows.mjs`.
+Vanaila Studio is a Vite + React 19 frontend with a Cloudflare Workers API built on Hono. Frontend and backend are launch-oriented with dual public/app routing, admin operations, Midtrans billing, Groq-powered Pro CV AI, anonymous/authenticated usage controls, and documented API/manual test coverage.
 
 ## Frontend
 
@@ -57,6 +57,7 @@ Implemented API areas:
 - Anonymous usage: anonymous daily limits
 - Billing: status, cancel, reactivate, webhook lifecycle, transactions, receipt
 - Admin: stats, users, transactions, subscriptions, refunds, analytics, errors, system config, feature flags, health, announcements, email templates, audit logs, cron test trigger
+- Public content: announcements and email-template preview endpoints
 - Bug reports
 - Error logging
 - CV AI: Pro-gated rewrite, summary, tone, tailoring, cover letter
@@ -68,12 +69,14 @@ D1 schema includes:
 - `users`
 - `sessions`
 - `usage_log`
+- `anonymous_usage`
 - `transactions`
 - `error_log`
 - password reset and email verification tables
-- rate-limit and security tables
+- rate-limit, failed-login, and security tables
 - admin dashboard/support tables
-- credit pack tables are present for future use, but public purchase checkout is disabled for launch
+- announcements, email templates, audit logs, and content-management tables
+- credit pack and credit usage tables are present for future public checkout work
 
 ## Deployment readiness
 

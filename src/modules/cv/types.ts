@@ -130,7 +130,10 @@ export type CVTemplate =
   | 'minimal'
   | 'ats'
   | 'executive'
-  | 'creative';
+  | 'creative'
+  | 'slate'
+  | 'crimson'
+  | 'carbon';
 
 export interface CVTemplateConfig {
   id: CVTemplate;
@@ -147,6 +150,10 @@ export const CV_TEMPLATES: CVTemplateConfig[] = [
   { id: 'ats',       name: 'ATS-Optimized', description: 'Parsed perfectly by applicant tracking systems', pro: true, accent: '#1c4532' },
   { id: 'executive', name: 'Executive',     description: 'Authoritative layout for senior roles', pro: true, accent: '#1a1a2e' },
   { id: 'creative',  name: 'Creative',      description: 'Bold visual design for creative fields', pro: true, accent: '#6b21a8' },
+  // ATS-compliant single-column templates
+  { id: 'slate',     name: 'Slate',         description: 'ATS-safe · navy accent, single-column', pro: false, accent: '#1e3a5f' },
+  { id: 'crimson',   name: 'Crimson',       description: 'ATS-safe · serif, deep red, single-column', pro: false, accent: '#7b1c1c' },
+  { id: 'carbon',    name: 'Carbon',        description: 'ATS-safe · bold rules, black & white', pro: false, accent: '#111111' },
 ];
 
 export const DEFAULT_CV: CVData = {

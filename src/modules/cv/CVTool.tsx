@@ -17,6 +17,11 @@ import {
   ExecutiveTemplate,
   CreativeTemplate,
 } from './templates';
+import {
+  SlateAtsTemplate,
+  CrimsonAtsTemplate,
+  CarbonAtsTemplate,
+} from './ats-templates';
 import { exportCVToDocx } from './cvDocxExport';
 import { useLocalStorage } from '../documents/utils';
 import { useToolLimit } from '../../hooks/useToolLimit';
@@ -36,6 +41,9 @@ function renderTemplate(templateId: CVTemplate, data: CVData, accent: string) {
     case 'ats':        return <AtsOptimizedTemplate data={data} accent={accent} />;
     case 'executive':  return <ExecutiveTemplate data={data} accent={accent} />;
     case 'creative':   return <CreativeTemplate  data={data} accent={accent} />;
+    case 'slate':      return <SlateAtsTemplate   data={data} accent={accent} />;
+    case 'crimson':    return <CrimsonAtsTemplate data={data} accent={accent} />;
+    case 'carbon':     return <CarbonAtsTemplate  data={data} accent={accent} />;
     default:           return <ClassicTemplate   data={data} accent={accent} />;
   }
 }

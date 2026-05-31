@@ -9,8 +9,19 @@
 import { execSync } from 'node:child_process'
 import { randomBytes, pbkdf2Sync } from 'node:crypto'
 
-const email = process.argv[2] || 'admin@vanaila.com'
-const password = process.argv[3] || 'Admin123!'
+const email = process.argv[2]
+const password = process.argv[3]
+
+if (!email || !password) {
+  console.error('Usage: node api/scripts/seed-admin.mjs <email> <password>')
+  console.error('Example: node api/scripts/seed-admin.mjs admin@yoursite.com SecurePass123!')
+  process.exit(1)
+}
+
+if (password.length < 8) {
+  console.error('Password must be at least 8 characters.')
+  process.exit(1)
+}
 
 // Match api/src/lib/password.ts: PBKDF2, SHA-256, 310k iterations, 16-byte salt
 const ITERATIONS = 310_000

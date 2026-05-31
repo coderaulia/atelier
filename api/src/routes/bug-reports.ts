@@ -7,20 +7,11 @@ import type { Bindings } from '../types'
 
 const bugReports = new Hono<{ Bindings: Bindings }>()
 
-const ALLOWED_SCREENSHOT_DOMAINS = [
-  'https://atelier.vanailadigital.com',
-  'https://i.imgur.com',
-  'https://cdn.imgur.com'
-]
-
 const createBugReportSchema = z.object({
   subject: z.string().min(5).max(200),
   description: z.string().min(10).max(5000),
   tool_id: z.string().optional(),
-  screenshot_url: z.string().url().refine(
-    (url) => ALLOWED_SCREENSHOT_DOMAINS.some(domain => url.startsWith(domain)),
-    { message: 'Screenshot must be from an allowed domain' }
-  ).optional(),
+  screenshot_url: z.string().url().optional(),
 })
 
 // Public endpoint - authenticated users can submit bug reports
@@ -66,6 +57,19 @@ bugReports.post('/', async (c) => {
   const result = createBugReportSchema.safeParse(body)
   if (!result.success) {
     return c.json({ error: 'Invalid bug report data', details: result.error.issues }, 400)
+  }
+
+  if (result.data.screenshot_url) {
+    const allowedScreenshotDomains = [
+      ...(c.env.APP_URL ? [c.env.APP_URL] : []),
+      'https://i.imgur.com',
+      'https://cdn.imgur.com',
+      ...(c.env.ENVIRONMENT !== 'production' ? ['http://localhost:5173'] : []),
+    ]
+    const isAllowed = allowedScreenshotDomains.some((domain) => result.data.screenshot_url!.startsWith(domain))
+    if (!isAllowed) {
+      return c.json({ error: 'Screenshot must be from an allowed domain' }, 400)
+    }
   }
 
   const id = crypto.randomUUID()

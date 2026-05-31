@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { fileURLToPath } from 'node:url'
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     react(),
     tailwindcss(),
@@ -31,16 +31,18 @@ export default defineConfig({
     chunkSizeWarningLimit: 250,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-pdf': ['pdf-lib', 'pdfjs-dist'],
-          'vendor-cv': ['@react-pdf/renderer'],
-          'vendor-image': ['@jsquash/avif', '@jsquash/webp', 'html-to-image'],
-          'vendor-docs': ['marked', 'dompurify'],
-          'vendor-ocr': ['tesseract.js'],
-          'vendor-archive': ['jszip'],
-        },
+        manualChunks: isSsrBuild
+          ? undefined
+          : {
+              'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+              'vendor-pdf': ['pdf-lib', 'pdfjs-dist'],
+              'vendor-cv': ['@react-pdf/renderer'],
+              'vendor-image': ['@jsquash/avif', '@jsquash/webp', 'html-to-image'],
+              'vendor-docs': ['marked', 'dompurify'],
+              'vendor-ocr': ['tesseract.js'],
+              'vendor-archive': ['jszip'],
+            },
       },
     },
   },
-})
+}))

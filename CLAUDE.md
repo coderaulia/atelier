@@ -9,9 +9,8 @@ Freemium browser-based toolkit with 8 professional tools: documents, social cont
 - Frontend: Vite + React 19 + React Router v7 + Tailwind CSS 4
 - Backend: Cloudflare Workers + Hono + Zod
 - Database: Cloudflare D1 (SQLite)
-- Storage: Cloudflare R2 (Pro cloud save)
 - Email: Resend (bilingual EN/ID templates)
-- Payments: Midtrans (recurring subscriptions + one-time credit packs)
+- Payments: Midtrans (recurring subscriptions)
 - AI: Groq API (`llama-3.3-70b-versatile`) for Pro-gated CV suggestions
 - Client-side processing: pdf.js, Tesseract.js, Canvas API, JSZip, pdf-lib, mammoth, docx, @jsquash/webp, @jsquash/avif
 
@@ -104,7 +103,7 @@ api/
       routes.ts                   # Register, login, /me, forgot-password, reset-password, verify-email, logout, delete account, change-password
     routes/
       usage.ts                    # GET/POST usage limits
-      billing.ts                  # GET /status, POST /cancel, POST /webhook, credit packs, transactions
+      billing.ts                  # GET /status, POST /cancel, POST /webhook, transactions
       admin.ts                    # Admin API: stats, users, subscriptions, refunds, analytics, errors
       log-error.ts                # POST /api/log-error
       cv-ai.ts                    # POST /api/cv/ai (Pro-gated Groq integration)
@@ -199,8 +198,7 @@ wrangler d1 execute vanaila-studio --local --file=api/src/db/migrations/001_admi
 - Update docs/project-status.md and docs/commit-log.md after each commit
 - All Zod validation on backend routes — never trust client input
 - Free daily limits: authenticated limits come from `src/lib/tools.tsx`; anonymous uses localStorage
-- Pro gates: premium templates, bulk export, cloud save, unlimited daily use
-- Credit packs are one-time purchases; subscriptions remain recurring
+- Pro gates: premium templates, bulk export, unlimited daily use
 - No watermarks on any plan unless explicit product decision changes this
 - IDR and USD both supported in Midtrans integration
 - Mobile responsive required for all pages and tools

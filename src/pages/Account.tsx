@@ -148,7 +148,7 @@ function SubscriptionTab({ user, onUpdate }: { user: User; onUpdate: (u: User) =
       {user.plan === 'free' && (
         <div className="upgrade-card">
           <h3>Upgrade to Pro</h3>
-          <p>Unlimited tool usage, premium templates, bulk export, and cloud save.</p>
+          <p>Unlimited daily usage, premium templates, and bulk export.</p>
           <button className="btn btn--accent">Upgrade now</button>
         </div>
       )}

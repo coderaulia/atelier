@@ -40,56 +40,17 @@ type Pack = {
 
 const PACKS: Pack[] = [
   {
-    id: 'cv-10',
-    eyebrow: 'CV Pack',
-    title: '10 polished CV exports',
-    price: '$4',
-    unit: 'one-time',
-    note: 'Best for job seekers',
-    description: 'Enough for tailoring CVs to multiple job applications without paying monthly.',
-    badge: 'No subscription',
-    kind: 'warm',
-    cta: 'Buy 10 CV exports',
-    features: ['10 watermark-free CV exports', 'Premium CV templates', 'ATS layout checks', 'Unused credits stay in account'],
-  },
-  {
-    id: 'social-50',
-    eyebrow: 'Creator Pack',
-    title: '50 social media exports',
-    price: '$12',
-    unit: 'one-time',
-    note: 'Most practical pack',
-    description: 'A monthly content sprint without a subscription. Perfect for launches, promos, and campaigns.',
-    badge: 'Popular',
-    kind: 'premium',
-    cta: 'Buy 50 social exports',
-    features: ['50 watermark-free social exports', 'Brand kit for this pack', 'Batch export up to 10 designs', 'Square, story, and carousel formats'],
-  },
-  {
-    id: 'growth-60',
-    eyebrow: 'Growth Pack',
-    title: '60 social + document exports',
-    price: '$16',
-    unit: 'one-time',
-    note: 'Best value pack',
-    description: 'For creators and small businesses that need social posts plus PDFs in one purchase.',
-    badge: 'Save 25%',
-    kind: 'dark',
-    cta: 'Buy 60 mixed credits',
-    features: ['60 mixed export credits', 'Use for CV, PDF, or social', 'No watermark', 'Priority export queue'],
-  },
-  {
-    id: 'all-access',
-    eyebrow: 'Power User',
+    id: 'pro-monthly',
+    eyebrow: 'Pro plan',
     title: 'Unlimited workspace',
     price: '$9',
     unit: 'per month',
-    note: 'Only if you use everything',
+    note: 'For regular creators and teams',
     description: 'For freelancers who generate documents, content, OCR, and conversions every week.',
-    badge: 'Unlimited',
-    kind: 'soft',
+    badge: 'Most practical',
+    kind: 'premium',
     cta: 'Subscribe monthly',
-    features: ['100 exports per day', 'Cloud document history', 'AI drafting across tools', 'Cancel anytime'],
+    features: ['100 exports per day', 'Premium templates', 'Bulk export', 'Cancel anytime'],
   },
 ]
 
@@ -102,7 +63,7 @@ export default function Pricing() {
   useEffect(() => {
     document.title = 'Pricing — Atelier by Vanaila'
     const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', 'Buy CV and social media export packs. No subscription needed. Subscribe only for unlimited use.')
+    if (meta) meta.setAttribute('content', 'Subscribe to Atelier Pro for higher daily limits, premium templates, and bulk export.')
 
     const token = getAuthToken()
     if (token) {
@@ -125,7 +86,9 @@ export default function Pricing() {
 
     setProcessingPayment(packId)
     try {
-      alert('Payment checkout coming next. Selected pack: ' + packId)
+      // Full checkout creation lives in the backend billing flow.
+      // Keep this deploy-safe: authenticated users land on the account page until production checkout is enabled.
+      navigate('/app/account')
     } finally {
       setProcessingPayment(null)
     }
@@ -145,11 +108,11 @@ export default function Pricing() {
       </nav>
 
       <section className="pricing-hero">
-        <div className="pricing-hero__badge"><SparkIcon /> No subscription needed</div>
+        <div className="pricing-hero__badge"><SparkIcon /> Free plan available</div>
         <h1>Pay for output, <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400 }}>not access.</span></h1>
         <p>
-          Free tools stay useful. Paid packs remove watermarks and unlock higher-value exports.
-          Buy CV or social credits when you need them — subscribe only if you produce every week.
+          Free tools stay useful. Pro unlocks higher daily limits, premium templates, and bulk export
+          for people who produce finished files every week.
         </p>
       </section>
 
@@ -160,8 +123,8 @@ export default function Pricing() {
         </div>
         <ul>
           <li>Daily export limits</li>
-          <li>Watermarked output</li>
-          <li>Local-only storage</li>
+          <li>Local-only processing</li>
+          <li>No file uploads to servers</li>
         </ul>
       </section>
 
@@ -192,12 +155,12 @@ export default function Pricing() {
       <section className="pricing-guidance">
         <div>
           <span>Recommended model</span>
-          <h2>Use credits as revenue engine.</h2>
+          <h2>Use Pro for regular production work.</h2>
         </div>
         <div className="pricing-guidance__cards">
-          <div><strong>$4 CV pack</strong><p>Low friction. Converts job seekers who only need outcome, not account commitment.</p></div>
-          <div><strong>$12 social pack</strong><p>Higher perceived value. Clear campaign-sized bundle for creators and small businesses.</p></div>
-          <div><strong>$9/mo unlimited</strong><p>Keep subscription for power users only. It becomes convenience, not forced commitment.</p></div>
+          <div><strong>Free plan</strong><p>Good for testing, light work, and occasional use with daily limits.</p></div>
+          <div><strong>$9/mo Pro</strong><p>Best for freelancers and creators who export finished files every week.</p></div>
+          <div><strong>Cancel anytime</strong><p>Subscription access stays active through the paid period after cancellation.</p></div>
         </div>
       </section>
 

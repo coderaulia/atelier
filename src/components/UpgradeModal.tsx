@@ -13,7 +13,7 @@ export default function UpgradeModal({ onClose }: Props) {
         <div className="modal__body">
           <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--shell-muted)', marginBottom: 20 }}>
             You've reached your free daily limit. Upgrade to Pro for unlimited exports,
-            cloud saves, and brand kit storage.
+            premium templates, and bulk export.
           </p>
           <a
             href="/register?plan=pro"

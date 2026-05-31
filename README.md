@@ -50,7 +50,6 @@ All file processing happens **client-side** — your files never leave your brow
 
 ### Pro Tier
 - Unlimited daily usage
-- Cloud save (R2 storage)
 - Premium templates
 - Bulk export
 - Priority support
@@ -78,7 +77,6 @@ All file processing happens **client-side** — your files never leave your brow
 - **Runtime:** Cloudflare Workers
 - **Framework:** Hono
 - **Database:** Cloudflare D1 (SQLite)
-- **Storage:** Cloudflare R2 (Pro cloud save)
 - **Email:** Resend
 - **Payments:** Midtrans (IDR & USD)
 - **Validation:** Zod
@@ -263,7 +261,6 @@ All file operations run in the browser:
 - Midtrans Snap.js for payment UI
 - Webhook validation with signature check
 - Subscription states: active, grace_period, cancelled
-- One-time credit packs supported
 - Refund requests with usage threshold checks
 
 ---

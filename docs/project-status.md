@@ -2,95 +2,97 @@
 
 ## Current state
 
-Vanaila Studio is a Vite + React 19 frontend with a Cloudflare Workers API built on Hono.
-The API is running locally on `http://localhost:8787` and `/health` returns OK.
+Vanaila Studio is a Vite + React 19 frontend with a Cloudflare Workers API built on Hono. Frontend builds successfully, backend typechecks successfully, and launch-critical API flows are covered by `scripts/test-flows.mjs`.
 
 ## Frontend
 
 Implemented routes:
 
 - `/` landing page
-- `/login`
-- `/register`
-- `/app` document generator
-- `/cv`
-- `/pdf-to-image`
-- `/image-converter`
-- `/ocr`
-- `/admin` internal admin overview
-- `/admin/users`
-- `/admin/users/:id`
-- `/admin/transactions`
-- `/admin/errors`
+- `/pricing`
+- `/manual`
+- `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`
+- `/app/dashboard`
+- `/app/*` authenticated tool routes generated from `src/lib/tools.tsx`
+- Public tool routes generated from `src/lib/tools.tsx`
+- `/app/account`
+- `/privacy`, `/terms`, `/refund`
+- `/receipt`
+- `/admin` and admin subroutes for users, transactions, subscriptions, refunds, bug reports, revenue, analytics, system config, feature flags, health, announcements, email templates, audit logs, and errors
+
+## Tools
+
+Implemented tools:
+
+- Document Generator
+- Social Generator
+- CV Builder
+- PDF to Image
+- PDF Merge
+- PDF Compress
+- Image Converter
+- OCR
 
 ## CV Builder
 
-Fully-featured CV/resume builder with 8 major phases implemented:
+Implemented CV/resume builder phases:
 
-1. **Guided wizard** — Pre-structures CV based on role/experience/industry
-2. **Step-by-step editor** — Section-by-section flow with progress tracking
-3. **Smart import** — Parses PDF (text + OCR) and DOCX files into structured fields
-4. **ATS checker** — Scores CV 0-100, detects weak verbs, checks formatting, matches JD keywords
-5. **AI suggestions** — Pro-gated Groq/Llama 3.3 rewrites for bullets and summary generation
-6. **Regional mode** — Toggle International (ATS-safe) vs Indonesia (photo/DOB/marital/religion)
-7. **Content library** — ~60 curated phrases by role/seniority/industry with copy-to-clipboard
-8. **Cover letter generator** — Pro-gated AI generation from CV data with editable preview
-9. **DOCX export** — Structured Word document export via docx library
-
-Export formats: PDF (6 templates) + DOCX
+1. Guided wizard
+2. Step-by-step editor
+3. PDF/DOCX import with OCR fallback
+4. ATS checker
+5. Pro-gated AI suggestions via Groq/Llama 3.3
+6. International/Indonesia regional mode
+7. Content library
+8. Cover letter generator
+9. PDF and DOCX export
 
 ## Backend
 
-Implemented API routes:
+Implemented API areas:
 
-- `GET /health`
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me`
-- `GET /usage/:toolId`
-- `POST /usage/:toolId`
-- `GET /admin/stats`
-- `GET /admin/users`
-- `GET /admin/users/:id`
-- `PATCH /admin/users/:id`
-- `GET /admin/transactions`
-- `GET /admin/errors`
-- `POST /api/log-error`
-- `POST /api/cv/ai` (Pro-gated Groq integration for CV rewrites and cover letters)
+- Health: `GET /health`
+- Auth: register, login, `/me`, forgot/reset password, verify email, logout, sessions, profile, change password, soft delete
+- Usage: authenticated usage limits and 30-day usage history
+- Anonymous usage: anonymous daily limits
+- Billing: status, cancel, reactivate, webhook lifecycle, transactions, receipt
+- Admin: stats, users, transactions, subscriptions, refunds, analytics, errors, system config, feature flags, health, announcements, email templates, audit logs, cron test trigger
+- Bug reports
+- Error logging
+- CV AI: Pro-gated rewrite, summary, tone, tailoring, cover letter
 
 ## Database
 
 D1 schema includes:
 
-- `users` with `plan`, `role`, `status`, `pro_expires_at`, `last_login`
+- `users`
 - `sessions`
-- `usage_log` with `limit_hits`
+- `usage_log`
 - `transactions`
 - `error_log`
+- password reset and email verification tables
+- rate-limit and security tables
+- admin dashboard/support tables
+- credit pack tables are present for future use, but public purchase checkout is disabled for launch
 
-## Admin access
+## Deployment readiness
 
-Admin routes require JWT session and `users.role = 'admin'`.
+Build checks passing:
 
-Set local admin account:
+- Frontend typecheck: pass
+- Frontend production build: pass
+- Backend typecheck: pass
 
-```bash
-wrangler d1 execute vanaila-studio --local --command "UPDATE users SET role='admin' WHERE email='your@email.com';"
-```
+Deployment prerequisites still requiring operator action:
 
-## Known gaps
+- Replace `api/wrangler.toml` D1 `database_id` with real Cloudflare D1 ID
+- Configure production secrets via `wrangler secret put`
+- Apply production D1 schema/migrations
+- Seed production admin user
+- Run manual browser/payment/device test plan on staging
 
-- Midtrans billing endpoints are not implemented yet.
-- R2 cloud save is not implemented yet.
-- Recharts is not installed; admin charts currently use lightweight CSS bars.
+## Known limitations for launch
 
-## Account management
-
-User-facing `/account` page is implemented with tabs:
-
-- Profile: email, member since, current plan, editable display name.
-- Subscription: free upgrade CTA, pro cancellation/reactivation, transaction history.
-- Usage: current user's usage_log last 30 days.
-- Security: change password, sessions, sign out other devices, soft-delete account.
-
-Receipt route implemented at `/receipt/:transaction_id` and verifies ownership via API.
+- R2 cloud save is not part of the launch surface and has been removed from user-facing copy.
+- One-time credit pack checkout is disabled for launch; credit tables remain for future implementation.
+- Admin charts use lightweight CSS bars instead of Recharts.

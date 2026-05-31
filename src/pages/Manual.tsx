@@ -139,8 +139,8 @@ export default function Manual() {
             <ManualCard title="Create a free account">
               <p>Register, verify email, and use tools inside the `/app` dashboard with synced account limits.</p>
             </ManualCard>
-            <ManualCard title="Upgrade or buy credits">
-              <p>Use Pro for unlimited daily access, or buy one-time credit packs when you only need more exports.</p>
+            <ManualCard title="Upgrade to Pro">
+              <p>Unlock unlimited daily access, premium templates, and bulk export. No per-use purchases needed.</p>
             </ManualCard>
           </div>
         </section>
@@ -200,15 +200,13 @@ export default function Manual() {
         <section id="billing" className="manual-section container">
           <div className="section__head">
             <span className="eyebrow eyebrow--accent">Billing</span>
-            <h2>Subscriptions and one-time credits.</h2>
+            <h2>Simple subscription with no surprise charges.</h2>
           </div>
           <div className="manual-grid manual-grid--two">
             <ManualCard title="Pro subscription">
-              <p>Pro unlocks unlimited daily use, cloud save, premium templates, and bulk export. Payments run through Midtrans.</p>
+              <p>Pro unlocks unlimited daily use, premium templates, and bulk export. Payments run through Midtrans.</p>
             </ManualCard>
-            <ManualCard title="Credit packs">
-              <p>Credit packs are one-time purchases for users who need extra exports without a recurring subscription.</p>
-            </ManualCard>
+
             <ManualCard title="Receipts">
               <p>After payment, open the receipt page from checkout redirect or account transaction history.</p>
             </ManualCard>

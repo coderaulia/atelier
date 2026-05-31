@@ -874,7 +874,7 @@ function Pricing() {
           <span className="eyebrow eyebrow--accent">Pricing</span>
           <h2>Generous free. <span className="accent">Honest Pro.</span></h2>
           <p className="section__lede">
-            The suite is free to use. Pro unlocks brand-kit storage, AI drafting, cloud history, and unlimited batch jobs. That's it. No "starter," "team," "scale" maze.
+            The suite is free to use. Pro unlocks higher daily limits, premium templates, and bulk export. That's it. No "starter," "team," "scale" maze.
           </p>
         </div>
 
@@ -910,11 +910,10 @@ function Pricing() {
             <div className="price-tier__tag">For people running a business.</div>
             <ul className="price-tier__list">
               <li>Everything in Free, plus —</li>
-              <li>Brand kit &amp; logo storage across devices</li>
-              <li>Cloud document history &amp; re-export</li>
+              <li>100 exports per day</li>
+              <li>Premium CV &amp; document templates</li>
               <li>AI drafting for proposals, PRDs, CVs</li>
-              <li>Unlimited OCR &amp; batch conversions</li>
-              <li>Custom domain on shared documents</li>
+              <li>Priority support</li>
             </ul>
             <div>
               <Link className="btn btn--accent" to="/pricing">Try Pro free for 14 days <ArrowSmIcon /></Link>

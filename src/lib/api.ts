@@ -77,6 +77,7 @@ export class UsageLimitError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     headers: { 'Content-Type': 'application/json', ...init?.headers },
+    credentials: 'include',
     ...init,
   })
   const data = await res.json() as T & { error?: string }

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { register } from '../lib/api'
 import { setAuthToken, setStoredUser } from '../lib/auth'
+import { authClient } from '../lib/auth-client'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -115,6 +116,33 @@ export default function Register() {
               {loading ? 'Creating account…' : plan === 'pro' ? 'Start free Pro trial' : 'Create free account'}
             </button>
           </form>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '24px 0', color: 'var(--ink-3)', fontSize: 12, fontFamily: 'var(--mono)', letterSpacing: '0.04em' }}>
+            <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            OR SIGN UP WITH
+            <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          </div>
+
+          <div style={{ display: 'grid', gap: 12 }}>
+            <button
+              id="register-google-button"
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => authClient.signIn.social({ provider: 'google', callbackURL: '/app/dashboard' })}
+              style={{ height: 48, justifyContent: 'center', width: '100%' }}
+            >
+              Continue with Google
+            </button>
+            <button
+              id="register-github-button"
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => authClient.signIn.social({ provider: 'github', callbackURL: '/app/dashboard' })}
+              style={{ height: 48, justifyContent: 'center', width: '100%' }}
+            >
+              Continue with GitHub
+            </button>
+          </div>
 
           <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--border)', textAlign: 'center', fontSize: 12, color: 'var(--ink-3)', fontFamily: 'var(--mono)', letterSpacing: '0.04em' }}>
             FREE · NO CARD · NO WATERMARKS

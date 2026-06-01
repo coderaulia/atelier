@@ -13,6 +13,7 @@
     "seed:admin": "node scripts/seed-admin.mjs"
   },
   "dependencies": {
+    "better-auth": "^1.6.13",
     "hono": "^4.7.0",
     "jose": "^5.10.0",
     "zod": "^3.25.0"

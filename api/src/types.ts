@@ -2,6 +2,12 @@ export interface Bindings {
   DB: D1Database
   JWT_SECRET: string
   JWT_SECRET_OLD?: string
+  BETTER_AUTH_SECRET?: string
+  BETTER_AUTH_URL?: string
+  GOOGLE_CLIENT_ID?: string
+  GOOGLE_CLIENT_SECRET?: string
+  GITHUB_CLIENT_ID?: string
+  GITHUB_CLIENT_SECRET?: string
   RESEND_API_KEY: string
   APP_URL?: string
   ALLOWED_ORIGINS?: string

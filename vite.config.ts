@@ -28,19 +28,20 @@ export default defineConfig(({ isSsrBuild }) => ({
   },
   build: {
     sourcemap: false,
-    chunkSizeWarningLimit: 250,
+    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
         manualChunks: isSsrBuild
           ? undefined
           : {
               'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-              'vendor-pdf': ['pdf-lib', 'pdfjs-dist'],
-              'vendor-cv': ['@react-pdf/renderer'],
+              'vendor-pdf-core': ['pdf-lib', 'pdfjs-dist'],
+              'vendor-pdf-renderer': ['@react-pdf/renderer'],
+              'vendor-docx': ['docx'],
+              'vendor-doc-import': ['mammoth'],
               'vendor-image': ['@jsquash/avif', '@jsquash/webp', 'html-to-image'],
               'vendor-docs': ['marked', 'dompurify'],
               'vendor-ocr': ['tesseract.js'],
-              'vendor-archive': ['jszip'],
             },
       },
     },

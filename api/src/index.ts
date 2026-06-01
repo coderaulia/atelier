@@ -10,6 +10,7 @@ import cvAi from './routes/cv-ai'
 import anonUsage from './routes/anon-usage'
 import { contentPublic } from './routes/admin/content'
 import { checkRateLimit, getClientIP } from './lib/rate-limit'
+import { createAuth } from './lib/better-auth'
 import type { Bindings } from './types'
 
 const DEFAULT_ORIGINS = ['https://atelier.vanailadigital.com']
@@ -26,6 +27,8 @@ app.use('*', cors({
   },
   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
+  exposeHeaders: ['Content-Length'],
+  credentials: true,
   maxAge: 86400,
 }))
 
@@ -60,6 +63,7 @@ app.use('*', async (c, next) => {
   await next()
 })
 
+app.on(['GET', 'POST'], '/api/auth/*', (c) => createAuth(c.env).handler(c.req.raw))
 app.route('/auth', auth)
 app.route('/usage', usage)
 app.route('/admin', admin)

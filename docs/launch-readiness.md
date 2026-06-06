@@ -46,59 +46,33 @@
 
 ## 🚨 CRITICAL BLOCKERS
 
-### 1. Payment Flow Not Implemented
-**Location:** `src/pages/Pricing.tsx:89-91`, `api/src/routes/billing.ts`
+### 1. Payment Flow Not Implemented ✅ COMPLETED 2026-06-06
+**Location:** `api/src/routes/billing.ts:102-137`, `src/pages/Pricing.tsx`, `src/lib/api.ts:201-209`
 
-**Issue:**  
-The "Subscribe monthly" button on `/pricing` is stubbed out. Clicking it just redirects to `/app/account` with a comment:
+**Fixed:**
+- `POST /api/billing/checkout` creates Midtrans Snap token via Snap API
+- `Pricing.tsx` loads Snap.js dynamically and opens payment modal on subscribe
+- `createCheckout()` in `src/lib/api.ts` handles the API call
+- Env vars: `VITE_MIDTRANS_ENV` (sandbox/production) and `VITE_MIDTRANS_CLIENT_KEY`
+- Button disabled until Snap.js loads
 
-```typescript
-// Full checkout creation lives in the backend billing flow.
-// Keep this deploy-safe: authenticated users land on the account page until production checkout is enabled.
-navigate('/app/account')
-```
-
-**Missing:**
-- ❌ Backend endpoint: `POST /billing/checkout` to create Midtrans Snap token
-- ❌ Frontend integration: Midtrans Snap.js to open payment modal
-- ❌ Initial transaction creation (webhook only handles recurring payments)
-- ❌ Success/failure redirect handling
-
-**Impact:**  
-Users cannot upgrade to Pro. Revenue generation is blocked.
-
-**Required implementation:**
-1. Create `POST /api/billing/checkout` endpoint that:
-   - Accepts `{ plan_type: 'pro-monthly' }`
-   - Calls Midtrans Snap API to create transaction token
-   - Returns `{ snap_token: string, order_id: string }`
-2. Update `Pricing.tsx` to:
-   - Load Midtrans Snap.js script
-   - Call checkout endpoint
-   - Open Snap modal with token
-   - Handle success/failure callbacks
-3. Update webhook to handle initial `settlement`/`capture` status (not just `recurring`)
-4. Add transaction record creation on first payment
 
 ---
 
 ## ⚠️ HIGH PRIORITY
 
-### 2. Webhook Only Handles Recurring Payments
-**Location:** `api/src/routes/billing.ts:130-163`
+### 2. Webhook Only Handles Recurring Payments ✅ FIXED 2026-06-06
+**Location:** `api/src/routes/billing.ts:163`
 
-**Issue:**  
-The webhook only processes `payment_type === 'recurring'` transactions. Initial Snap checkout payments (which have `payment_type: 'credit_card'` or similar) are ignored.
+**Fixed:** Webhook now processes `settlement` and `capture` for all payment types (not just `recurring`).
 
-**Fix needed:**
+Changed from:
 ```typescript
-// Add before line 130:
+if (event.payment_type === 'recurring' && event.transaction_status === 'capture') {
+```
+To:
+```typescript
 if (event.transaction_status === 'settlement' || event.transaction_status === 'capture') {
-  // Handle initial payment (non-recurring)
-  // Create transaction record
-  // Upgrade user to pro
-  // Send confirmation email
-}
 ```
 
 ### 3. Production Environment Variables Not Documented

@@ -43,6 +43,23 @@ For Midtrans sandbox, use:
 MIDTRANS_BASE_URL = "https://api.sandbox.midtrans.com"
 ```
 
+## Frontend env vars (non-secret)
+
+These are public values set in the frontend `.env` file or CI build environment:
+
+```bash
+VITE_API_URL=https://api.yourdomain.com
+VITE_MIDTRANS_ENV=production
+VITE_MIDTRANS_CLIENT_KEY=Mid-client-xxxxxxxxx
+```
+
+For sandbox/dev:
+
+```bash
+VITE_MIDTRANS_ENV=sandbox
+VITE_MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxxxxxx
+```
+
 ## Local development secrets
 
 Use Cloudflare's local secrets file. Do not commit it.

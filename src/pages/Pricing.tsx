@@ -1,8 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getAuthToken } from '../lib/auth'
-import { getMe } from '../lib/api'
+import { getMe, createCheckout } from '../lib/api'
 import './Pricing.css'
+
+declare global {
+  interface Window {
+    snap?: {
+      pay: (token: string, options: {
+        onSuccess?: (result: unknown) => void
+        onPending?: (result: unknown) => void
+        onError?: (result: unknown) => void
+        onClose?: () => void
+      }) => void
+    }
+  }
+}
 
 const ArrowIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -59,6 +72,7 @@ export default function Pricing() {
   const [user, setUser] = useState<UserLite | null>(null)
   const [loading, setLoading] = useState(true)
   const [processingPayment, setProcessingPayment] = useState<string | null>(null)
+  const [snapReady, setSnapReady] = useState(false)
 
   useEffect(() => {
     document.title = 'Pricing — Atelier by Vanaila'
@@ -76,6 +90,25 @@ export default function Pricing() {
     }
   }, [])
 
+  // Load Midtrans Snap.js once
+  useEffect(() => {
+    if (document.querySelector('#midtrans-snap')) {
+      setSnapReady(true)
+      return
+    }
+    const isSandbox = import.meta.env.VITE_MIDTRANS_ENV !== 'production'
+    const snapUrl = isSandbox ? 'https://app.sandbox.midtrans.com/snap/snap.js' : 'https://app.midtrans.com/snap/snap.js'
+    const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || 'SB-Mid-client-PLACEHOLDER'
+    
+    const script = document.createElement('script')
+    script.id = 'midtrans-snap'
+    script.src = snapUrl
+    script.setAttribute('data-client-key', clientKey)
+    script.onload = () => setSnapReady(true)
+    script.onerror = () => console.error('Failed to load Midtrans Snap.js')
+    document.body.appendChild(script)
+  }, [])
+
   async function handlePurchase(packId: string) {
     const token = getAuthToken()
     if (!token) {
@@ -86,9 +119,28 @@ export default function Pricing() {
 
     setProcessingPayment(packId)
     try {
-      // Full checkout creation lives in the backend billing flow.
-      // Keep this deploy-safe: authenticated users land on the account page until production checkout is enabled.
-      navigate('/app/account')
+      const { snap_token } = await createCheckout(packId)
+      if (!window.snap) {
+        alert('Payment system is loading. Please wait a moment and try again.')
+        return
+      }
+      window.snap.pay(snap_token, {
+        onSuccess: () => {
+          navigate('/app/account')
+        },
+        onPending: () => {
+          navigate('/app/account')
+        },
+        onError: () => {
+          navigate('/pricing')
+        },
+        onClose: () => {
+          // user closed the modal without completing
+        },
+      })
+    } catch (err) {
+      console.error('Checkout error:', err)
+      alert('Failed to start checkout. Please try again.')
     } finally {
       setProcessingPayment(null)
     }
@@ -145,7 +197,7 @@ export default function Pricing() {
                 <li key={feature}><CheckIcon /> {feature}</li>
               ))}
             </ul>
-            <button className="price-card__cta" onClick={() => handlePurchase(pack.id)} disabled={loading || processingPayment === pack.id}>
+            <button className="price-card__cta" onClick={() => handlePurchase(pack.id)} disabled={loading || processingPayment === pack.id || !snapReady}>
               {processingPayment === pack.id ? 'Opening checkout…' : pack.cta} <ArrowIcon />
             </button>
           </article>

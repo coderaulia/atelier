@@ -198,6 +198,14 @@ export function getReceipt(txId: number) {
   return request<{ transaction: Transaction }>(`/billing/receipt/${txId}`, { headers: authHeaders() })
 }
 
+export function createCheckout(planType: string) {
+  return request<{ snap_token: string; order_id: string }>('/billing/checkout', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ plan_type: planType }),
+  })
+}
+
 // ── Usage log ───────────────────────────────────────────────────
 export function getMyUsage() {
   return request<{ usage: UsageLogEntry[] }>('/usage/me', { headers: authHeaders() })

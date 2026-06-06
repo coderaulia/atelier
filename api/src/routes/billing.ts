@@ -99,6 +99,43 @@ billing.get('/transactions', authMiddleware, async (c) => {
   return c.json({ transactions: rows.results ?? [] })
 })
 
+billing.post('/checkout', authMiddleware, async (c) => {
+  const body = await c.req.json().catch(() => null)
+  if (!body || body.plan_type !== 'pro-monthly') return c.json({ error: 'Invalid plan' }, 400)
+
+  const user = await c.env.DB
+    .prepare('SELECT email, first_name, last_name FROM users WHERE id = ?')
+    .bind(c.var.userId)
+    .first<{ email: string; first_name: string; last_name: string }>()
+
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  const orderId = `PRO-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+  const payload = {
+    transaction_details: { order_id: orderId, gross_amount: 140000 },
+    customer_details: { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
+    custom_field1: c.var.userId,
+  }
+
+  const isSandbox = (c.env.MIDTRANS_BASE_URL || '').includes('sandbox')
+  const snapUrl = isSandbox ? 'https://app.sandbox.midtrans.com/snap/v1/transactions' : 'https://app.midtrans.com/snap/v1/transactions'
+  const authString = btoa(`${c.env.MIDTRANS_SERVER_KEY}:`)
+  
+  const response = await fetch(snapUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Basic ${authString}` },
+    body: JSON.stringify(payload)
+  })
+
+  if (!response.ok) {
+    console.error('Midtrans Snap Error:', await response.text())
+    return c.json({ error: 'Failed to create checkout' }, 500)
+  }
+
+  const data = await response.json<{ token: string }>()
+  return c.json({ snap_token: data.token, order_id: orderId })
+})
+
 // Midtrans recurring lifecycle webhook.
 // Recurring should use Midtrans Core API token-based recurring charges.
 // Snap is for initial checkout; saved card token then powers recurring Core API charges.
@@ -127,7 +164,7 @@ billing.post('/webhook', async (c) => {
   const now = Math.floor(Date.now() / 1000)
   const thirtyDays = 30 * 24 * 60 * 60
 
-  if (event.payment_type === 'recurring' && event.transaction_status === 'capture') {
+  if (event.transaction_status === 'settlement' || event.transaction_status === 'capture') {
     const existing = await c.env.DB
       .prepare('SELECT id FROM transactions WHERE midtrans_order_id = ?')
       .bind(event.order_id)

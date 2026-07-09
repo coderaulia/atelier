@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import AdminLayout from './AdminLayout'
+import ManagePlanModal from './ManagePlanModal'
 import { getAdminUsers, patchAdminUser, type User } from '../../lib/api'
+
+function planBadge(user: User): { label: string; className: string } {
+  if (user.plan !== 'pro') return { label: 'Free', className: 'badge--free' }
+  const tier = user.pro_tier ?? 'pro'
+  return { label: `Pro · ${tier}`, className: `badge--${tier}` }
+}
 
 export default function Users() {
   const navigate = useNavigate()
@@ -12,6 +19,7 @@ export default function Users() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [searchInput, setSearchInput] = useState(params.get('search') ?? '')
+  const [manageUser, setManageUser] = useState<User | null>(null)
 
   const page = Number(params.get('page') ?? 1)
   const search = params.get('search') ?? ''
@@ -35,27 +43,9 @@ export default function Users() {
     setParams({ page: '1', search: searchInput, plan })
   }
 
-  function handleExtend(user: User) {
-    const days = Number(prompt('Extend Pro by how many days?', '30'))
-    if (!days || days <= 0) return
-    const expires = Math.floor(Date.now() / 1000) + days * 86400
-    patchAdminUser(user.id, { plan: 'pro', pro_expires_at: expires })
-      .then(() => {
-        setSuccess(`Extended ${user.email} Pro by ${days} days`)
-        load()
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed'))
-  }
-
-  function handleChangePlan(user: User) {
-    const next = user.plan === 'pro' ? 'free' : 'pro'
-    if (!confirm(`Change ${user.email} from ${user.plan} to ${next}?`)) return
-    patchAdminUser(user.id, { plan: next })
-      .then(() => {
-        setSuccess(`Changed ${user.email} to ${next}`)
-        load()
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed'))
+  function handleModalSaved(message: string) {
+    setSuccess(message)
+    load()
   }
 
   function handleBan(user: User) {
@@ -110,21 +100,27 @@ export default function Users() {
             <tbody>
               {loading && <tr><td colSpan={7}>Loading…</td></tr>}
               {!loading && !users.length && <tr><td colSpan={7}>No users found.</td></tr>}
-              {!loading && users.map((user) => (
+              {!loading && users.map((user) => {
+                const badge = planBadge(user)
+                return (
                 <tr key={user.id} className={user.status === 'banned' ? 'banned' : ''}>
                   <td><button className="link-btn" onClick={() => navigate(`/admin/users/${user.id}`)}>{user.email}</button></td>
-                  <td><span className={`badge badge--${user.plan}`}>{user.plan}</span></td>
+                  <td><span className={`badge ${badge.className}`}>{badge.label}</span></td>
                   <td>{user.role ?? 'user'}</td>
                   <td>{user.status ?? 'active'}</td>
                   <td>{user.total_tool_uses ?? 0}</td>
                   <td>{user.created_at ? new Date(user.created_at * 1000).toLocaleDateString() : '—'}</td>
                   <td>
-                    <button onClick={() => handleExtend(user)} title="Extend Pro">⏰</button>
-                    <button onClick={() => handleChangePlan(user)} title="Change plan">🔄</button>
-                    <button onClick={() => handleBan(user)} title="Ban">🚫</button>
+                    <div className="admin-row-actions">
+                      <button className="admin-btn-icon" onClick={() => setManageUser(user)} title="Manage plan & credits" aria-label="Manage plan and credits">⚙️</button>
+                      {user.status !== 'banned' && (
+                        <button className="admin-btn-icon admin-btn-icon--danger" onClick={() => handleBan(user)} title="Ban user" aria-label="Ban user">🚫</button>
+                      )}
+                    </div>
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -135,6 +131,14 @@ export default function Users() {
           <button disabled={(page * 20) >= total} onClick={() => setParams({ page: String(page + 1), search, plan })}>Next →</button>
         </div>
       </section>
+
+      {manageUser && (
+        <ManagePlanModal
+          user={manageUser}
+          onClose={() => setManageUser(null)}
+          onSaved={handleModalSaved}
+        />
+      )}
     </AdminLayout>
   )
 }

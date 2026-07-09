@@ -275,14 +275,27 @@ export function getAdminUsers(params: { page?: number; limit?: number; search?: 
 }
 
 export function getAdminUser(id: string) {
-  return request<{ user: User; transactions: Transaction[]; usage_log: { date: string; tool_id: string; count: number; limit_hits: number }[] }>(`/admin/users/${id}`, { headers: authHeaders() })
+  return request<{
+    user: User
+    transactions: Transaction[]
+    usage_log: { date: string; tool_id: string; count: number; limit_hits: number }[]
+    credits: { pack_type: string; remaining: number }[]
+  }>(`/admin/users/${id}`, { headers: authHeaders() })
 }
 
-export function patchAdminUser(id: string, body: Partial<Pick<User, 'plan' | 'status' | 'pro_expires_at'>>) {
+export function patchAdminUser(id: string, body: Partial<Pick<User, 'plan' | 'pro_tier' | 'status' | 'pro_expires_at'>>) {
   return request<{ user: User }>(`/admin/users/${id}`, {
     method: 'PATCH',
     headers: authHeaders(),
     body: JSON.stringify(body),
+  })
+}
+
+export function grantCredits(userId: string, packType: 'cv-10' | 'social-50', credits: number) {
+  return request<{ pack: { id: number; pack_type: string; credits_total: number; credits_used: number } }>(`/admin/users/${userId}/grant-credits`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ pack_type: packType, credits }),
   })
 }
 

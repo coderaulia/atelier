@@ -9,6 +9,7 @@ import systemAdmin from './admin/system'
 import { contentAdmin } from './admin/content'
 import auditAdmin from './admin/audit'
 import { checkRateLimit, getClientIP } from '../lib/rate-limit'
+import { PRICING } from '../lib/pricing'
 import type { Bindings } from '../types'
 
 const admin = new Hono<{ Bindings: Bindings; Variables: AdminVariables }>()
@@ -37,8 +38,14 @@ function dayOffset(daysAgo: number): string {
 
 const patchUserSchema = z.object({
   plan: z.enum(['free', 'pro']).optional(),
+  pro_tier: z.enum(['starter', 'pro', 'business']).nullable().optional(),
   pro_expires_at: z.number().int().nullable().optional(),
   status: z.enum(['active', 'banned']).optional(),
+})
+
+const grantCreditsSchema = z.object({
+  pack_type: z.enum(['cv-10', 'social-50']),
+  credits: z.number().int().min(1).max(1000),
 })
 
 admin.get('/stats', async (c) => {
@@ -122,7 +129,7 @@ admin.get('/users', async (c) => {
   const where = filters.length ? `WHERE ${filters.join(' AND ')}` : ''
 
   const rows = await c.env.DB.prepare(
-    `SELECT u.id, u.email, u.plan, u.role, u.status, u.pro_expires_at, u.created_at, u.last_login,
+    `SELECT u.id, u.email, u.plan, u.pro_tier, u.role, u.status, u.pro_expires_at, u.created_at, u.last_login,
       COALESCE(SUM(l.count), 0) AS total_tool_uses
      FROM users u
      LEFT JOIN usage_log l ON l.user_id = u.id
@@ -142,7 +149,7 @@ admin.get('/users', async (c) => {
 admin.get('/users/:id', async (c) => {
   const id = c.req.param('id')
   const user = await c.env.DB.prepare(
-    `SELECT u.id, u.email, u.plan, u.role, u.status, u.pro_expires_at, u.created_at, u.last_login,
+    `SELECT u.id, u.email, u.plan, u.pro_tier, u.role, u.status, u.pro_expires_at, u.created_at, u.last_login,
       COALESCE(SUM(l.count), 0) AS total_tool_uses
      FROM users u
      LEFT JOIN usage_log l ON l.user_id = u.id
@@ -151,6 +158,13 @@ admin.get('/users/:id', async (c) => {
   ).bind(id).first()
 
   if (!user) return c.json({ error: 'User not found' }, 404)
+
+  const credits = await c.env.DB.prepare(
+    `SELECT pack_type, SUM(credits_total - credits_used) AS remaining
+     FROM credit_packs
+     WHERE user_id = ? AND credits_used < credits_total
+     GROUP BY pack_type`
+  ).bind(id).all<{ pack_type: string; remaining: number }>()
 
   const since = dayOffset(29)
   const [transactions, usage] = await Promise.all([
@@ -162,7 +176,7 @@ admin.get('/users/:id', async (c) => {
       .all(),
   ])
 
-  return c.json({ user, transactions: transactions.results ?? [], usage_log: usage.results ?? [] })
+  return c.json({ user, transactions: transactions.results ?? [], usage_log: usage.results ?? [], credits: credits.results ?? [] })
 })
 
 admin.patch('/users/:id', async (c) => {
@@ -180,12 +194,12 @@ admin.patch('/users/:id', async (c) => {
   if (!fields.length) return c.json({ error: 'No changes provided' }, 400)
 
   const before = await c.env.DB
-    .prepare('SELECT id, email, plan, role, status, pro_expires_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, plan, pro_tier, role, status, pro_expires_at FROM users WHERE id = ?')
     .bind(id)
     .first()
 
   const updated = await c.env.DB.prepare(
-    `UPDATE users SET ${fields.join(', ')} WHERE id = ? RETURNING id, email, plan, role, status, pro_expires_at, created_at, last_login`
+    `UPDATE users SET ${fields.join(', ')} WHERE id = ? RETURNING id, email, plan, pro_tier, role, status, pro_expires_at, created_at, last_login`
   ).bind(...values, id).first()
 
   if (!updated) return c.json({ error: 'User not found' }, 404)
@@ -202,6 +216,32 @@ admin.patch('/users/:id', async (c) => {
     .run()
 
   return c.json({ user: updated })
+})
+
+// Manually grant a credit pack to a user (comp, support, migration).
+admin.post('/users/:id/grant-credits', async (c) => {
+  const id = c.req.param('id')
+  const body = await c.req.json().catch(() => null)
+  const result = grantCreditsSchema.safeParse(body)
+  if (!result.success) return c.json({ error: 'Invalid grant' }, 400)
+
+  const { pack_type, credits } = result.data
+  if (!(pack_type in PRICING.packs)) return c.json({ error: 'Unknown pack type' }, 400)
+
+  const user = await c.env.DB.prepare('SELECT id, email FROM users WHERE id = ?').bind(id).first<{ id: string; email: string }>()
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  const pack = await c.env.DB
+    .prepare('INSERT INTO credit_packs (user_id, pack_type, credits_total) VALUES (?, ?, ?) RETURNING id, pack_type, credits_total, credits_used, purchased_at')
+    .bind(id, pack_type, credits)
+    .first()
+
+  await c.env.DB
+    .prepare('INSERT INTO admin_audit_log (admin_id, action, target_user_id, changes, ip_address) VALUES (?, ?, ?, ?, ?)')
+    .bind(c.var.userId, 'credits.grant', id, JSON.stringify({ pack_type, credits, email: user.email }), getClientIP(c))
+    .run()
+
+  return c.json({ pack })
 })
 
 admin.get('/transactions', async (c) => {

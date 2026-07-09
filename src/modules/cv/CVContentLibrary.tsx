@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ROLE_GROUPS, GENERAL_PHRASES, LEADERSHIP, type ContentPhrase } from './cvContentLibrary';
+import { ROLE_GROUPS, GENERAL_PHRASES, LEADERSHIP, type ContentPhrase } from './cvPhraseLibrary';
 
 interface Props {
   onInsert: (phrase: string) => void;

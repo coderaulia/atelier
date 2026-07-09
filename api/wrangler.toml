@@ -2,14 +2,37 @@ name = "vanaila-studio-api"
 main = "src/index.ts"
 compatibility_date = "2025-05-27"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 [[d1_databases]]
 binding = "DB"
 database_name = "vanaila-studio"
-database_id = "placeholder-replace-after-wrangler-d1-create"
+database_id = "0483bc85-d701-4499-977c-143fa5160b4e"
 
 # Set secrets via: wrangler secret put JWT_SECRET
 # [vars] — don't put JWT_SECRET here, use wrangler secret
 
+[vars]
+ENVIRONMENT = "production"
+APP_URL = "https://studio.vanaila.com"
+BETTER_AUTH_URL = "https://vanaila-studio-api.atelier-591.workers.dev"
+ALLOWED_ORIGINS = "https://studio.vanaila.com"
+# MIDTRANS_BASE_URL = "https://api.midtrans.com"
+
 [triggers]
 crons = ["0 0 * * *"]
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1

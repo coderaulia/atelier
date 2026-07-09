@@ -1,4 +1,5 @@
 import type { CVData, WorkExperience, Education, Skill } from './types';
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 // ---- Tiny UID ----
 let _uid = 0;
@@ -386,7 +387,7 @@ export async function extractPDFText(
   onProgress?: (page: number, total: number) => void
 ): Promise<string> {
   const pdfjs = await import('pdfjs-dist');
-  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+  pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;

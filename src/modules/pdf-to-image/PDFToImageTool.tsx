@@ -5,6 +5,7 @@ import UpgradeModal from '../../components/UpgradeModal';
 import Toast from '../../components/Toast';
 import { validatePDF, warnPDFPageLimit } from '../../lib/fileValidation';
 import { getFriendlyErrorMessage, isLowPowerDevice, releaseCanvas, canvasToBlob } from '../../lib/errorHandler';
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 // Lazy-loaded pdfjs-dist
 let pdfjsLib: any = null;
@@ -14,8 +15,7 @@ async function loadPdfJs() {
   if (pdfjsLoaded) return pdfjsLib;
   
   const pdfjs = await import('pdfjs-dist');
-  // Set worker from CDN
-  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+  pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
   pdfjsLib = pdfjs;
   pdfjsLoaded = true;
   return pdfjs;

@@ -53,7 +53,13 @@ auth.post('/register', async (c) => {
     return c.json({ error: 'Too many registration attempts', reset_at: limit.resetAt }, 429)
   }
 
-  const password_hash = await hashPassword(password)
+  let password_hash: string
+  try {
+    password_hash = await hashPassword(password)
+  } catch (err) {
+    console.error('Password hashing failed during registration', err)
+    return c.json({ error: 'Registration failed' }, 500)
+  }
 
   try {
     const user = await c.env.DB

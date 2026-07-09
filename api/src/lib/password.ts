@@ -1,10 +1,12 @@
-const ITERATIONS = 310_000
+const ALGORITHM = 'pbkdf2_sha256'
+const CURRENT_ITERATIONS = 30_000
+const LEGACY_ITERATIONS = 310_000
 const HASH_BITS = 256
 
-async function pbkdf2(plain: string, salt: Uint8Array): Promise<string> {
+async function pbkdf2(plain: string, salt: Uint8Array, iterations: number): Promise<string> {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(plain), 'PBKDF2', false, ['deriveBits'])
   const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: ITERATIONS },
+    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations },
     key,
     HASH_BITS,
   )
@@ -21,14 +23,27 @@ function fromHex(hex: string) {
 
 export async function hashPassword(plain: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16))
-  const hash = await pbkdf2(plain, salt)
-  return `${toHex(salt)}:${hash}`
+  const hash = await pbkdf2(plain, salt, CURRENT_ITERATIONS)
+  return `${ALGORITHM}$${CURRENT_ITERATIONS}$${toHex(salt)}$${hash}`
 }
 
 export async function verifyPassword(plain: string, stored: string): Promise<boolean> {
+  const parts = stored.split('$')
+  if (parts.length === 4 && parts[0] === ALGORITHM) {
+    const iterations = Number(parts[1])
+    const [, , saltHex, expectedHash] = parts
+    if (!Number.isSafeInteger(iterations) || iterations <= 0 || !saltHex || !expectedHash) return false
+    const actualHash = await pbkdf2(plain, fromHex(saltHex), iterations)
+    return timingSafeEqual(actualHash, expectedHash)
+  }
+
   const [saltHex, expectedHash] = stored.split(':')
   if (!saltHex || !expectedHash) return false
-  const actualHash = await pbkdf2(plain, fromHex(saltHex))
+  const actualHash = await pbkdf2(plain, fromHex(saltHex), LEGACY_ITERATIONS)
+  return timingSafeEqual(actualHash, expectedHash)
+}
+
+function timingSafeEqual(actualHash: string, expectedHash: string): boolean {
   // Constant-time comparison via timing-safe equal length check + XOR
   if (actualHash.length !== expectedHash.length) return false
   let diff = 0

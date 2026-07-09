@@ -23,13 +23,14 @@ if (password.length < 8) {
   process.exit(1)
 }
 
-// Match api/src/lib/password.ts: PBKDF2, SHA-256, 310k iterations, 16-byte salt
-const ITERATIONS = 310_000
+// Match api/src/lib/password.ts: PBKDF2, SHA-256, versioned hash format.
+const ALGORITHM = 'pbkdf2_sha256'
+const ITERATIONS = 30_000
 const salt = randomBytes(16)
 const hash = pbkdf2Sync(password, salt, ITERATIONS, 32, 'sha256')
   .toString('hex')
 const saltHex = salt.toString('hex')
-const passwordHash = `${saltHex}:${hash}`
+const passwordHash = `${ALGORITHM}$${ITERATIONS}$${saltHex}$${hash}`
 
 // Escape single quotes for SQL
 const safeEmail = email.replace(/'/g, "''")

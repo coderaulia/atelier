@@ -14,6 +14,8 @@ import VerifyEmailNotice from './pages/VerifyEmailNotice'
 import PrivacyPolicy from './pages/legal/PrivacyPolicy'
 import TermsOfService from './pages/legal/TermsOfService'
 import RefundPolicy from './pages/legal/RefundPolicy'
+import Contact from './pages/legal/Contact'
+import FAQ from './pages/legal/FAQ'
 import Dashboard from './pages/app/Dashboard'
 import Pricing from './pages/Pricing'
 
@@ -54,6 +56,8 @@ export default function App() {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/refund" element={<RefundPolicy />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/faq" element={<FAQ />} />
       <Route path="/manual" element={<Manual />} />
       <Route
         path="/receipt"

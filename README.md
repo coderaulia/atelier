@@ -77,7 +77,7 @@ All file processing happens **client-side** — your files never leave your brow
 - **Runtime:** Cloudflare Workers
 - **Framework:** Hono
 - **Database:** Cloudflare D1 (SQLite)
-- **Email:** Resend
+- **Email:** Brevo
 - **Payments:** Midtrans (IDR & USD)
 - **Validation:** Zod
 
@@ -110,7 +110,7 @@ npm run db:apply
 # Configure environment variables
 # Create api/.dev.vars with:
 # JWT_SECRET=your-secret-key
-# RESEND_API_KEY=your-resend-key
+# BREVO_API_KEY=your-brevo-key
 # MIDTRANS_SERVER_KEY=your-midtrans-key
 # MIDTRANS_CLIENT_KEY=your-midtrans-client-key
 
@@ -216,7 +216,7 @@ atelier/
 │   │   │   └── admin.ts          # Admin role check
 │   │   ├── lib/
 │   │   │   ├── config.ts
-│   │   │   ├── email.ts          # Resend + templates
+│   │   │   ├── email.ts          # Brevo + templates
 │   │   │   ├── jwt.ts
 │   │   │   ├── password.ts
 │   │   │   ├── pricing.ts        # Pricing source of truth
@@ -308,7 +308,7 @@ wrangler d1 execute vanaila-studio --local \
 ### Backend (.dev.vars for local, Cloudflare dashboard for production)
 ```
 JWT_SECRET=your-secret-key
-RESEND_API_KEY=re_xxxxx
+BREVO_API_KEY=xkeysib-xxxxx
 MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxx
 MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxx
 MIDTRANS_IS_PRODUCTION=false

@@ -13,8 +13,8 @@ cd api
 openssl rand -base64 32
 wrangler secret put JWT_SECRET
 
-# Required — email delivery via Resend (get from https://resend.com)
-wrangler secret put RESEND_API_KEY
+# Required — email delivery via Brevo (get from https://app.brevo.com/settings/keys/api)
+wrangler secret put BREVO_API_KEY
 
 # Required — payment webhook verification (get from Midtrans dashboard)
 wrangler secret put MIDTRANS_SERVER_KEY
@@ -76,7 +76,7 @@ Then fill values in `api/.dev.vars`:
 ```dotenv
 ENVIRONMENT=development
 JWT_SECRET=replace-with-local-random-secret
-RESEND_API_KEY=replace-with-resend-key-or-test-value
+BREVO_API_KEY=replace-with-brevo-key-or-test-value
 MIDTRANS_SERVER_KEY=replace-with-midtrans-sandbox-server-key
 GROQ_API_KEY=replace-with-groq-key
 APP_URL=http://localhost:5173
@@ -95,7 +95,7 @@ openssl rand -base64 32
 | Secret | Required | Source | Notes |
 |--------|----------|--------|-------|
 | `JWT_SECRET` | ✅ | Generate | `openssl rand -base64 32` |
-| `RESEND_API_KEY` | ✅ | Resend dashboard | Email verification, billing |
+| `BREVO_API_KEY` | ✅ | Brevo dashboard | Email verification, billing |
 | `MIDTRANS_SERVER_KEY` | ✅ | Midtrans dashboard | Webhook validation |
 | `GROQ_API_KEY` | If AI enabled | Groq console | CV AI features |
 

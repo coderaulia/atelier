@@ -7,7 +7,7 @@
       "dataCollected": {"title":"Data yang Kami Kumpulkan","items":["Alamat email (untuk akun dan komunikasi)","Password yang di-hash (kami tidak menyimpan password plaintext)","Log penggunaan (jumlah pemakaian alat, timestamp, region dari IP)","Catatan billing (ID transaksi, nominal, status subscription via Midtrans)"]},
       "dataNotCollected": {"title":"Data yang TIDAK Kami Kumpulkan","items":["File yang Anda unggah (dokumen, gambar, PDF)","Semua pemrosesan file berjalan sepenuhnya di browser Anda — file tidak diunggah ke server kami","Kami tidak punya akses ke isi dokumen atau gambar Anda"]},
       "storage": {"title":"Penyimpanan Data","items":["Data akun: Cloudflare D1 (region US)","Cloud saves Pro: Cloudflare R2 (terenkripsi)","Semua data dienkripsi saat disimpan dan dikirim (TLS 1.3)"]},
-      "thirdParties": {"title":"Layanan Pihak Ketiga","items":["Midtrans — pemrosesan pembayaran (detail kartu ditangani Midtrans, tidak disimpan di server kami)","Resend — pengiriman email transaksional","PostHog — analitik produk anonim (tanpa data personal)"]},
+      "thirdParties": {"title":"Layanan Pihak Ketiga","items":["Midtrans — pemrosesan pembayaran (detail kartu ditangani Midtrans, tidak disimpan di server kami)","Brevo — pengiriman email transaksional","PostHog — analitik produk anonim (tanpa data personal)"]},
       "rights": {"title":"Hak Anda","intro":"Anda berhak untuk:","items":["Akses: Meminta salinan semua data pribadi yang kami simpan","Koreksi: Meminta perbaikan data pribadi yang tidak akurat","Penghapusan: Menghapus akun dan semua data terkait melalui DELETE /auth/account","Portabilitas data: Meminta data dalam format machine-readable"]},
       "pdp": {"title":"Kepatuhan UU PDP Indonesia","body":"Kami mematuhi Undang-Undang Pelindungan Data Pribadi Indonesia (UU PDP No. 27/2022). Kami memproses data pribadi secara sah, adil, dan transparan. Anda berhak mengakses, memperbaiki, menghapus, dan memindahkan data pribadi. Kami menerapkan langkah keamanan yang sesuai dan akan memberi notifikasi kepada Anda serta otoritas terkait jika terjadi kebocoran data."},
       "gdpr": {"title":"Kepatuhan GDPR (Pengguna EU)","body":"Untuk pengguna di European Economic Area (EEA), United Kingdom, dan Switzerland: Kami memproses data pribadi sesuai General Data Protection Regulation (GDPR). Dasar hukum pemrosesan kami adalah kebutuhan kontraktual (menyediakan layanan) dan kepentingan sah (analitik). Anda berhak mengajukan komplain ke otoritas perlindungan data lokal."},
@@ -33,5 +33,75 @@
       "oneTime":{"title":"Refund Pembelian Sekali Bayar","items":["Pembelian sekali bayar tidak dapat direfund setelah file diunduh","Unduhan dianggap sebagai pengiriman produk digital","Jika masalah teknis mencegah unduhan, hubungi kami untuk bantuan"]},
       "howToRequest":{"title":"Cara Meminta Refund","items":["Email billing@vanailadigital.com dengan email akun dan ID transaksi Anda","Kami akan merespons dalam 2 hari kerja","Refund diproses via Midtrans dalam 5-7 hari kerja","Refund dikreditkan ke metode pembayaran asli"]}
     }
+  },
+  "contact": {
+    "title": "Hubungi Kami",
+    "lastUpdated": "Terakhir diperbarui: Juli 2026",
+    "intro": "Punya pertanyaan, menemukan bug, atau butuh bantuan billing? Hubungi kami lewat kanal di bawah — biasanya kami merespons dalam 1-2 hari kerja.",
+    "channels": {
+      "title": "Kanal Kontak",
+      "items": [
+        { "label": "Dukungan umum", "value": "support@vanailadigital.com", "href": "mailto:support@vanailadigital.com" },
+        { "label": "Billing & refund", "value": "billing@vanailadigital.com", "href": "mailto:billing@vanailadigital.com" },
+        { "label": "Privasi & permintaan data", "value": "privacy@vanailadigital.com", "href": "mailto:privacy@vanailadigital.com" },
+        { "label": "Laporan bug", "value": "Gunakan form laporan bug di dalam aplikasi (tersedia di setiap halaman alat)", "href": "" }
+      ]
+    },
+    "responseTime": {
+      "title": "Waktu Respons",
+      "body": "Kami berusaha merespons semua pertanyaan dalam 1-2 hari kerja. Permintaan billing dan refund diprioritaskan dan biasanya dijawab dalam 24 jam pada hari kerja."
+    },
+    "office": {
+      "title": "Perusahaan",
+      "body": "Vanaila Digital — Jakarta, Indonesia. Atelier dioperasikan sebagai produk dari Vanaila Digital."
+    }
+  },
+  "faq": {
+    "title": "Pertanyaan yang Sering Diajukan",
+    "lastUpdated": "Terakhir diperbarui: Juli 2026",
+    "intro": "Jawaban untuk pertanyaan umum seputar Atelier, alat kami, harga, dan akun. Tidak menemukan jawabannya? Hubungi kami.",
+    "categories": [
+      {
+        "title": "Memulai",
+        "items": [
+          { "q": "Apakah saya perlu akun untuk memakai Atelier?", "a": "Tidak. Sebagian besar alat bisa dipakai secara anonim dengan kuota harian terbatas (1 kali/hari). Membuat akun gratis menaikkan limit harian menjadi 3 kali penggunaan di semua alat serta membuka riwayat penggunaan." },
+          { "q": "Apakah Atelier gratis?", "a": "Ya. Semua 8 alat tersedia di paket Free dengan limit harian. Pro menghapus limit pada alat yang dibatasi dan membuka template premium, fitur AI, dan ekspor tanpa batas." },
+          { "q": "Alat apa saja yang tersedia di Atelier?", "a": "Document Generator, Social Content Generator, CV/Resume Builder, PDF to Image, PDF Merge, PDF Compress, Image Converter, dan OCR (ekstraksi teks)." }
+        ]
+      },
+      {
+        "title": "File & Privasi",
+        "items": [
+          { "q": "Apakah file saya diunggah ke server Anda?", "a": "Tidak. Semua pemrosesan file (PDF, gambar, OCR) berjalan sepenuhnya di browser Anda memakai library client-side. File Anda tidak pernah meninggalkan perangkat Anda." },
+          { "q": "Apakah dokumen saya disimpan setelah saya menutup tab?", "a": "Tidak, kecuali Anda pengguna Pro dan secara eksplisit menyimpan ke Cloud History. Penggunaan di paket Free tidak disimpan di mana pun." },
+          { "q": "Data apa saja yang sebenarnya Anda kumpulkan?", "a": "Hanya info akun (email, password ter-hash), jumlah penggunaan untuk rate-limiting, dan catatan billing. Lihat Kebijakan Privasi kami untuk detail lengkap." }
+        ]
+      },
+      {
+        "title": "Harga & Billing",
+        "items": [
+          { "q": "Berapa biaya Pro?", "a": "$8/bulan atau $72/tahun (ditagih via Midtrans, mendukung IDR dan USD)." },
+          { "q": "Bisakah saya batal kapan saja?", "a": "Ya. Membatalkan menghentikan perpanjangan berikutnya — Anda tetap punya akses Pro hingga akhir periode billing berjalan." },
+          { "q": "Apakah ada refund?", "a": "Charge subscription dapat direfund secara pro-rata dalam 7 hari sejak tanggal charge. Pembelian sekali bayar tidak dapat direfund setelah diunduh. Lihat Kebijakan Refund kami." },
+          { "q": "Metode pembayaran apa yang didukung?", "a": "Kartu kredit/debit, transfer bank, e-wallet, dan metode lain yang tersedia lewat Midtrans, tergantung wilayah Anda." }
+        ]
+      },
+      {
+        "title": "Limit Penggunaan",
+        "items": [
+          { "q": "Berapa limit harian?", "a": "Pengguna anonim: 1 kali/hari. Akun Free: 3 kali/hari (khusus alat yang dibatasi). Pro: 100 kali/hari. PDF Merge, PDF Compress, dan Image Converter tidak dibatasi untuk semua pengguna." },
+          { "q": "Kapan limit di-reset?", "a": "Setiap hari pukul 00:00 UTC." },
+          { "q": "Apakah hasil ekspor saya ada watermark?", "a": "Watermark kecil berlaku pada output free/anonim di alat yang mendukungnya. Ekspor Pro selalu bebas watermark." }
+        ]
+      },
+      {
+        "title": "Akun",
+        "items": [
+          { "q": "Bagaimana cara menghapus akun saya?", "a": "Buka pengaturan Akun dan pilih Hapus Akun. Akun Anda langsung dihapus sementara dan dihapus permanen setelah 30 hari. Hubungi kami dalam jangka waktu itu jika ini kesalahan." },
+          { "q": "Saya lupa password — harus bagaimana?", "a": "Gunakan tautan \"Lupa password\" di halaman login. Anda akan menerima tautan reset lewat email yang berlaku selama 1 jam." },
+          { "q": "Bisakah saya login pakai Google atau GitHub?", "a": "Ya, login sosial via Google dan GitHub didukung selain email/password." }
+        ]
+      }
+    ]
   }
 }

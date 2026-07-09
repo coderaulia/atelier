@@ -61,7 +61,7 @@ billing.post('/cancel', authMiddleware, async (c) => {
 
   const expiryDate = fmt(user.pro_expires_at)
   const t = emailTemplates('en')
-  sendEmail({ to: user.email, subject: t.subscriptionCancelledSubject, html: t.subscriptionCancelledBody(expiryDate) }, c.env.RESEND_API_KEY).catch(() => {})
+  sendEmail({ to: user.email, subject: t.subscriptionCancelledSubject, html: t.subscriptionCancelledBody(expiryDate) }, c.env.BREVO_API_KEY).catch(() => {})
 
   return c.json({ ok: true, pro_expires_at: user.pro_expires_at, cancel_at_period_end: true })
 })
@@ -271,7 +271,7 @@ billing.post('/webhook', async (c) => {
         to: user.email,
         subject: t.subscriptionConfirmedSubject,
         html: t.subscriptionConfirmedBody(Number(event.gross_amount ?? 0), event.currency ?? 'IDR', fmt(nextRenewal)),
-      }, c.env.RESEND_API_KEY).catch(() => {})
+      }, c.env.BREVO_API_KEY).catch(() => {})
     }
   }
 
@@ -303,7 +303,7 @@ billing.post('/webhook', async (c) => {
     if (user?.email) {
       const t = emailTemplates('en')
       const retryUrl = `${getAppUrl(c.env.APP_URL)}/pricing`
-      sendEmail({ to: user.email, subject: t.paymentFailedSubject, html: t.paymentFailedBody(retryUrl) }, c.env.RESEND_API_KEY).catch(() => {})
+      sendEmail({ to: user.email, subject: t.paymentFailedSubject, html: t.paymentFailedBody(retryUrl) }, c.env.BREVO_API_KEY).catch(() => {})
     }
   }
 

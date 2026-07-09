@@ -33,7 +33,7 @@
         "title": "Third-Party Services",
         "items": [
           "Midtrans — payment processing (card details handled by Midtrans, never stored on our servers)",
-          "Resend — transactional email delivery",
+          "Brevo — transactional email delivery",
           "PostHog — anonymised product analytics (no personal data shared)"
         ]
       },
@@ -154,5 +154,75 @@
         ]
       }
     }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "lastUpdated": "Last updated: July 2026",
+    "intro": "Have a question, found a bug, or need help with billing? Reach us through the channels below — we typically reply within 1-2 business days.",
+    "channels": {
+      "title": "Contact Channels",
+      "items": [
+        { "label": "General support", "value": "support@vanailadigital.com", "href": "mailto:support@vanailadigital.com" },
+        { "label": "Billing & refunds", "value": "billing@vanailadigital.com", "href": "mailto:billing@vanailadigital.com" },
+        { "label": "Privacy & data requests", "value": "privacy@vanailadigital.com", "href": "mailto:privacy@vanailadigital.com" },
+        { "label": "Bug reports", "value": "Use the in-app bug report form (available from any tool page)", "href": "" }
+      ]
+    },
+    "responseTime": {
+      "title": "Response Time",
+      "body": "We aim to respond to all inquiries within 1-2 business days. Billing and refund requests are prioritized and typically answered within 24 hours on business days."
+    },
+    "office": {
+      "title": "Company",
+      "body": "Vanaila Digital — Jakarta, Indonesia. Atelier is operated as a product of Vanaila Digital."
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "lastUpdated": "Last updated: July 2026",
+    "intro": "Answers to common questions about Atelier, our tools, pricing, and account. Can't find what you're looking for? Contact us.",
+    "categories": [
+      {
+        "title": "Getting Started",
+        "items": [
+          { "q": "Do I need an account to use Atelier?", "a": "No. Most tools work anonymously with a limited daily quota (1 use/day). Creating a free account raises your daily limit to 3 uses across all tools and unlocks usage history." },
+          { "q": "Is Atelier free to use?", "a": "Yes. All 8 tools are available on the Free plan with daily usage limits. Pro removes limits on metered tools and unlocks premium templates, AI features, and unlimited exports." },
+          { "q": "What tools does Atelier offer?", "a": "Document Generator, Social Content Generator, CV/Resume Builder, PDF to Image, PDF Merge, PDF Compress, Image Converter, and OCR (text extraction)." }
+        ]
+      },
+      {
+        "title": "Files & Privacy",
+        "items": [
+          { "q": "Are my files uploaded to your servers?", "a": "No. All file processing (PDF, image, OCR) happens entirely in your browser using client-side libraries. Your files never leave your device." },
+          { "q": "Do you store my documents after I close the tab?", "a": "No, unless you're on the Pro plan and explicitly save to Cloud History. Free plan usage is not persisted anywhere." },
+          { "q": "What data do you actually collect?", "a": "Just account info (email, hashed password), usage counts for rate-limiting, and billing records. See our Privacy Policy for full details." }
+        ]
+      },
+      {
+        "title": "Pricing & Billing",
+        "items": [
+          { "q": "How much does Pro cost?", "a": "$8/month or $72/year (billed via Midtrans, supports IDR and USD)." },
+          { "q": "Can I cancel anytime?", "a": "Yes. Cancelling stops future renewals — you keep Pro access until the end of your current billing period." },
+          { "q": "Do you offer refunds?", "a": "Subscription charges are refundable pro-rata within 7 days of the charge date. One-time purchases are non-refundable once downloaded. See our Refund Policy." },
+          { "q": "What payment methods are supported?", "a": "Credit/debit cards, bank transfer, e-wallets, and other methods available through Midtrans, depending on your region." }
+        ]
+      },
+      {
+        "title": "Usage Limits",
+        "items": [
+          { "q": "What are the daily limits?", "a": "Anonymous users: 1 use/day. Free account: 3 uses/day (metered tools only). Pro: 100 uses/day. PDF Merge, PDF Compress, and Image Converter are unmetered for everyone." },
+          { "q": "When do limits reset?", "a": "Daily at midnight UTC." },
+          { "q": "Will my exports have a watermark?", "a": "A small watermark applies to free/anonymous output on tools where supported. Pro exports are always watermark-free." }
+        ]
+      },
+      {
+        "title": "Account",
+        "items": [
+          { "q": "How do I delete my account?", "a": "Go to Account settings and select Delete Account. Your account is soft-deleted immediately and permanently removed after 30 days. Contact us within that window if it was a mistake." },
+          { "q": "I forgot my password — what do I do?", "a": "Use the \"Forgot password\" link on the login page. You'll receive a reset link by email valid for 1 hour." },
+          { "q": "Can I use Google or GitHub to sign in?", "a": "Yes, social login via Google and GitHub is supported alongside email/password." }
+        ]
+      }
+    ]
   }
 }

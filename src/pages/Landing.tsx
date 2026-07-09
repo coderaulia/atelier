@@ -954,6 +954,8 @@ function Footer() {
           <div>
             <div className="footer__col-title">Company</div>
             <Link className="footer__col-link" to="/manual">Manual</Link>
+            <Link className="footer__col-link" to="/faq">FAQ</Link>
+            <Link className="footer__col-link" to="/contact">Contact</Link>
             <a className="footer__col-link" href="#">About</a>
             <a className="footer__col-link" href="#">Changelog</a>
             <a className="footer__col-link" href="#">Roadmap</a>

@@ -88,7 +88,7 @@ auth.post('/register', async (c) => {
     const baseUrl = getAppUrl(c.env.APP_URL)
     const lang = c.req.header('Accept-Language')?.startsWith('id') ? 'id' : 'en'
     const t = emailTemplates(lang)
-    sendEmail({ to: email, subject: t.verifySubject, html: t.verifyBody(verifyToken, baseUrl) }, c.env.RESEND_API_KEY).catch(() => {})
+    sendEmail({ to: email, subject: t.verifySubject, html: t.verifyBody(verifyToken, baseUrl) }, c.env.BREVO_API_KEY).catch(() => {})
 
     return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan, role: user.role, status: user.status, email_verified: 0 } }, 201)
   } catch (err) {
@@ -229,7 +229,7 @@ auth.post('/forgot-password', async (c) => {
   const baseUrl = getAppUrl(c.env.APP_URL)
   const lang = c.req.header('Accept-Language')?.startsWith('id') ? 'id' : 'en'
   const t = emailTemplates(lang)
-  sendEmail({ to: email, subject: t.resetSubject, html: t.resetBody(token, baseUrl) }, c.env.RESEND_API_KEY).catch(() => {})
+  sendEmail({ to: email, subject: t.resetSubject, html: t.resetBody(token, baseUrl) }, c.env.BREVO_API_KEY).catch(() => {})
 
   return c.json({ ok: true })
 })
@@ -348,7 +348,7 @@ auth.post('/verify-email', authMiddleware, async (c) => {
 
   const baseUrl = getAppUrl(c.env.APP_URL)
   const t = emailTemplates('en')
-  sendEmail({ to: user.email, subject: t.verifySubject, html: t.verifyBody(token, baseUrl) }, c.env.RESEND_API_KEY).catch(() => {})
+  sendEmail({ to: user.email, subject: t.verifySubject, html: t.verifyBody(token, baseUrl) }, c.env.BREVO_API_KEY).catch(() => {})
 
   return c.json({ ok: true })
 })
@@ -400,7 +400,7 @@ auth.delete('/account', authMiddleware, async (c) => {
     .run()
 
   const t = emailTemplates('en')
-  sendEmail({ to: user.email, subject: t.accountDeletionSubject, html: t.accountDeletionBody() }, c.env.RESEND_API_KEY).catch(() => {})
+  sendEmail({ to: user.email, subject: t.accountDeletionSubject, html: t.accountDeletionBody() }, c.env.BREVO_API_KEY).catch(() => {})
 
   return c.json({ ok: true })
 })

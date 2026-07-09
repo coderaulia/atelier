@@ -4,24 +4,25 @@ export interface EmailPayload {
   html: string
 }
 
-export async function sendEmail(payload: EmailPayload, resendApiKey: string): Promise<void> {
-  const res = await fetch('https://api.resend.com/emails', {
+export async function sendEmail(payload: EmailPayload, brevoApiKey: string): Promise<void> {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${resendApiKey}`,
+      Accept: 'application/json',
+      'api-key': brevoApiKey,
     },
     body: JSON.stringify({
-      from: 'Vanaila Studio <noreply@vanailadigital.com>',
-      to: payload.to,
+      sender: { name: 'Vanaila Studio', email: 'noreply@vanailadigital.com' },
+      to: [{ email: payload.to }],
       subject: payload.subject,
-      html: payload.html,
+      htmlContent: payload.html,
     }),
   })
 
   if (!res.ok) {
     const error = await res.text()
-    throw new Error(`Resend API error: ${error}`)
+    throw new Error(`Brevo API error: ${error}`)
   }
 }
 

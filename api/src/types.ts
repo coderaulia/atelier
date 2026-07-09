@@ -8,7 +8,7 @@ export interface Bindings {
   GOOGLE_CLIENT_SECRET?: string
   GITHUB_CLIENT_ID?: string
   GITHUB_CLIENT_SECRET?: string
-  RESEND_API_KEY: string
+  BREVO_API_KEY: string
   APP_URL?: string
   ALLOWED_ORIGINS?: string
   MIDTRANS_SERVER_KEY?: string

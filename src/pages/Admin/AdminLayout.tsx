@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { getMe } from '../../lib/api'
 import { getAuthToken } from '../../lib/auth'
 
@@ -10,30 +10,32 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children, active }: AdminLayoutProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
 
   useEffect(() => {
+    const redirectTo = `${location.pathname}${location.search}`
     const token = getAuthToken()
     if (!token) {
-      localStorage.setItem('vs_post_auth_redirect', '/admin')
-      navigate('/login')
+      localStorage.setItem('vs_post_auth_redirect', redirectTo)
+      navigate('/login', { replace: true })
       return
     }
     getMe(token)
       .then(({ user }) => {
         if (user.role !== 'admin') {
-          navigate('/')
+          navigate('/', { replace: true })
           return
         }
         setEmail(user.email)
         setLoading(false)
       })
       .catch(() => {
-        localStorage.setItem('vs_post_auth_redirect', '/admin')
-        navigate('/login')
+        localStorage.setItem('vs_post_auth_redirect', redirectTo)
+        navigate('/login', { replace: true })
       })
-  }, [navigate])
+  }, [location.pathname, location.search, navigate])
 
   if (loading) {
     return (

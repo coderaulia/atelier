@@ -10,7 +10,9 @@
     "db:apply": "wrangler d1 execute vanaila-studio --local --file src/db/schema.sql",
     "db:migrate": "for f in src/db/migrations/*.sql; do echo \"Applying $f...\"; wrangler d1 execute vanaila-studio --local --file \"$f\"; done",
     "db:apply:remote": "wrangler d1 execute vanaila-studio --file src/db/schema.sql",
-    "seed:admin": "node scripts/seed-admin.mjs"
+    "seed:admin": "node scripts/seed-admin.mjs",
+    "hash:password": "node scripts/hash-password.mjs",
+    "admin:create:remote": "node scripts/create-admin-remote.mjs"
   },
   "dependencies": {
     "better-auth": "^1.6.13",

@@ -9,17 +9,25 @@ const OAUTH_ENABLED = import.meta.env.VITE_ENABLE_OAUTH === 'true'
 
 export default function Login() {
   const navigate = useNavigate()
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (authLoading || !isAuthenticated) return
+
+    const redirect = localStorage.getItem('vs_post_auth_redirect')
+    if (redirect) {
+      localStorage.removeItem('vs_post_auth_redirect')
+      navigate(redirect, { replace: true })
+    } else if (user?.role === 'admin') {
+      navigate('/admin', { replace: true })
+    } else {
       navigate('/app/dashboard', { replace: true })
     }
-  }, [authLoading, isAuthenticated, navigate])
+  }, [authLoading, isAuthenticated, user, navigate])
 
   if (authLoading || isAuthenticated) {
     return (
@@ -37,15 +45,7 @@ export default function Login() {
       const { token, user } = await login(email, password)
       setAuthToken(token)
       setStoredUser(user as unknown as Record<string, unknown>)
-      const redirect = localStorage.getItem('vs_post_auth_redirect')
-      if (redirect) {
-        localStorage.removeItem('vs_post_auth_redirect')
-        navigate(redirect)
-      } else if (user.role === 'admin') {
-        navigate('/admin')
-      } else {
-        navigate('/app/dashboard')
-      }
+      // Redirect handled by the useEffect above once useAuth picks up the new session.
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {

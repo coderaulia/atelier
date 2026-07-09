@@ -19,10 +19,19 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (authLoading || !isAuthenticated) return
+
+    const redirect = localStorage.getItem('vs_post_auth_redirect')
+    if (redirect) {
+      localStorage.removeItem('vs_post_auth_redirect')
+      navigate(redirect, { replace: true })
+    } else if (plan === 'pro') {
+      // No trial — send Pro intent straight to checkout.
+      navigate('/pricing', { replace: true })
+    } else {
       navigate('/app/dashboard', { replace: true })
     }
-  }, [authLoading, isAuthenticated, navigate])
+  }, [authLoading, isAuthenticated, plan, navigate])
 
   if (authLoading || isAuthenticated) {
     return (
@@ -44,16 +53,7 @@ export default function Register() {
       const { token, user } = await register(email, password)
       setAuthToken(token)
       setStoredUser(user as unknown as Record<string, unknown>)
-      const redirect = localStorage.getItem('vs_post_auth_redirect')
-      if (redirect) {
-        localStorage.removeItem('vs_post_auth_redirect')
-        navigate(redirect)
-      } else if (plan === 'pro') {
-        // No trial — send Pro intent straight to checkout.
-        navigate('/pricing')
-      } else {
-        navigate('/app/dashboard')
-      }
+      // Redirect handled by the useEffect above once useAuth picks up the new session.
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {

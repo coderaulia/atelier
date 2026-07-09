@@ -1,11 +1,17 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { checkRateLimit, getClientIP } from '../lib/rate-limit'
+import { TIER_LIMITS, type ProTier } from '../lib/pricing'
 import type { Bindings } from '../types'
 
 // Usage limits per user type
 const FREE_DAILY_LIMIT = 3 // Registered free: tight limit to create upgrade pressure
-const PRO_DAILY_LIMIT = 100 // Pro subscription: generous but not unlimited (prevent abuse)
+
+// Pro daily limit depends on subscription tier; legacy pro users with no
+// tier set (pre-tiers) default to the mid 'pro' tier limit.
+function proDailyLimit(proTier: ProTier | null): number {
+  return TIER_LIMITS[proTier ?? 'pro']
+}
 
 // Tools that don't consume credits (always free)
 const FREE_TOOLS = new Set(['pdf-merge', 'pdf-compress', 'image-converter'])
@@ -92,6 +98,7 @@ usage.use('*', async (c, next) => {
 usage.get('/me', async (c) => {
   const userId = c.get('userId')
   const plan = c.get('plan')
+  const proTier = c.get('proTier')
   const since30 = new Date()
   since30.setUTCDate(since30.getUTCDate() - 30)
   const sinceStr = since30.toISOString().slice(0, 10)
@@ -104,7 +111,7 @@ usage.get('/me', async (c) => {
        WHERE user_id = ? AND date >= ?
        ORDER BY date DESC, tool_id ASC`
     )
-    .bind(plan, PRO_DAILY_LIMIT, FREE_DAILY_LIMIT, userId, sinceStr)
+    .bind(plan, proDailyLimit(proTier), FREE_DAILY_LIMIT, userId, sinceStr)
     .all()
 
   return c.json({
@@ -122,6 +129,7 @@ usage.get('/:toolId', async (c) => {
   const toolId = c.req.param('toolId')
   const userId = c.get('userId')
   const plan = c.get('plan')
+  const proTier = c.get('proTier')
   const date = todayUTC()
 
   // Free tools: no limits, no watermark
@@ -170,7 +178,7 @@ usage.get('/:toolId', async (c) => {
 
     return c.json({
       used: row?.count ?? 0,
-      limit: PRO_DAILY_LIMIT,
+      limit: proDailyLimit(proTier),
       reset_at: resetAt(),
       has_watermark: false,
     })
@@ -195,6 +203,7 @@ usage.post('/:toolId', async (c) => {
   const toolId = c.req.param('toolId')
   const userId = c.get('userId')
   const plan = c.get('plan')
+  const proTier = c.get('proTier')
   const date = todayUTC()
 
   // Free tools: always allow
@@ -253,7 +262,7 @@ usage.post('/:toolId', async (c) => {
   }
 
   // No credits (or race consumed them): use daily limit
-  const limit = plan === 'pro' ? PRO_DAILY_LIMIT : FREE_DAILY_LIMIT
+  const limit = plan === 'pro' ? proDailyLimit(proTier) : FREE_DAILY_LIMIT
   return await applyDailyLimit(c.env.DB, userId, toolId, date, limit, plan)
 })
 

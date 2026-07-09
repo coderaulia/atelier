@@ -107,7 +107,7 @@ export default function Dashboard() {
         <section className="dashboard-upsell">
           <div>
             <span className="dashboard-upsell__badge">Pro</span>
-            <h2>Get unlimited access — IDR 99,000 / $9 a month.</h2>
+            <h2>Get more daily exports — plans from IDR 49,000 / $5 a month.</h2>
             <p>Remove daily limits, unlock premium templates, and speed up every workflow.</p>
           </div>
           <div className="dashboard-upsell__actions">

@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { getMe, updateProfile, changePassword, getSessions, signOutAll, deleteAccount, cancelSubscription, reactivateSubscription, getTransactions, getMyUsage, type User, type Session, type Transaction, type UsageLogEntry } from '../lib/api'
 import { getAuthToken, clearAuth } from '../lib/auth'
 import BugReportForm from '../components/BugReportForm'
 
 type Tab = 'profile' | 'subscription' | 'usage' | 'security' | 'support'
+
+function tierLabel(tier?: string | null): string {
+  switch (tier) {
+    case 'starter': return 'Starter'
+    case 'business': return 'Business'
+    default: return 'Pro'
+  }
+}
 
 export default function Account() {
   const navigate = useNavigate()
@@ -40,8 +48,7 @@ export default function Account() {
         <div className="container nav__inner">
           <a href="/" className="nav__brand">
             <span className="nav__mark" />
-            <span>Atelier</span>
-            <span className="nav__brand-sub">by Vanaila</span>
+            <span>Vanaila Studio</span>
           </a>
         </div>
       </nav>
@@ -148,14 +155,14 @@ function SubscriptionTab({ user, onUpdate }: { user: User; onUpdate: (u: User) =
       {user.plan === 'free' && (
         <div className="upgrade-card">
           <h3>Upgrade to Pro</h3>
-          <p>Unlimited daily usage, premium templates, and bulk export.</p>
-          <button className="btn btn--accent">Upgrade now</button>
+          <p>Higher daily limits, premium templates, and bulk export.</p>
+          <Link to="/pricing" className="btn btn--accent">See Pro plans</Link>
         </div>
       )}
       {user.plan === 'pro' && (
         <>
           <dl className="account-detail-list">
-            <dt>Plan</dt><dd>Pro</dd>
+            <dt>Plan</dt><dd>{tierLabel(user.pro_tier)}</dd>
             <dt>Renewal</dt><dd>{user.pro_expires_at ? new Date(user.pro_expires_at * 1000).toLocaleDateString() : '—'}</dd>
             <dt>Status</dt><dd>{user.cancel_at_period_end ? 'Cancelled (active until expiration)' : 'Active'}</dd>
           </dl>

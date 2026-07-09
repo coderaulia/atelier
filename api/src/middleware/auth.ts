@@ -7,6 +7,7 @@ import type { Bindings } from '../types'
 export type AuthVariables = {
   userId: string
   plan: 'free' | 'pro'
+  proTier: 'starter' | 'pro' | 'business' | null
 }
 
 export const authMiddleware = createMiddleware<{ Bindings: Bindings; Variables: AuthVariables }>(
@@ -19,20 +20,21 @@ export const authMiddleware = createMiddleware<{ Bindings: Bindings; Variables: 
       if (session?.user?.id) {
         // Verify user exists in app users table and is not deleted
         const user = await c.env.DB
-          .prepare('SELECT plan, deleted_at FROM users WHERE id = ?')
+          .prepare('SELECT plan, pro_tier, deleted_at FROM users WHERE id = ?')
           .bind(session.user.id)
-          .first<{ plan: string; deleted_at: number | null }>()
-        
+          .first<{ plan: string; pro_tier: string | null; deleted_at: number | null }>()
+
         if (!user) {
           return c.json({ error: 'User not found' }, 404)
         }
-        
+
         if (user.deleted_at) {
           return c.json({ error: 'Account deleted' }, 403)
         }
-        
+
         c.set('userId', session.user.id)
         c.set('plan', user.plan as 'free' | 'pro')
+        c.set('proTier', user.pro_tier as 'starter' | 'pro' | 'business' | null)
         await next()
         
         // Capture geo data from Cloudflare header (fire-and-forget)
@@ -77,20 +79,21 @@ export const authMiddleware = createMiddleware<{ Bindings: Bindings; Variables: 
     }
     
     const user = await c.env.DB
-      .prepare('SELECT plan, deleted_at FROM users WHERE id = ?')
+      .prepare('SELECT plan, pro_tier, deleted_at FROM users WHERE id = ?')
       .bind(userId)
-      .first<{ plan: string; deleted_at: number | null }>()
-    
+      .first<{ plan: string; pro_tier: string | null; deleted_at: number | null }>()
+
     if (!user) {
       return c.json({ error: 'User not found' }, 404)
     }
-    
+
     if (user.deleted_at) {
       return c.json({ error: 'Account deleted' }, 403)
     }
-    
+
     c.set('userId', userId)
     c.set('plan', user.plan as 'free' | 'pro')
+    c.set('proTier', user.pro_tier as 'starter' | 'pro' | 'business' | null)
     await next()
     
     // Capture geo data from Cloudflare header (fire-and-forget)

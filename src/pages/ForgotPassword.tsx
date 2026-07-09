@@ -49,8 +49,7 @@ export default function ForgotPassword() {
         <div className="container nav__inner">
           <Link to="/" className="nav__brand">
             <span className="nav__mark" />
-            <span>Atelier</span>
-            <span className="nav__brand-sub">by Vanaila</span>
+            <span>Vanaila Studio</span>
           </Link>
         </div>
       </nav>

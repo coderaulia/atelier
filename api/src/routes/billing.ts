@@ -4,7 +4,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { emailTemplates, sendEmail } from '../lib/email'
 import { checkRateLimit, getClientIP } from '../lib/rate-limit'
 import { getAppUrl } from '../lib/config'
-import { PRICING } from '../lib/pricing'
+import { PRICING, type PackId, type ProTier } from '../lib/pricing'
 import type { Bindings } from '../types'
 
 const billing = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
@@ -100,9 +100,45 @@ billing.get('/transactions', authMiddleware, async (c) => {
   return c.json({ transactions: rows.results ?? [] })
 })
 
+const TIERS = new Set<ProTier>(['starter', 'pro', 'business'])
+const PACK_IDS = new Set<PackId>(['cv-10', 'social-50'])
+
+async function createSnapTransaction(
+  c: { env: Bindings },
+  orderId: string,
+  grossAmount: number,
+  customer: { first_name: string; last_name: string; email: string },
+  userId: string,
+) {
+  const payload = {
+    transaction_details: { order_id: orderId, gross_amount: grossAmount },
+    customer_details: customer,
+    custom_field1: userId,
+  }
+
+  const isSandbox = (c.env.MIDTRANS_BASE_URL || '').includes('sandbox')
+  const snapUrl = isSandbox ? 'https://app.sandbox.midtrans.com/snap/v1/transactions' : 'https://app.midtrans.com/snap/v1/transactions'
+  const authString = btoa(`${c.env.MIDTRANS_SERVER_KEY}:`)
+
+  const response = await fetch(snapUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Basic ${authString}` },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    console.error('Midtrans Snap Error:', await response.text())
+    return null
+  }
+
+  return response.json<{ token: string }>()
+}
+
+// Subscription checkout — starter / pro / business, billed monthly in IDR.
 billing.post('/checkout', authMiddleware, async (c) => {
   const body = await c.req.json().catch(() => null)
-  if (!body || body.plan_type !== 'pro-monthly') return c.json({ error: 'Invalid plan' }, 400)
+  const tier = body?.tier as ProTier | undefined
+  if (!tier || !TIERS.has(tier)) return c.json({ error: 'Invalid plan' }, 400)
 
   const user = await c.env.DB
     .prepare('SELECT email, first_name, last_name FROM users WHERE id = ?')
@@ -111,31 +147,46 @@ billing.post('/checkout', authMiddleware, async (c) => {
 
   if (!user) return c.json({ error: 'User not found' }, 404)
 
-  const orderId = `PRO-${Date.now()}-${Math.floor(Math.random() * 1000)}`
-  // Midtrans settles in IDR — charge the canonical Pro price from central config.
-  const grossAmount = PRICING.pro.monthly.idr.amount
-  const payload = {
-    transaction_details: { order_id: orderId, gross_amount: grossAmount },
-    customer_details: { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
-    custom_field1: c.var.userId,
-  }
+  const orderId = `SUB_${tier}_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+  const grossAmount = PRICING.pro[tier].idr.amount
 
-  const isSandbox = (c.env.MIDTRANS_BASE_URL || '').includes('sandbox')
-  const snapUrl = isSandbox ? 'https://app.sandbox.midtrans.com/snap/v1/transactions' : 'https://app.midtrans.com/snap/v1/transactions'
-  const authString = btoa(`${c.env.MIDTRANS_SERVER_KEY}:`)
-  
-  const response = await fetch(snapUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Basic ${authString}` },
-    body: JSON.stringify(payload)
-  })
+  const data = await createSnapTransaction(
+    c,
+    orderId,
+    grossAmount,
+    { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
+    c.var.userId,
+  )
+  if (!data) return c.json({ error: 'Failed to create checkout' }, 500)
 
-  if (!response.ok) {
-    console.error('Midtrans Snap Error:', await response.text())
-    return c.json({ error: 'Failed to create checkout' }, 500)
-  }
+  return c.json({ snap_token: data.token, order_id: orderId })
+})
 
-  const data = await response.json<{ token: string }>()
+// One-time credit pack checkout — adds credits, doesn't touch plan/tier.
+billing.post('/checkout-pack', authMiddleware, async (c) => {
+  const body = await c.req.json().catch(() => null)
+  const packId = body?.pack_id as PackId | undefined
+  if (!packId || !PACK_IDS.has(packId)) return c.json({ error: 'Invalid pack' }, 400)
+
+  const user = await c.env.DB
+    .prepare('SELECT email, first_name, last_name FROM users WHERE id = ?')
+    .bind(c.var.userId)
+    .first<{ email: string; first_name: string; last_name: string }>()
+
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  const orderId = `PACK_${packId}_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+  const grossAmount = PRICING.packs[packId].idr.amount
+
+  const data = await createSnapTransaction(
+    c,
+    orderId,
+    grossAmount,
+    { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
+    c.var.userId,
+  )
+  if (!data) return c.json({ error: 'Failed to create checkout' }, 500)
+
   return c.json({ snap_token: data.token, order_id: orderId })
 })
 
@@ -167,12 +218,34 @@ billing.post('/webhook', async (c) => {
   const now = Math.floor(Date.now() / 1000)
   const thirtyDays = 30 * 24 * 60 * 60
 
+  // order_id encodes what was purchased: SUB_<tier>_<ts>_<rand> or PACK_<packId>_<ts>_<rand>
+  const orderParts = event.order_id.split('_')
+  const kind = orderParts[0]
+  const packId = orderParts[1] as PackId
+  const tier: ProTier = TIERS.has(orderParts[1] as ProTier) ? (orderParts[1] as ProTier) : 'pro'
+  const isPack = kind === 'PACK' && PACK_IDS.has(packId)
+
   if (event.transaction_status === 'settlement' || event.transaction_status === 'capture') {
     const existing = await c.env.DB
       .prepare('SELECT id FROM transactions WHERE midtrans_order_id = ?')
       .bind(event.order_id)
       .first<{ id: number }>()
     if (existing) return c.json({ ok: true })
+
+    if (isPack) {
+      const pack = PRICING.packs[packId]
+      await c.env.DB
+        .prepare('INSERT INTO credit_packs (user_id, pack_type, credits_total) VALUES (?, ?, ?)')
+        .bind(userId, packId, pack.credits)
+        .run()
+
+      await c.env.DB
+        .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
+        .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', `pack:${packId}`, 'success', event.order_id ?? null)
+        .run()
+
+      return c.json({ ok: true })
+    }
 
     const user = await c.env.DB
       .prepare('SELECT email, pro_expires_at FROM users WHERE id = ?')
@@ -183,13 +256,13 @@ billing.post('/webhook', async (c) => {
     const nextRenewal = base + thirtyDays
 
     await c.env.DB
-      .prepare('UPDATE users SET plan = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
-      .bind('pro', nextRenewal, userId)
+      .prepare('UPDATE users SET plan = ?, pro_tier = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
+      .bind('pro', tier, nextRenewal, userId)
       .run()
 
     await c.env.DB
       .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', 'pro', 'success', event.order_id ?? null)
+      .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', tier, 'success', event.order_id ?? null)
       .run()
 
     if (user?.email) {
@@ -209,6 +282,13 @@ billing.post('/webhook', async (c) => {
       .first<{ id: number }>()
     if (dup) return c.json({ ok: true })
 
+    await c.env.DB
+      .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', isPack ? `pack:${packId}` : tier, 'failed', event.order_id ?? null)
+      .run()
+
+    if (isPack) return c.json({ ok: true })
+
     const graceUntil = now + 3 * 24 * 60 * 60
     const user = await c.env.DB
       .prepare('SELECT email FROM users WHERE id = ?')
@@ -218,11 +298,6 @@ billing.post('/webhook', async (c) => {
     await c.env.DB
       .prepare('UPDATE users SET grace_until = ? WHERE id = ?')
       .bind(graceUntil, userId)
-      .run()
-
-    await c.env.DB
-      .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', 'pro', 'failed', event.order_id ?? null)
       .run()
 
     if (user?.email) {

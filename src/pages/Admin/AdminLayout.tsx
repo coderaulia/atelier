@@ -49,7 +49,7 @@ export default function AdminLayout({ children, active }: AdminLayoutProps) {
         <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border)' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'var(--ink)' }}>
             <span className="nav__mark" style={{ width: 24, height: 24 }} />
-            <span style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 600 }}>Atelier</span>
+            <span style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 600 }}>Vanaila Studio</span>
           </Link>
           <div style={{ marginTop: 12, fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--mono)', letterSpacing: '0.04em' }}>ADMIN PANEL</div>
         </div>

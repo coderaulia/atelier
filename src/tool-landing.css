@@ -10,73 +10,7 @@
   overflow-x: hidden;
 }
 
-/* ---------- Nav ---------- */
-.tool-nav {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: rgba(250, 248, 243, 0.86);
-  backdrop-filter: saturate(140%) blur(14px);
-  -webkit-backdrop-filter: saturate(140%) blur(14px);
-  border-bottom: 1px solid var(--border);
-}
-
-.tool-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32px;
-  height: 64px;
-}
-
-.tool-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.tool-nav__links {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.tool-nav__links a,
-.tool-nav__link {
-  font-size: 13px;
-  color: var(--ink-2);
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-  border: 1px solid color-mix(in oklab, var(--border) 76%, transparent);
-  border-radius: 999px;
-  padding: 7px 10px;
-  background: color-mix(in oklab, var(--surface) 58%, transparent);
-  white-space: nowrap;
-}
-
-.tool-nav__links a:hover,
-.tool-nav__link:hover {
-  color: var(--ink);
-  border-color: color-mix(in oklab, var(--tool-accent) 44%, var(--border));
-  background: color-mix(in oklab, var(--tool-accent) 9%, var(--surface));
-}
-
-.tool-nav__sep {
-  width: 1px;
-  height: 24px;
-  background: var(--border);
-  margin: 0 4px;
-  flex: 0 0 auto;
-}
+/* Nav is now the shared MarketingNav component (src/components/navigation) — see landing.css */
 
 /* ---------- Hero ---------- */
 .tool-hero {

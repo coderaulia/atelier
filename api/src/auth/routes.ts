@@ -183,9 +183,9 @@ auth.get('/me', async (c) => {
   }
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, plan, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
     .bind(userId)
-    .first<{ id: string; email: string; plan: string; role: string; status: string; pro_expires_at: number | null; cancel_at_period_end: number; grace_until: number | null; email_verified: number; created_at: number }>()
+    .first<{ id: string; email: string; plan: string; pro_tier: string | null; role: string; status: string; pro_expires_at: number | null; cancel_at_period_end: number; grace_until: number | null; email_verified: number; created_at: number }>()
 
   if (!user) return c.json({ error: 'User not found' }, 404)
   if (user.status === 'banned') return c.json({ error: 'Account banned' }, 403)
@@ -434,7 +434,7 @@ auth.patch('/profile', authMiddleware, async (c) => {
     .run()
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, name, plan, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, name, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
     .bind(userId)
     .first()
 

@@ -404,7 +404,7 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
       <aside className="sidebar">
         <div className="sidebar__brand">
           <span className="sidebar__brand-mark"></span>
-          <span className="sidebar__brand-name">Atelier</span>
+          <span className="sidebar__brand-name">Studio</span>
           <span className="sidebar__brand-tag">v 0.1</span>
         </div>
 

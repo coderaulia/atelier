@@ -7,12 +7,12 @@ export default function RefundPolicy() {
   const s = t('refund.sections', { returnObjects: true }) as Record<string, { title: string; items?: string[] }>
 
   useEffect(() => {
-    document.title = `${t('refund.title')} — Atelier`
+    document.title = `${t('refund.title')} — Vanaila Studio`
   }, [])
 
   return (
     <main style={{ maxWidth: 740, margin: '0 auto', padding: '60px 24px 100px' }}>
-      <Link to="/" style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24, display: 'inline-block' }}>← Back to Atelier</Link>
+      <Link to="/" style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24, display: 'inline-block' }}>← Back to Vanaila Studio</Link>
       <h1 style={{ fontFamily: 'var(--serif)', fontSize: 40, fontWeight: 400, fontStyle: 'italic', letterSpacing: '-0.02em', marginBottom: 8 }}>{t('refund.title')}</h1>
       <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 32 }}>{t('refund.lastUpdated')}</p>
       <p style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--ink-2)', marginBottom: 40 }}>{t('refund.intro')}</p>

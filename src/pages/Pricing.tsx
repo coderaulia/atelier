@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { getAuthToken } from '../lib/auth'
-import { getMe, createCheckout } from '../lib/api'
+import { getMe, createCheckout, createPackCheckout } from '../lib/api'
+import MarketingNav from '../components/navigation/MarketingNav'
 import './Pricing.css'
 
 declare global {
@@ -35,11 +36,12 @@ const CheckIcon = () => (
   </svg>
 )
 
-type UserLite = { plan: string; email: string }
 type Currency = 'IDR' | 'USD'
+type Tier = 'starter' | 'pro' | 'business'
+type PackId = 'cv-10' | 'social-50'
 
-type Pack = {
-  id: string
+type Plan = {
+  id: Tier
   eyebrow: string
   title: string
   price: Record<Currency, string>
@@ -52,10 +54,30 @@ type Pack = {
   features: string[]
 }
 
+type Pack = {
+  id: PackId
+  title: string
+  price: Record<Currency, string>
+  credits: number
+  description: string
+}
+
 // Prices mirror api/src/lib/pricing.ts (canonical). Midtrans settles in IDR.
-const PACKS: Pack[] = [
+const PLANS: Plan[] = [
   {
-    id: 'pro-monthly',
+    id: 'starter',
+    eyebrow: 'Starter',
+    title: 'For occasional exports',
+    price: { IDR: 'IDR 49,000', USD: '$5' },
+    unit: 'per month',
+    note: 'Light, regular use',
+    description: 'For people who need more than the free daily limit, without full production volume.',
+    kind: 'soft',
+    cta: 'Subscribe monthly',
+    features: ['30 exports per day', 'No watermark', 'Cancel anytime'],
+  },
+  {
+    id: 'pro',
     eyebrow: 'Pro plan',
     title: 'Unlimited workspace',
     price: { IDR: 'IDR 99,000', USD: '$9' },
@@ -67,27 +89,54 @@ const PACKS: Pack[] = [
     cta: 'Subscribe monthly',
     features: ['100 exports per day', 'Premium templates', 'Bulk export', 'Cancel anytime'],
   },
+  {
+    id: 'business',
+    eyebrow: 'Business',
+    title: 'For high-volume production',
+    price: { IDR: 'IDR 249,000', USD: '$22' },
+    unit: 'per month',
+    note: 'Highest daily volume',
+    description: 'For studios and teams producing client-facing files at scale, every day.',
+    kind: 'dark',
+    cta: 'Subscribe monthly',
+    features: ['300 exports per day', 'Premium templates', 'Bulk export', 'Priority support'],
+  },
+]
+
+const PACKS: Pack[] = [
+  {
+    id: 'cv-10',
+    title: 'CV credit pack',
+    price: { IDR: 'IDR 64,000', USD: '$4' },
+    credits: 10,
+    description: '10 CV exports, no watermark. Credits never expire and apply on top of your daily limit.',
+  },
+  {
+    id: 'social-50',
+    title: 'Social credit pack',
+    price: { IDR: 'IDR 192,000', USD: '$12' },
+    credits: 50,
+    description: '50 social post exports, no watermark. Credits never expire and apply on top of your daily limit.',
+  },
 ]
 
 export default function Pricing() {
   const navigate = useNavigate()
-  const [user, setUser] = useState<UserLite | null>(null)
+  const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(true)
-  const [processingPayment, setProcessingPayment] = useState<string | null>(null)
+  const [processingId, setProcessingId] = useState<string | null>(null)
   const [snapReady, setSnapReady] = useState(false)
   const [currency, setCurrency] = useState<Currency>('IDR')
+  const resumedRef = useRef(false)
 
   useEffect(() => {
-    document.title = 'Pricing — Atelier by Vanaila'
+    document.title = 'Pricing | Vanaila Studio Pro'
     const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', 'Subscribe to Atelier Pro for higher daily limits, premium templates, and bulk export.')
+    if (meta) meta.setAttribute('content', 'Upgrade Vanaila Studio for unlimited daily use, premium templates, bulk exports, and Pro browser tools.')
 
     const token = getAuthToken()
     if (token) {
-      getMe(token)
-        .then(({ user }) => setUser(user))
-        .catch(() => setUser(null))
-        .finally(() => setLoading(false))
+      getMe(token).finally(() => setLoading(false))
     } else {
       setLoading(false)
     }
@@ -102,7 +151,7 @@ export default function Pricing() {
     const isSandbox = import.meta.env.VITE_MIDTRANS_ENV !== 'production'
     const snapUrl = isSandbox ? 'https://app.sandbox.midtrans.com/snap/snap.js' : 'https://app.midtrans.com/snap/snap.js'
     const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || 'SB-Mid-client-PLACEHOLDER'
-    
+
     const script = document.createElement('script')
     script.id = 'midtrans-snap'
     script.src = snapUrl
@@ -112,7 +161,36 @@ export default function Pricing() {
     document.body.appendChild(script)
   }, [])
 
-  async function handlePurchase(packId: string) {
+  async function handleSubscribe(tier: Tier) {
+    const token = getAuthToken()
+    if (!token) {
+      localStorage.setItem('vs_post_auth_redirect', `/pricing?tier=${tier}`)
+      navigate('/login')
+      return
+    }
+
+    setProcessingId(tier)
+    try {
+      const { snap_token } = await createCheckout(tier)
+      if (!window.snap) {
+        alert('Payment system is loading. Please wait a moment and try again.')
+        return
+      }
+      window.snap.pay(snap_token, {
+        onSuccess: () => navigate('/app/account'),
+        onPending: () => navigate('/app/account'),
+        onError: () => navigate('/pricing'),
+        onClose: () => {},
+      })
+    } catch (err) {
+      console.error('Checkout error:', err)
+      alert('Failed to start checkout. Please try again.')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  async function handlePack(packId: PackId) {
     const token = getAuthToken()
     if (!token) {
       localStorage.setItem('vs_post_auth_redirect', `/pricing?pack=${packId}`)
@@ -120,53 +198,55 @@ export default function Pricing() {
       return
     }
 
-    setProcessingPayment(packId)
+    setProcessingId(packId)
     try {
-      const { snap_token } = await createCheckout(packId)
+      const { snap_token } = await createPackCheckout(packId)
       if (!window.snap) {
         alert('Payment system is loading. Please wait a moment and try again.')
         return
       }
       window.snap.pay(snap_token, {
-        onSuccess: () => {
-          navigate('/app/account')
-        },
-        onPending: () => {
-          navigate('/app/account')
-        },
-        onError: () => {
-          navigate('/pricing')
-        },
-        onClose: () => {
-          // user closed the modal without completing
-        },
+        onSuccess: () => navigate('/app/account'),
+        onPending: () => navigate('/app/account'),
+        onError: () => navigate('/pricing'),
+        onClose: () => {},
       })
     } catch (err) {
       console.error('Checkout error:', err)
       alert('Failed to start checkout. Please try again.')
     } finally {
-      setProcessingPayment(null)
+      setProcessingId(null)
     }
   }
 
+  // Resume a purchase that was interrupted by a login redirect.
+  useEffect(() => {
+    if (resumedRef.current || loading || !snapReady) return
+    const token = getAuthToken()
+    if (!token) return
+
+    const tierParam = searchParams.get('tier') as Tier | null
+    const packParam = searchParams.get('pack') as PackId | null
+
+    if (tierParam && PLANS.some((p) => p.id === tierParam)) {
+      resumedRef.current = true
+      handleSubscribe(tierParam)
+    } else if (packParam && PACKS.some((p) => p.id === packParam)) {
+      resumedRef.current = true
+      handlePack(packParam)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, snapReady, searchParams])
+
   return (
     <main className="pricing-page">
-      <nav className="pricing-nav">
-        <Link to="/" className="pricing-brand">
-          <span className="pricing-brand__mark" />
-          <span>Atelier</span>
-          <small>by Vanaila</small>
-        </Link>
-        <div className="pricing-nav__actions">
-          {user ? <Link className="pricing-nav__pill" to="/app/dashboard">Open app</Link> : <Link className="pricing-nav__pill" to="/login">Sign in</Link>}
-        </div>
-      </nav>
+      <MarketingNav />
 
       <section className="pricing-hero">
         <div className="pricing-hero__badge"><SparkIcon /> Free plan available</div>
         <h1>Pay for output, <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400 }}>not access.</span></h1>
         <p>
-          Free tools stay useful. Pro unlocks higher daily limits, premium templates, and bulk export
+          Free tools stay useful. Paid plans unlock higher daily limits, premium templates, and bulk export
           for people who produce finished files every week.
         </p>
         <div className="pricing-currency" role="group" aria-label="Currency">
@@ -201,41 +281,64 @@ export default function Pricing() {
         </ul>
       </section>
 
-      <section className="pricing-grid" aria-label="Paid packs">
-        {PACKS.map((pack) => (
-          <article key={pack.id} className={`price-card price-card--${pack.kind}`}>
-            {pack.badge && <div className="price-card__badge">{pack.badge}</div>}
-            <div className="price-card__eyebrow">{pack.eyebrow}</div>
-            <h2>{pack.title}</h2>
+      <section className="pricing-grid" aria-label="Paid plans">
+        {PLANS.map((plan) => (
+          <article key={plan.id} className={`price-card price-card--${plan.kind}`}>
+            {plan.badge && <div className="price-card__badge">{plan.badge}</div>}
+            <div className="price-card__eyebrow">{plan.eyebrow}</div>
+            <h2>{plan.title}</h2>
             <div className="price-card__price">
-              <span>{pack.price[currency]}</span>
-              <small>{pack.unit}</small>
+              <span>{plan.price[currency]}</span>
+              <small>{plan.unit}</small>
             </div>
             <div className="price-card__note">
-              {pack.note}
-              {currency === 'USD' && <span> · billed as {pack.price.IDR} via Midtrans</span>}
+              {plan.note}
+              {currency === 'USD' && <span> · billed as {plan.price.IDR} via Midtrans</span>}
             </div>
-            <p>{pack.description}</p>
+            <p>{plan.description}</p>
             <ul>
-              {pack.features.map((feature) => (
+              {plan.features.map((feature) => (
                 <li key={feature}><CheckIcon /> {feature}</li>
               ))}
             </ul>
-            <button className="price-card__cta" onClick={() => handlePurchase(pack.id)} disabled={loading || processingPayment === pack.id || !snapReady}>
-              {processingPayment === pack.id ? 'Opening checkout…' : pack.cta} <ArrowIcon />
+            <button className="price-card__cta" onClick={() => handleSubscribe(plan.id)} disabled={loading || processingId === plan.id || !snapReady}>
+              {processingId === plan.id ? 'Opening checkout…' : plan.cta} <ArrowIcon />
             </button>
           </article>
         ))}
       </section>
 
+      <section className="pricing-packs" aria-label="Credit packs">
+        <div className="pricing-packs__head">
+          <span>One-time credit packs</span>
+          <h2>Need a burst of exports for one project?</h2>
+          <p>Credits stack on top of your daily limit, never expire, and remove the watermark for that export.</p>
+        </div>
+        <div className="pricing-packs__grid">
+          {PACKS.map((pack) => (
+            <article key={pack.id} className="pack-card">
+              <h3>{pack.title}</h3>
+              <div className="pack-card__price">
+                <span>{pack.price[currency]}</span>
+                {currency === 'USD' && <small>billed as {pack.price.IDR}</small>}
+              </div>
+              <p>{pack.description}</p>
+              <button className="pack-card__cta" onClick={() => handlePack(pack.id)} disabled={loading || processingId === pack.id || !snapReady}>
+                {processingId === pack.id ? 'Opening checkout…' : `Buy ${pack.credits} credits`} <ArrowIcon />
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="pricing-guidance">
         <div>
           <span>Recommended model</span>
-          <h2>Use Pro for regular production work.</h2>
+          <h2>Pick the tier that matches your weekly volume.</h2>
         </div>
         <div className="pricing-guidance__cards">
           <div><strong>Free plan</strong><p>Good for testing, light work, and occasional use with daily limits.</p></div>
-          <div><strong>IDR 99,000 / $9 mo Pro</strong><p>Best for freelancers and creators who export finished files every week.</p></div>
+          <div><strong>Starter → Business</strong><p>Same features, higher daily limits as you scale up production.</p></div>
           <div><strong>Cancel anytime</strong><p>Subscription access stays active through the paid period after cancellation.</p></div>
         </div>
       </section>

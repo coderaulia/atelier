@@ -25,7 +25,7 @@ export default function VerifyEmailNotice() {
         <div className="container nav__inner">
           <Link to="/" className="nav__brand">
             <span className="nav__mark" />
-            <span>Atelier</span>
+            <span>Vanaila Studio</span>
           </Link>
         </div>
       </nav>

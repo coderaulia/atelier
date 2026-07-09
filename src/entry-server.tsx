@@ -6,6 +6,7 @@ import { allStaticRoutes, routeMeta, siteUrl, toolPages, type ToolPage } from '.
    into the SSR bundle. The prerender script will swap them with `<div id="live-tool" />`
    which the client hydrates later. */
 import Landing from './pages/Landing'
+import Pricing from './pages/Pricing'
 
 function ToolPlaceholder({ tool }: { tool: ToolPage }) {
   return (
@@ -34,10 +35,16 @@ export async function render(url: string) {
   const ToolLanding = await getToolLanding()
   const tool = toolPages.find((page) => page.path === url)
 
+  // Every prerendered route must render its real page component here —
+  // falling back to Landing for unmatched routes (e.g. /pricing) causes a
+  // client hydration mismatch that replaces the page with Landing content
+  // on first paint until React reconciles, which reads as "the page is gone."
   const element = tool ? (
     <ToolLanding tool={tool}>
       <ToolPlaceholder tool={tool} />
     </ToolLanding>
+  ) : url === '/pricing' ? (
+    <Pricing />
   ) : (
     <Landing />
   )

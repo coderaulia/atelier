@@ -1,55 +1,63 @@
 /**
- * Central pricing configuration for Atelier.
- * 
- * Option A: Regional pricing
- * - IDR 99,000 for Indonesian market
- * - USD $9 for international market
- * 
+ * Central pricing configuration for Vanaila Studio.
+ *
+ * Regional pricing: IDR for Indonesian market, USD for international.
  * This ensures displayed prices match charged amounts across:
- * - Frontend pricing pages
+ * - Frontend pricing page
  * - Midtrans checkout creation
  * - Email receipts and confirmations
+ *
+ * `plan` on the users table stays a binary free/pro entitlement gate
+ * (premium templates, bulk export, AI, no watermark). `pro_tier` only
+ * decides price and daily export limit — see TIER_LIMITS.
  */
+
+export type ProTier = 'starter' | 'pro' | 'business'
+
+export const TIER_LIMITS: Record<ProTier, number> = {
+  starter: 30,
+  pro: 100,
+  business: 300,
+}
 
 export const PRICING = {
   pro: {
-    monthly: {
-      idr: {
-        amount: 99000,
-        currency: 'IDR',
-        display: 'IDR 99,000',
-      },
-      usd: {
-        amount: 9,
-        currency: 'USD',
-        display: '$9',
-      },
+    starter: {
+      idr: { amount: 49000, currency: 'IDR', display: 'IDR 49,000' },
+      usd: { amount: 5, currency: 'USD', display: '$5' },
+    },
+    pro: {
+      idr: { amount: 99000, currency: 'IDR', display: 'IDR 99,000' },
+      usd: { amount: 9, currency: 'USD', display: '$9' },
+    },
+    business: {
+      idr: { amount: 249000, currency: 'IDR', display: 'IDR 249,000' },
+      usd: { amount: 22, currency: 'USD', display: '$22' },
     },
   },
   packs: {
-    cv_10: {
+    'cv-10': {
+      credits: 10,
       idr: { amount: 64000, currency: 'IDR', display: 'IDR 64,000' },
       usd: { amount: 4, currency: 'USD', display: '$4' },
     },
-    social_50: {
+    'social-50': {
+      credits: 50,
       idr: { amount: 192000, currency: 'IDR', display: 'IDR 192,000' },
       usd: { amount: 12, currency: 'USD', display: '$12' },
-    },
-    growth_60: {
-      idr: { amount: 256000, currency: 'IDR', display: 'IDR 256,000' },
-      usd: { amount: 16, currency: 'USD', display: '$16' },
     },
   },
 } as const
 
 export type Currency = 'IDR' | 'USD'
+export type PackId = keyof typeof PRICING.packs
 
-export function getProPrice(currency: Currency = 'USD') {
-  return currency === 'IDR' ? PRICING.pro.monthly.idr : PRICING.pro.monthly.usd
+export function getProPrice(tier: ProTier, currency: Currency = 'USD') {
+  return currency === 'IDR' ? PRICING.pro[tier].idr : PRICING.pro[tier].usd
 }
 
 export function getPackPrice(packId: string, currency: Currency = 'USD') {
-  const pack = PRICING.packs[packId as keyof typeof PRICING.packs]
+  const pack = PRICING.packs[packId as PackId]
   if (!pack) return null
   return currency === 'IDR' ? pack.idr : pack.usd
 }

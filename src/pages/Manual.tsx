@@ -60,7 +60,7 @@ function ManualNav() {
       <div className="container nav__inner">
         <Link to="/" className="nav__brand">
           <span className="nav__mark" />
-          <span>Atelier</span>
+          <span>Vanaila Studio</span>
           <span className="nav__brand-sub">Manual</span>
         </Link>
         <div className="nav__links">
@@ -90,12 +90,12 @@ function ManualCard({ title, children }: { title: string; children: React.ReactN
 
 export default function Manual() {
   useEffect(() => {
-    document.title = 'Atelier Manual — Help, tools, billing, and privacy'
+    document.title = 'Vanaila Studio Manual — Help, tools, billing, and privacy'
     const meta = document.querySelector('meta[name="description"]')
     if (meta) {
       meta.setAttribute(
         'content',
-        'User manual for Atelier by Vanaila. Learn how to use document, CV, PDF, image, OCR, account, billing, and privacy features.'
+        'User manual for Vanaila Studio. Learn how to use document, CV, PDF, image, OCR, account, billing, and privacy features.'
       )
     }
   }, [])
@@ -110,7 +110,7 @@ export default function Manual() {
               <span className="eyebrow eyebrow--accent">User manual</span>
               <h1>Make finished files without learning another app.</h1>
               <p>
-                Quick guide for using Atelier tools, managing account access, buying credits,
+                Quick guide for using Vanaila Studio tools, managing account access, buying credits,
                 and understanding how files stay private in your browser.
               </p>
               <div className="hero__ctas">
@@ -130,7 +130,7 @@ export default function Manual() {
         <section id="getting-started" className="manual-section container">
           <div className="section__head">
             <span className="eyebrow eyebrow--accent">Start here</span>
-            <h2>Three ways to use Atelier.</h2>
+            <h2>Three ways to use Vanaila Studio.</h2>
           </div>
           <div className="manual-grid manual-grid--three">
             <ManualCard title="Use public tools">

@@ -51,8 +51,7 @@ export default function Register() {
         <div className="container nav__inner">
           <Link to="/" className="nav__brand">
             <span className="nav__mark" />
-            <span>Atelier</span>
-            <span className="nav__brand-sub">by Vanaila</span>
+            <span>Vanaila Studio</span>
           </Link>
         </div>
       </nav>
@@ -70,7 +69,7 @@ export default function Register() {
               {plan === 'pro' ? 'Continue to Pro' : 'Create a free account'}
             </span>
             <h1 style={{ fontFamily: 'var(--sans)', fontSize: 32, fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: 8 }}>
-              Start with <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, color: 'var(--accent)' }}>Atelier.</span>
+              Start with <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, color: 'var(--accent)' }}>Vanaila Studio.</span>
             </h1>
             <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.5 }}>
               Already have an account?{' '}

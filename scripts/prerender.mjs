@@ -5,14 +5,16 @@
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distDir = resolve(__dirname, '../dist')
 const htmlPath = resolve(distDir, 'index.html')
 
-// Dynamic import of compiled server entry — built by Vite separately
-const serverEntry = await import(resolve(distDir, 'server/entry-server.js'))
+// Dynamic import of compiled server entry — built by Vite separately.
+// pathToFileURL is required on Windows: a bare absolute path (C:\...) isn't
+// a valid ESM specifier there and throws ERR_UNSUPPORTED_ESM_URL_SCHEME.
+const serverEntry = await import(pathToFileURL(resolve(distDir, 'server/entry-server.js')).href)
 
 const template = readFileSync(htmlPath, 'utf-8')
 const routes = serverEntry.default ?? []

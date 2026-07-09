@@ -37,7 +37,7 @@ export default function EmailTemplates() {
   }
 
   const defaultTemplates = [
-    ['welcome', 'Welcome to Atelier'],
+    ['welcome', 'Welcome to Vanaila Studio'],
     ['email-verify', 'Verify your email'],
     ['password-reset', 'Reset your password'],
     ['subscription-confirmed', 'Subscription confirmed'],

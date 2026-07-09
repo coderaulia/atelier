@@ -32,68 +32,54 @@ export default function MarketingNav({ showGoToApp = true }: MarketingNavProps) 
   }, [location.pathname])
 
   return (
-    <header className="marketing-nav">
-      <div className="marketing-nav__container">
-        <Link to="/" className="marketing-nav__brand">
-          <span className="marketing-nav__logo">V</span>
-          <span>
-            <strong>Atelier</strong>
-            <small>Vanaila</small>
-          </span>
+    <nav className="nav">
+      <div className="container nav__inner">
+        <Link to="/" className="nav__brand">
+          <span className="nav__mark" />
+          <span>Vanaila Studio</span>
         </Link>
 
-        <nav className="marketing-nav__links" aria-label="Main navigation">
-          {/* Tools dropdown */}
-          <div className="marketing-nav__dropdown" ref={dropdownRef}>
+        <div className="nav__links">
+          <div className="nav__dropdown" ref={dropdownRef}>
             <button
-              className="marketing-nav__link marketing-nav__dropdown-trigger"
+              className="nav__link nav__dropdown-trigger"
               onClick={() => setDropdownOpen((v) => !v)}
               aria-expanded={dropdownOpen}
               aria-haspopup="true"
               type="button"
             >
               Tools
-              <span className={`marketing-nav__chevron ${dropdownOpen ? 'open' : ''}`}>▾</span>
+              <span className={`nav__chevron ${dropdownOpen ? 'open' : ''}`}>▾</span>
             </button>
             {dropdownOpen && (
-              <div className="marketing-nav__dropdown-panel">
+              <div className="nav__dropdown-panel">
                 {TOOLS.map((tool) => (
-                  <Link
-                    key={tool.id}
-                    to={tool.publicPath}
-                    className="marketing-nav__dropdown-item"
-                  >
-                    <span className="marketing-nav__dropdown-item-icon">{tool.icon}</span>
-                    <div className="marketing-nav__dropdown-item-content">
-                      <span className="marketing-nav__dropdown-item-name">{tool.name}</span>
-                      <span className="marketing-nav__dropdown-item-desc">{tool.description}</span>
+                  <Link key={tool.id} to={tool.publicPath} className="nav__dropdown-item">
+                    <span className="nav__dropdown-item-icon">{tool.icon}</span>
+                    <div className="nav__dropdown-item-content">
+                      <span className="nav__dropdown-item-name">{tool.name}</span>
+                      <span className="nav__dropdown-item-desc">{tool.description}</span>
                     </div>
                   </Link>
                 ))}
               </div>
             )}
           </div>
+          <Link className="nav__link" to="/pricing">Pricing</Link>
+        </div>
 
-          <Link to="/pricing" className="marketing-nav__link">
-            Pricing
-          </Link>
+        <div className="nav__actions">
           <LanguageToggle />
           {isAuthenticated && showGoToApp ? (
-            <Link to="/app/dashboard" className="marketing-nav__cta">
-              Go to App →
-            </Link>
+            <Link className="btn btn--primary" to="/app/dashboard">Go to app →</Link>
           ) : (
             <>
-              <Link to="/login" className="marketing-nav__link">
-                Login
-              </Link>
-              <Link to="/register" className="marketing-nav__cta">
-                Sign up free
-              </Link>
+              <Link className="nav__link" to="/login" style={{ fontWeight: 600 }}>Sign in</Link>
+              <Link className="btn btn--primary" to="/register">Sign up free</Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
-    </header>
+    </nav>
   )
 }

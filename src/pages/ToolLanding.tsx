@@ -1,17 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { type ToolPage, toolPages } from './toolPages'
-
-const toolShortNames: Record<string, string> = {
-  'pdf-to-image': 'PDF→Img',
-  'pdf-merge': 'Merge',
-  'pdf-compress': 'Compress',
-  'image-converter': 'Image',
-  ocr: 'OCR',
-  'cv-builder': 'CV',
-  'document-generator': 'Docs',
-  'social-generator': 'Social',
-}
+import MarketingNav from '@/components/navigation/MarketingNav'
+import { type ToolPage } from './toolPages'
 
 export default function ToolLanding({ tool, children }: { tool: ToolPage; children: ReactNode }) {
   useEffect(() => {
@@ -22,25 +12,7 @@ export default function ToolLanding({ tool, children }: { tool: ToolPage; childr
 
   return (
     <main className="tool-seo-page" style={{ '--tool-accent': tool.accent } as React.CSSProperties}>
-      <nav className="tool-nav" aria-label="Primary navigation">
-        <Link className="tool-brand" to="/">
-          <span className="nav__mark" />
-          <span>Atelier</span>
-          <span className="nav__brand-sub">by Vanaila</span>
-        </Link>
-        <div className="tool-nav__links">
-          {toolPages.map((tp) =>
-            tp.slug !== tool.slug ? (
-              <Link key={tp.slug} className="tool-nav__link" to={tp.path}>
-                {toolShortNames[tp.slug] || tp.name}
-              </Link>
-            ) : null
-          )}
-          <span className="tool-nav__sep" />
-          <Link className="tool-nav__link" to="/pricing">Pricing</Link>
-          <a className="tool-nav__link" href="#faq">FAQ</a>
-        </div>
-      </nav>
+      <MarketingNav />
 
       <section className="tool-hero">
         <div className="tool-hero__copy">

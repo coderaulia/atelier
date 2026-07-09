@@ -7,6 +7,7 @@ export interface User {
   email: string
   name?: string | null
   plan: 'free' | 'pro'
+  pro_tier?: 'starter' | 'pro' | 'business' | null
   role?: 'user' | 'admin'
   status?: 'active' | 'banned'
   pro_expires_at?: number | null
@@ -198,11 +199,19 @@ export function getReceipt(txId: number) {
   return request<{ transaction: Transaction }>(`/billing/receipt/${txId}`, { headers: authHeaders() })
 }
 
-export function createCheckout(planType: string) {
+export function createCheckout(tier: 'starter' | 'pro' | 'business') {
   return request<{ snap_token: string; order_id: string }>('/billing/checkout', {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({ plan_type: planType }),
+    body: JSON.stringify({ tier }),
+  })
+}
+
+export function createPackCheckout(packId: 'cv-10' | 'social-50') {
+  return request<{ snap_token: string; order_id: string }>('/billing/checkout-pack', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ pack_id: packId }),
   })
 }
 

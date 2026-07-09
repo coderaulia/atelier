@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import LanguageToggle from '../components/LanguageToggle'
+import MarketingNav from '../components/navigation/MarketingNav'
 
 /* ---- Inline icons ---- */
 const ArrowIcon = () => (
@@ -66,32 +66,6 @@ const UploadIcon = () => (
     <line x1="12" y1="3" x2="12" y2="15" />
   </svg>
 )
-
-/* ===================== NAV ===================== */
-function Nav() {
-  return (
-    <nav className="nav">
-      <div className="container nav__inner">
-        <a href="/" className="nav__brand">
-          <span className="nav__mark" />
-          <span>Atelier</span>
-          <span className="nav__brand-sub">by Vanaila</span>
-        </a>
-        <div className="nav__links">
-          <a className="nav__link" href="#tools">Tools</a>
-          <Link className="nav__link" to="/cv-builder">CV Builder</Link>
-          <Link className="nav__link" to="/image-converter">Image Converter</Link>
-          <Link className="nav__link" to="/pricing">Pricing</Link>
-        </div>
-        <div className="nav__actions">
-          <LanguageToggle />
-          <Link className="nav__link" to="/login" style={{ fontWeight: 600 }}>Sign in</Link>
-          <Link className="btn btn--primary" to="/register">Open the app <ArrowSmIcon /></Link>
-        </div>
-      </div>
-    </nav>
-  )
-}
 
 /* ===================== HERO ===================== */
 function HeroDocWindow() {
@@ -178,7 +152,7 @@ function Hero() {
         <div className="hero__copy">
           <div className="hero__tag">
             <span className="hero__tag-dot" />
-            Now live · Atelier 0.1 + 4 new tools coming
+            Now live · v0.1 + 4 new tools coming
           </div>
           <h1>
             One tab.<br />
@@ -214,7 +188,7 @@ function Logos() {
     <section className="logos container">
       <div className="logos__label">A toolkit instead of a stack of subscriptions</div>
       <div className="logos__row">
-        <span className="logos__item">Atelier</span>
+        <span className="logos__item">Documents</span>
         <span className="logos__item logos__item--sans">CV Studio</span>
         <span className="logos__item">Convert</span>
         <span className="logos__item logos__item--sans">Scan</span>
@@ -244,10 +218,10 @@ function ToolsGrid() {
         </div>
 
         <div className="tools">
-          {/* Atelier — hero tool, full-width */}
+          {/* Document generator — hero tool, full-width */}
           <Link className="tool-card tool-card--hero" to="/document-generator">
             <div className="tool-card__body">
-              <div className="tool-card__num">Tool 01 / Atelier</div>
+              <div className="tool-card__num">Tool 01 / Documents</div>
               <div className="tool-card__icon"><DocIcon /></div>
               <h3 className="tool-card__title">The document generator <span className="it">that ships.</span></h3>
               <p className="tool-card__desc">
@@ -257,7 +231,7 @@ function ToolsGrid() {
                 {DOC_TYPES.map((d) => <span key={d} className="dt-pill">{d}</span>)}
               </div>
               <div className="tool-card__foot">
-                <span className="tool-card__cta">Open Atelier <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
+                <span className="tool-card__cta">Open Documents <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
                 <span className="tool-card__badge tool-card__badge--live">● Live</span>
               </div>
             </div>
@@ -338,7 +312,7 @@ function ToolsGrid() {
           </Link>
 
           <Link className="tool-card tool-card--md" to="/social-generator">
-            <div className="tool-card__num">Inside Atelier / Social</div>
+            <div className="tool-card__num">Inside Documents / Social</div>
             <div className="tool-card__icon"><SocialIcon /></div>
             <h3 className="tool-card__title">Posts that look <span className="it">designed.</span></h3>
             <p className="tool-card__desc">
@@ -902,21 +876,21 @@ function Pricing() {
           </div>
 
           <div className="price-tier price-tier--pro">
-            <div className="price-tier__name">Pro · $9 / mo</div>
+            <div className="price-tier__name">Paid plans · from $5 / mo</div>
             <div className="price-tier__price">
-              <span className="num">$9</span>
-              <span className="per">/ month — or IDR 99,000</span>
+              <span className="num">$5</span>
+              <span className="per">/ month — or IDR 49,000</span>
             </div>
-            <div className="price-tier__tag">For people running a business.</div>
+            <div className="price-tier__tag">Starter, Pro, and Business tiers.</div>
             <ul className="price-tier__list">
               <li>Everything in Free, plus —</li>
-              <li>100 exports per day</li>
+              <li>30–300 exports per day, by tier</li>
               <li>Premium CV &amp; document templates</li>
               <li>AI drafting for proposals, PRDs, CVs</li>
-              <li>Priority support</li>
+              <li>Priority support on Business</li>
             </ul>
             <div>
-              <Link className="btn btn--accent" to="/pricing">See Pro plans <ArrowSmIcon /></Link>
+              <Link className="btn btn--accent" to="/pricing">Compare plans <ArrowSmIcon /></Link>
             </div>
           </div>
         </div>
@@ -964,8 +938,7 @@ function Footer() {
           <div>
             <a className="nav__brand" href="/">
               <span className="nav__mark" />
-              <span>Atelier</span>
-              <span className="nav__brand-sub">by Vanaila</span>
+              <span>Vanaila Studio</span>
             </a>
             <p className="footer__brand-text">A small suite of free tools for the documents that surround the work — and the formats that surround the documents.</p>
           </div>
@@ -994,7 +967,7 @@ function Footer() {
         </div>
         <div className="footer__bottom">
           <span>© 2026 Vanaila Digital</span>
-          <span>app.vanailadigital.com</span>
+          <a href="https://studio.vanaila.com" style={{ color: 'inherit', textDecoration: 'none' }}>studio.vanaila.com</a>
         </div>
       </div>
     </footer>
@@ -1004,14 +977,14 @@ function Footer() {
 /* ===================== PAGE ===================== */
 export default function Landing() {
   useEffect(() => {
-    document.title = 'Atelier by Vanaila — Documents, CVs, conversions & more'
+    document.title = 'Vanaila Studio — Documents, CVs, conversions & more'
     const meta = document.querySelector('meta[name="description"]')
     if (meta) meta.setAttribute('content', 'Documents, CVs, image and PDF conversions, OCR, and social posts — built in your browser. No installs, no accounts, no watermarks.')
   }, [])
 
   return (
     <>
-      <Nav />
+      <MarketingNav showGoToApp={false} />
       <Hero />
       <Logos />
       <ToolsGrid />

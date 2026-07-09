@@ -145,10 +145,14 @@ npm run seed:admin
 cd api
 wrangler deploy
 
-# Build and deploy frontend
+# Frontend on Hostinger Node.js App
 cd ..
 npm run build
-# Deploy dist/ to Cloudflare Pages
+npm start
+
+# Hostinger Git deployment:
+# Build command: npm run build
+# Start command: npm start
 ```
 
 ---

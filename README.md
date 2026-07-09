@@ -145,14 +145,21 @@ npm run seed:admin
 cd api
 wrangler deploy
 
-# Frontend on Hostinger Node.js App
+# Frontend on Hostinger (static Git deployment)
 cd ..
-npm run build
-npm start
+npm run build   # outputs to dist/
 
-# Hostinger Git deployment:
-# Build command: npm run build
-# Start command: npm start
+# Hostinger Deployments settings:
+#   Framework preset : Vite
+#   Build command    : npm run build
+#   Output directory : dist
+#   (no start command — dist/ is served statically by LiteSpeed/Apache)
+#
+# SPA routing: public/.htaccess is copied into dist/ on every build and
+# rewrites all non-file routes to index.html so React Router handles them.
+# Do NOT remove it or direct hits/refreshes on /login, /admin, etc. will 404.
+# (public/_redirects and server.js are only used on Cloudflare Pages / a Node
+# host respectively — inert on Hostinger static hosting.)
 ```
 
 ---

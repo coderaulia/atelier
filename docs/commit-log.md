@@ -1,5 +1,15 @@
 # Commit Log
 
+## 2026-07-09 — Onboarding + pricing fixes
+
+- Removed unimplemented "14-day Pro trial" copy from landing and register (no trial logic existed).
+- Unified Pro price to canonical IDR 99,000 / $9 across checkout, pricing page, landing, dashboard upsell (checkout previously hardcoded IDR 140,000).
+- Added IDR/USD currency toggle to pricing page.
+- UpgradeModal now links to `/pricing` instead of `/register?plan=pro` (fired for already-authenticated users).
+- Added email-verification banner and first-run welcome card to dashboard.
+- Gated Google/GitHub OAuth buttons behind `VITE_ENABLE_OAUTH` (default off) so unconfigured providers don't render dead buttons.
+- Pro-intent registration now redirects to checkout.
+
 ## 2026-05-29
 
 - Added internal admin dashboard routes and UI.

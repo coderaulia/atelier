@@ -905,7 +905,7 @@ function Pricing() {
             <div className="price-tier__name">Pro · $9 / mo</div>
             <div className="price-tier__price">
               <span className="num">$9</span>
-              <span className="per">/ month — or $81 yearly</span>
+              <span className="per">/ month — or IDR 99,000</span>
             </div>
             <div className="price-tier__tag">For people running a business.</div>
             <ul className="price-tier__list">
@@ -916,7 +916,7 @@ function Pricing() {
               <li>Priority support</li>
             </ul>
             <div>
-              <Link className="btn btn--accent" to="/pricing">Try Pro free for 14 days <ArrowSmIcon /></Link>
+              <Link className="btn btn--accent" to="/pricing">See Pro plans <ArrowSmIcon /></Link>
             </div>
           </div>
         </div>

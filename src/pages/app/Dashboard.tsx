@@ -16,6 +16,7 @@ interface UsageItem {
 
 const UPSELL_KEY = 'vs_upsell_dismissed'
 const LAST_TOOL_KEY = 'vs_last_used_tool'
+const WELCOME_KEY = 'vs_welcome_dismissed'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [usage, setUsage] = useState<UsageItem[]>([])
   const [usageLoading, setUsageLoading] = useState(true)
   const [upsellVisible, setUpsellVisible] = useState(() => shouldShowUpsell())
+  const [welcomeVisible, setWelcomeVisible] = useState(() => !localStorage.getItem(WELCOME_KEY) && !localStorage.getItem(LAST_TOOL_KEY))
 
   const tools = useMemo(() => {
     const lastToolId = localStorage.getItem(LAST_TOOL_KEY)
@@ -31,6 +33,13 @@ export default function Dashboard() {
     if (!recent) return TOOLS
     return [recent, ...TOOLS.filter((tool) => tool.id !== lastToolId)]
   }, [])
+
+  const emailUnverified = user != null && user.email_verified === 0
+
+  const dismissWelcome = () => {
+    localStorage.setItem(WELCOME_KEY, '1')
+    setWelcomeVisible(false)
+  }
 
   useEffect(() => {
     const token = getAuthToken()
@@ -71,11 +80,34 @@ export default function Dashboard() {
 
       <AnnouncementsBanner />
 
+      {emailUnverified && (
+        <div className="dashboard-verify" role="alert">
+          <span>📧 Verify your email to secure your account and receive receipts.</span>
+          <Link to="/verify-email" className="dashboard-verify__btn">Verify email</Link>
+        </div>
+      )}
+
+      {welcomeVisible && (
+        <section className="dashboard-welcome">
+          <div>
+            <span className="dashboard-welcome__badge">Welcome</span>
+            <h2>New here? Start with one tool.</h2>
+            <p>All processing runs locally in your browser — files never upload. Pick {tools[0]?.name || 'a tool'} to try your first export.</p>
+          </div>
+          <div className="dashboard-welcome__actions">
+            <Link to={tools[0]?.appPath || '/app/dashboard'} className="dashboard-welcome__btn" onClick={dismissWelcome}>
+              Open {tools[0]?.name || 'a tool'} →
+            </Link>
+            <button type="button" onClick={dismissWelcome} className="dashboard-welcome__dismiss">Dismiss</button>
+          </div>
+        </section>
+      )}
+
       {!isPro && upsellVisible && (
         <section className="dashboard-upsell">
           <div>
             <span className="dashboard-upsell__badge">Pro</span>
-            <h2>Get unlimited access — from IDR 49k/month.</h2>
+            <h2>Get unlimited access — IDR 99,000 / $9 a month.</h2>
             <p>Remove daily limits, unlock premium templates, and speed up every workflow.</p>
           </div>
           <div className="dashboard-upsell__actions">

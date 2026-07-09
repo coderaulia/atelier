@@ -12,15 +12,15 @@ export default function UpgradeModal({ onClose }: Props) {
         </div>
         <div className="modal__body">
           <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--shell-muted)', marginBottom: 20 }}>
-            You've reached your free daily limit. Upgrade to Pro for unlimited exports,
+            You've reached your free daily limit. Upgrade to Pro for 100 exports/day,
             premium templates, and bulk export.
           </p>
           <a
-            href="/register?plan=pro"
+            href="/pricing"
             className="btn btn--accent"
             style={{ display: 'inline-block', padding: '10px 20px', textDecoration: 'none' }}
           >
-            Upgrade to Pro →
+            See Pro plans →
           </a>
         </div>
       </div>

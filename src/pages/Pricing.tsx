@@ -36,12 +36,13 @@ const CheckIcon = () => (
 )
 
 type UserLite = { plan: string; email: string }
+type Currency = 'IDR' | 'USD'
 
 type Pack = {
   id: string
   eyebrow: string
   title: string
-  price: string
+  price: Record<Currency, string>
   unit: string
   note: string
   description: string
@@ -51,12 +52,13 @@ type Pack = {
   features: string[]
 }
 
+// Prices mirror api/src/lib/pricing.ts (canonical). Midtrans settles in IDR.
 const PACKS: Pack[] = [
   {
     id: 'pro-monthly',
     eyebrow: 'Pro plan',
     title: 'Unlimited workspace',
-    price: '$9',
+    price: { IDR: 'IDR 99,000', USD: '$9' },
     unit: 'per month',
     note: 'For regular creators and teams',
     description: 'For freelancers who generate documents, content, OCR, and conversions every week.',
@@ -73,6 +75,7 @@ export default function Pricing() {
   const [loading, setLoading] = useState(true)
   const [processingPayment, setProcessingPayment] = useState<string | null>(null)
   const [snapReady, setSnapReady] = useState(false)
+  const [currency, setCurrency] = useState<Currency>('IDR')
 
   useEffect(() => {
     document.title = 'Pricing — Atelier by Vanaila'
@@ -166,6 +169,24 @@ export default function Pricing() {
           Free tools stay useful. Pro unlocks higher daily limits, premium templates, and bulk export
           for people who produce finished files every week.
         </p>
+        <div className="pricing-currency" role="group" aria-label="Currency">
+          <button
+            type="button"
+            className={`pricing-currency__btn${currency === 'IDR' ? ' is-active' : ''}`}
+            aria-pressed={currency === 'IDR'}
+            onClick={() => setCurrency('IDR')}
+          >
+            IDR
+          </button>
+          <button
+            type="button"
+            className={`pricing-currency__btn${currency === 'USD' ? ' is-active' : ''}`}
+            aria-pressed={currency === 'USD'}
+            onClick={() => setCurrency('USD')}
+          >
+            USD
+          </button>
+        </div>
       </section>
 
       <section className="pricing-free-strip" aria-label="Free plan limits">
@@ -187,10 +208,13 @@ export default function Pricing() {
             <div className="price-card__eyebrow">{pack.eyebrow}</div>
             <h2>{pack.title}</h2>
             <div className="price-card__price">
-              <span>{pack.price}</span>
+              <span>{pack.price[currency]}</span>
               <small>{pack.unit}</small>
             </div>
-            <div className="price-card__note">{pack.note}</div>
+            <div className="price-card__note">
+              {pack.note}
+              {currency === 'USD' && <span> · billed as {pack.price.IDR} via Midtrans</span>}
+            </div>
             <p>{pack.description}</p>
             <ul>
               {pack.features.map((feature) => (
@@ -211,7 +235,7 @@ export default function Pricing() {
         </div>
         <div className="pricing-guidance__cards">
           <div><strong>Free plan</strong><p>Good for testing, light work, and occasional use with daily limits.</p></div>
-          <div><strong>$9/mo Pro</strong><p>Best for freelancers and creators who export finished files every week.</p></div>
+          <div><strong>IDR 99,000 / $9 mo Pro</strong><p>Best for freelancers and creators who export finished files every week.</p></div>
           <div><strong>Cancel anytime</strong><p>Subscription access stays active through the paid period after cancellation.</p></div>
         </div>
       </section>

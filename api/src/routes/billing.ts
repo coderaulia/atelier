@@ -4,6 +4,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { emailTemplates, sendEmail } from '../lib/email'
 import { checkRateLimit, getClientIP } from '../lib/rate-limit'
 import { getAppUrl } from '../lib/config'
+import { PRICING } from '../lib/pricing'
 import type { Bindings } from '../types'
 
 const billing = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>()
@@ -111,8 +112,10 @@ billing.post('/checkout', authMiddleware, async (c) => {
   if (!user) return c.json({ error: 'User not found' }, 404)
 
   const orderId = `PRO-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+  // Midtrans settles in IDR — charge the canonical Pro price from central config.
+  const grossAmount = PRICING.pro.monthly.idr.amount
   const payload = {
-    transaction_details: { order_id: orderId, gross_amount: 140000 },
+    transaction_details: { order_id: orderId, gross_amount: grossAmount },
     customer_details: { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
     custom_field1: c.var.userId,
   }

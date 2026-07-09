@@ -241,7 +241,7 @@ export default function Manual() {
             <details><summary>Are there watermarks?</summary><p>No. Free and Pro exports are clean unless product policy changes later.</p></details>
             <details><summary>Why did export fail?</summary><p>Check file size, browser memory, and daily limit. Try fewer pages or lower output quality.</p></details>
             <details><summary>Which browser is best?</summary><p>Use current Chrome, Edge, Firefox, or Safari. Large PDF/image tasks work best on desktop.</p></details>
-            <details><summary>How do I get support?</summary><p>Email hello@vanaila.com with account email, tool name, and steps to reproduce.</p></details>
+            <details><summary>How do I get support?</summary><p>Email studio@vanaila.com with account email, tool name, and steps to reproduce.</p></details>
           </div>
         </section>
       </main>

@@ -11,7 +11,7 @@
       "rights": {"title":"Hak Anda","intro":"Anda berhak untuk:","items":["Akses: Meminta salinan semua data pribadi yang kami simpan","Koreksi: Meminta perbaikan data pribadi yang tidak akurat","Penghapusan: Menghapus akun dan semua data terkait melalui DELETE /auth/account","Portabilitas data: Meminta data dalam format machine-readable"]},
       "pdp": {"title":"Kepatuhan UU PDP Indonesia","body":"Kami mematuhi Undang-Undang Pelindungan Data Pribadi Indonesia (UU PDP No. 27/2022). Kami memproses data pribadi secara sah, adil, dan transparan. Anda berhak mengakses, memperbaiki, menghapus, dan memindahkan data pribadi. Kami menerapkan langkah keamanan yang sesuai dan akan memberi notifikasi kepada Anda serta otoritas terkait jika terjadi kebocoran data."},
       "gdpr": {"title":"Kepatuhan GDPR (Pengguna EU)","body":"Untuk pengguna di European Economic Area (EEA), United Kingdom, dan Switzerland: Kami memproses data pribadi sesuai General Data Protection Regulation (GDPR). Dasar hukum pemrosesan kami adalah kebutuhan kontraktual (menyediakan layanan) dan kepentingan sah (analitik). Anda berhak mengajukan komplain ke otoritas perlindungan data lokal."},
-      "contact": {"title":"Kontak","body":"Untuk pertanyaan privasi atau permintaan data, hubungi privacy@vanailadigital.com."}
+      "contact": {"title":"Kontak","body":"Untuk pertanyaan privasi atau permintaan data, hubungi studio@vanaila.com."}
     }
   },
   "terms": {
@@ -21,7 +21,7 @@
       "freePlan":{"title":"Limit Paket Free","items":["Pengguna login: 5 penggunaan alat per hari","Pengguna anonim: 3 penggunaan alat per hari","Limit reset harian pukul 00:00 UTC","Paket Free mencakup semua alat dan format ekspor"]},
       "proPlan":{"title":"Paket Pro","items":["Subscription bulanan: $8/bulan atau $72/tahun","Batal kapan saja — akses Pro berlanjut sampai akhir periode billing berjalan","Tidak ada refund parsial kecuali diminta dalam 7 hari dari charge (lihat Kebijakan Refund)","Fitur Pro termasuk penyimpanan brand kit, riwayat cloud, AI drafting, dan batch operation tanpa batas"]},
       "oneTimePurchase":{"title":"Pembelian Sekali Bayar","items":["Pembelian sekali bayar tidak dapat direfund setelah file diunduh","Unduhan dianggap sebagai pengiriman produk digital"]},
-      "refundPolicy":{"title":"Refund Subscription","items":["Refund pro-rata tersedia dalam 7 hari sejak charge subscription","Refund diproses via Midtrans dalam 5-7 hari kerja","Hubungi billing@vanailadigital.com untuk meminta refund"]},
+      "refundPolicy":{"title":"Refund Subscription","items":["Refund pro-rata tersedia dalam 7 hari sejak charge subscription","Refund diproses via Midtrans dalam 5-7 hari kerja","Hubungi care@vanaila.com untuk meminta refund"]},
       "ip":{"title":"Kekayaan Intelektual","items":["Anda memiliki semua file yang Anda buat memakai Layanan","Kami tidak mengklaim kepemilikan atas dokumen, gambar, atau ekspor Anda","Kode, template, dan desain Layanan dimiliki Vanaila Digital"]},
       "governingLaw":{"title":"Hukum yang Berlaku","body":"Ketentuan ini diatur oleh hukum Republik Indonesia. Sengketa diselesaikan di pengadilan Jakarta, Indonesia."}
     }
@@ -31,7 +31,7 @@
     "sections": {
       "subscription":{"title":"Refund Subscription (Paket Pro)","items":["Anda dapat meminta refund dalam 7 hari dari tanggal charge subscription","Refund bersifat pro-rata berdasarkan sisa periode billing","Setelah jendela 7 hari, tidak ada refund untuk periode berjalan","Pembatalan menghentikan charge berikutnya tetapi tidak otomatis merefund periode berjalan"]},
       "oneTime":{"title":"Refund Pembelian Sekali Bayar","items":["Pembelian sekali bayar tidak dapat direfund setelah file diunduh","Unduhan dianggap sebagai pengiriman produk digital","Jika masalah teknis mencegah unduhan, hubungi kami untuk bantuan"]},
-      "howToRequest":{"title":"Cara Meminta Refund","items":["Email billing@vanailadigital.com dengan email akun dan ID transaksi Anda","Kami akan merespons dalam 2 hari kerja","Refund diproses via Midtrans dalam 5-7 hari kerja","Refund dikreditkan ke metode pembayaran asli"]}
+      "howToRequest":{"title":"Cara Meminta Refund","items":["Email care@vanaila.com dengan email akun dan ID transaksi Anda","Kami akan merespons dalam 2 hari kerja","Refund diproses via Midtrans dalam 5-7 hari kerja","Refund dikreditkan ke metode pembayaran asli"]}
     }
   },
   "contact": {
@@ -41,9 +41,9 @@
     "channels": {
       "title": "Kanal Kontak",
       "items": [
-        { "label": "Dukungan umum", "value": "support@vanailadigital.com", "href": "mailto:support@vanailadigital.com" },
-        { "label": "Billing & refund", "value": "billing@vanailadigital.com", "href": "mailto:billing@vanailadigital.com" },
-        { "label": "Privasi & permintaan data", "value": "privacy@vanailadigital.com", "href": "mailto:privacy@vanailadigital.com" },
+        { "label": "Dukungan umum", "value": "studio@vanaila.com", "href": "mailto:studio@vanaila.com" },
+        { "label": "Billing & refund", "value": "care@vanaila.com", "href": "mailto:care@vanaila.com" },
+        { "label": "Privasi & permintaan data", "value": "studio@vanaila.com", "href": "mailto:studio@vanaila.com" },
         { "label": "Laporan bug", "value": "Gunakan form laporan bug di dalam aplikasi (tersedia di setiap halaman alat)", "href": "" }
       ]
     },

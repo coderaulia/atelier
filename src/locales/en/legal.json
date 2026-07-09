@@ -57,7 +57,7 @@
       },
       "contact": {
         "title": "Contact",
-        "body": "For privacy questions or data requests, contact us at privacy@vanailadigital.com."
+        "body": "For privacy questions or data requests, contact us at studio@vanaila.com."
       }
     }
   },
@@ -105,7 +105,7 @@
         "items": [
           "Pro-rata refund available within 7 days of a subscription charge",
           "Refunds are processed via Midtrans within 5-7 business days",
-          "Contact us at billing@vanailadigital.com to request a refund"
+          "Contact us at care@vanaila.com to request a refund"
         ]
       },
       "ip": {
@@ -147,7 +147,7 @@
       "howToRequest": {
         "title": "How to Request a Refund",
         "items": [
-          "Email billing@vanailadigital.com with your account email and transaction ID",
+          "Email care@vanaila.com with your account email and transaction ID",
           "We will respond within 2 business days",
           "Refunds are processed via Midtrans within 5-7 business days",
           "Refunds are credited to the original payment method"
@@ -162,9 +162,9 @@
     "channels": {
       "title": "Contact Channels",
       "items": [
-        { "label": "General support", "value": "support@vanailadigital.com", "href": "mailto:support@vanailadigital.com" },
-        { "label": "Billing & refunds", "value": "billing@vanailadigital.com", "href": "mailto:billing@vanailadigital.com" },
-        { "label": "Privacy & data requests", "value": "privacy@vanailadigital.com", "href": "mailto:privacy@vanailadigital.com" },
+        { "label": "General support", "value": "studio@vanaila.com", "href": "mailto:studio@vanaila.com" },
+        { "label": "Billing & refunds", "value": "care@vanaila.com", "href": "mailto:care@vanaila.com" },
+        { "label": "Privacy & data requests", "value": "studio@vanaila.com", "href": "mailto:studio@vanaila.com" },
         { "label": "Bug reports", "value": "Use the in-app bug report form (available from any tool page)", "href": "" }
       ]
     },

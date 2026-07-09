@@ -353,13 +353,13 @@ function SupportTab() {
         </button>
 
         <a
-          href="mailto:support@vanailadigital.com?subject=Support Request"
+          href="mailto:studio@vanaila.com?subject=Support Request"
           className="btn"
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '20px 22px', height: 'auto', borderRadius: 16, textDecoration: 'none', border: '1px solid var(--border)' }}
         >
           <span style={{ fontSize: 28, marginBottom: 10 }}>✉️</span>
           <span style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: 'var(--ink)' }}>Email Support</span>
-          <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--ink-2)' }}>support@vanailadigital.com</span>
+          <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--ink-2)' }}>studio@vanaila.com</span>
         </a>
       </div>
 

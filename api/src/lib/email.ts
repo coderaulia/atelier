@@ -13,7 +13,7 @@ export async function sendEmail(payload: EmailPayload, brevoApiKey: string): Pro
       'api-key': brevoApiKey,
     },
     body: JSON.stringify({
-      sender: { name: 'Vanaila Studio', email: 'noreply@vanailadigital.com' },
+      sender: { name: 'Vanaila Studio', email: 'studio@vanaila.com' },
       to: [{ email: payload.to }],
       subject: payload.subject,
       htmlContent: payload.html,

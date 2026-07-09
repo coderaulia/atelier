@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getUsage, incrementUsage, getAnonUsage, incrementAnonUsage, UsageLimitError } from '../lib/api'
-import { getAuthToken } from '../lib/auth'
+import { useAuthToken } from './useAuthToken'
 
 const ANON_LIMIT = 1
 const FREE_LIMIT = 3
@@ -21,7 +21,7 @@ export interface ToolLimitResult {
 }
 
 export function useToolLimit(toolId: string): ToolLimitResult {
-  const token = getAuthToken()
+  const token = useAuthToken()
   const isAuthed = !!token
   const tomorrow = Math.floor(new Date(`${todayStr()}T24:00:00.000Z`).getTime() / 1000)
 

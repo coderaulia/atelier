@@ -9,12 +9,14 @@
 
 const TOKEN_KEY = 'auth_token'
 const USER_KEY = 'auth_user'
+const AUTH_CHANGE_EVENT = 'vanaila-auth-change'
 
 // Legacy localStorage keys — migrate on first access
 const LEGACY_TOKEN_KEY = 'token'
 const LEGACY_USER_KEY = 'user'
 
 function migrateFromLocalStorage(): void {
+  if (typeof window === 'undefined') return
   try {
     const legacyToken = localStorage.getItem(LEGACY_TOKEN_KEY)
     if (legacyToken) {
@@ -32,16 +34,20 @@ function migrateFromLocalStorage(): void {
 }
 
 export function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null
   // One-time migration from legacy localStorage
   migrateFromLocalStorage()
   return sessionStorage.getItem(TOKEN_KEY)
 }
 
 export function setAuthToken(token: string): void {
+  if (typeof window === 'undefined') return
   sessionStorage.setItem(TOKEN_KEY, token)
+  notifyAuthChanged()
 }
 
 export function getStoredUser<T = Record<string, unknown>>(): T | null {
+  if (typeof window === 'undefined') return null
   const raw = sessionStorage.getItem(USER_KEY)
   if (!raw) return null
   try {
@@ -52,10 +58,29 @@ export function getStoredUser<T = Record<string, unknown>>(): T | null {
 }
 
 export function setStoredUser(user: Record<string, unknown>): void {
+  if (typeof window === 'undefined') return
   sessionStorage.setItem(USER_KEY, JSON.stringify(user))
+  notifyAuthChanged()
 }
 
 export function clearAuth(): void {
+  if (typeof window === 'undefined') return
   sessionStorage.removeItem(TOKEN_KEY)
   sessionStorage.removeItem(USER_KEY)
+  notifyAuthChanged()
+}
+
+export function subscribeToAuthChanges(listener: () => void): () => void {
+  if (typeof window === 'undefined') return () => {}
+  window.addEventListener(AUTH_CHANGE_EVENT, listener)
+  window.addEventListener('storage', listener)
+  return () => {
+    window.removeEventListener(AUTH_CHANGE_EVENT, listener)
+    window.removeEventListener('storage', listener)
+  }
+}
+
+function notifyAuthChanged(): void {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT))
 }

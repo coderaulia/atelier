@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getMe, type User } from '@/lib/api'
-import { getAuthToken, getStoredUser, setStoredUser, clearAuth } from '@/lib/auth'
+import { getStoredUser, setStoredUser, clearAuth } from '@/lib/auth'
+import { useAuthToken } from '@/hooks/useAuthToken'
 
 interface AuthResult {
   user: User | null
@@ -10,11 +11,11 @@ interface AuthResult {
 }
 
 export function useAuth(): AuthResult {
+  const token = useAuthToken()
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const token = getAuthToken()
     if (!token) {
       setUser(null)
       setIsLoading(false)
@@ -40,6 +41,7 @@ export function useAuth(): AuthResult {
       return
     }
 
+    setIsLoading(true)
     // No cache, fetch fresh
     getMe(token)
       .then(({ user: freshUser }) => {
@@ -51,7 +53,7 @@ export function useAuth(): AuthResult {
         setUser(null)
       })
       .finally(() => setIsLoading(false))
-  }, [])
+  }, [token])
 
   const logout = () => {
     clearAuth()

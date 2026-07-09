@@ -1,20 +1,36 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { register } from '../lib/api'
 import { setAuthToken, setStoredUser } from '../lib/auth'
 import { authClient } from '../lib/auth-client'
+import { useAuth } from '../hooks/useAuth'
 
 const OAUTH_ENABLED = import.meta.env.VITE_ENABLE_OAUTH === 'true'
 
 export default function Register() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const plan = searchParams.get('plan') === 'pro' ? 'pro' : 'free'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate('/app/dashboard', { replace: true })
+    }
+  }, [authLoading, isAuthenticated, navigate])
+
+  if (authLoading || isAuthenticated) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-2)' }}>
+        Checking session...
+      </div>
+    )
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()

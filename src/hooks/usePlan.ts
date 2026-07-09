@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getMe } from '../lib/api';
-import { getAuthToken } from '../lib/auth';
+import { useAuthToken } from './useAuthToken';
 
 export interface PlanResult {
   plan: 'free' | 'pro' | null;
@@ -9,11 +9,11 @@ export interface PlanResult {
 }
 
 export function usePlan(): PlanResult {
+  const token = useAuthToken();
   const [plan, setPlan] = useState<'free' | 'pro' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = getAuthToken();
     if (!token) {
       setPlan(null);
       setIsLoading(false);
@@ -23,7 +23,7 @@ export function usePlan(): PlanResult {
       .then(({ user }) => setPlan(user.plan))
       .catch(() => setPlan(null))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [token]);
 
   return { plan, isLoading, isPro: plan === 'pro' };
 }

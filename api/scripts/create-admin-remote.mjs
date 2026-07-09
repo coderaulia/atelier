@@ -9,7 +9,7 @@
  * marks the account active and verified, and clears old sessions.
  */
 
-import { execFileSync } from 'node:child_process'
+import { execSync } from 'node:child_process'
 import { randomBytes, pbkdf2Sync } from 'node:crypto'
 import { writeFileSync, unlinkSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -74,13 +74,11 @@ WHERE email = '${safeEmail}';
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const apiRoot = join(__dirname, '..')
 const tmpFile = join(apiRoot, `_create_admin_remote_${Date.now()}.sql`)
-const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx'
 
 try {
   writeFileSync(tmpFile, sql)
-  const output = execFileSync(
-    npx,
-    ['wrangler', 'd1', 'execute', DATABASE_NAME, '--remote', '--file', tmpFile],
+  const output = execSync(
+    `npx wrangler d1 execute ${DATABASE_NAME} --remote --file "${tmpFile}"`,
     { cwd: apiRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
   )
 

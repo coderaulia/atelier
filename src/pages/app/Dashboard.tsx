@@ -4,7 +4,7 @@ import { TOOLS } from '@/lib/tools'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { getAuthToken } from '@/lib/auth'
-import { getUsage } from '@/lib/api'
+import { getUsage, getPricing, type Pricing as PricingData } from '@/lib/api'
 import AnnouncementsBanner from '@/components/AnnouncementsBanner'
 import './dashboard.css'
 
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const { isPro } = usePlan()
   const [usage, setUsage] = useState<UsageItem[]>([])
   const [usageLoading, setUsageLoading] = useState(true)
+  const [pricing, setPricing] = useState<PricingData | null>(null)
   const [upsellVisible, setUpsellVisible] = useState(() => shouldShowUpsell())
   const [welcomeVisible, setWelcomeVisible] = useState(() => !localStorage.getItem(WELCOME_KEY) && !localStorage.getItem(LAST_TOOL_KEY))
 
@@ -60,6 +61,11 @@ export default function Dashboard() {
     )
       .then(setUsage)
       .finally(() => setUsageLoading(false))
+  }, [isPro])
+
+  useEffect(() => {
+    if (isPro) return
+    getPricing().then(setPricing).catch(() => {})
   }, [isPro])
 
   const dismissUpsell = () => {
@@ -107,7 +113,7 @@ export default function Dashboard() {
         <section className="dashboard-upsell">
           <div>
             <span className="dashboard-upsell__badge">Pro</span>
-            <h2>Get more daily exports — plans from IDR 49,000 / $5 a month.</h2>
+            <h2>Get more daily exports — plans from {pricing ? `${pricing.pro.starter.idr.display} / ${pricing.pro.starter.usd.display}` : 'IDR 49,000 / $5'} a month.</h2>
             <p>Remove daily limits, unlock premium templates, and speed up every workflow.</p>
           </div>
           <div className="dashboard-upsell__actions">

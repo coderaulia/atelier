@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { getAuthToken } from '../lib/auth'
-import { getMe, createCheckout, createPackCheckout } from '../lib/api'
+import { getMe, createCheckout, createPackCheckout, getPricing, type Pricing as PricingData } from '../lib/api'
 import MarketingNav from '../components/navigation/MarketingNav'
 import './Pricing.css'
 
@@ -44,7 +44,6 @@ type Plan = {
   id: Tier
   eyebrow: string
   title: string
-  price: Record<Currency, string>
   unit: string
   note: string
   description: string
@@ -57,18 +56,15 @@ type Plan = {
 type Pack = {
   id: PackId
   title: string
-  price: Record<Currency, string>
-  credits: number
   description: string
 }
 
-// Prices mirror api/src/lib/pricing.ts (canonical). Midtrans settles in IDR.
+// Copy/features only — prices come live from GET /billing/pricing (api/src/lib/pricing.ts, canonical).
 const PLANS: Plan[] = [
   {
     id: 'starter',
     eyebrow: 'Starter',
     title: 'For occasional exports',
-    price: { IDR: 'IDR 49,000', USD: '$5' },
     unit: 'per month',
     note: 'Light, regular use',
     description: 'For people who need more than the free daily limit, without full production volume.',
@@ -80,7 +76,6 @@ const PLANS: Plan[] = [
     id: 'pro',
     eyebrow: 'Pro plan',
     title: 'Unlimited workspace',
-    price: { IDR: 'IDR 99,000', USD: '$9' },
     unit: 'per month',
     note: 'For regular creators and teams',
     description: 'For freelancers who generate documents, content, OCR, and conversions every week.',
@@ -93,7 +88,6 @@ const PLANS: Plan[] = [
     id: 'business',
     eyebrow: 'Business',
     title: 'For high-volume production',
-    price: { IDR: 'IDR 249,000', USD: '$22' },
     unit: 'per month',
     note: 'Highest daily volume',
     description: 'For studios and teams producing client-facing files at scale, every day.',
@@ -107,18 +101,27 @@ const PACKS: Pack[] = [
   {
     id: 'cv-10',
     title: 'CV credit pack',
-    price: { IDR: 'IDR 64,000', USD: '$4' },
-    credits: 10,
     description: '10 CV exports, no watermark. Credits never expire and apply on top of your daily limit.',
   },
   {
     id: 'social-50',
     title: 'Social credit pack',
-    price: { IDR: 'IDR 192,000', USD: '$12' },
-    credits: 50,
     description: '50 social post exports, no watermark. Credits never expire and apply on top of your daily limit.',
   },
 ]
+
+// Fallback shown only if the live pricing fetch fails — kept in sync manually as a safety net.
+const FALLBACK_PRICING: PricingData = {
+  pro: {
+    starter: { idr: { amount: 49000, currency: 'IDR', display: 'IDR 49,000' }, usd: { amount: 5, currency: 'USD', display: '$5' } },
+    pro: { idr: { amount: 99000, currency: 'IDR', display: 'IDR 99,000' }, usd: { amount: 9, currency: 'USD', display: '$9' } },
+    business: { idr: { amount: 249000, currency: 'IDR', display: 'IDR 249,000' }, usd: { amount: 22, currency: 'USD', display: '$22' } },
+  },
+  packs: {
+    'cv-10': { credits: 10, idr: { amount: 64000, currency: 'IDR', display: 'IDR 64,000' }, usd: { amount: 4, currency: 'USD', display: '$4' } },
+    'social-50': { credits: 50, idr: { amount: 192000, currency: 'IDR', display: 'IDR 192,000' }, usd: { amount: 12, currency: 'USD', display: '$12' } },
+  },
+}
 
 export default function Pricing() {
   const navigate = useNavigate()
@@ -127,6 +130,7 @@ export default function Pricing() {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [snapReady, setSnapReady] = useState(false)
   const [currency, setCurrency] = useState<Currency>('IDR')
+  const [pricing, setPricing] = useState<PricingData>(FALLBACK_PRICING)
   const resumedRef = useRef(false)
 
   useEffect(() => {
@@ -140,6 +144,8 @@ export default function Pricing() {
     } else {
       setLoading(false)
     }
+
+    getPricing().then(setPricing).catch(() => {})
   }, [])
 
   // Load Midtrans Snap.js once
@@ -282,30 +288,33 @@ export default function Pricing() {
       </section>
 
       <section className="pricing-grid" aria-label="Paid plans">
-        {PLANS.map((plan) => (
-          <article key={plan.id} className={`price-card price-card--${plan.kind}`}>
-            {plan.badge && <div className="price-card__badge">{plan.badge}</div>}
-            <div className="price-card__eyebrow">{plan.eyebrow}</div>
-            <h2>{plan.title}</h2>
-            <div className="price-card__price">
-              <span>{plan.price[currency]}</span>
-              <small>{plan.unit}</small>
-            </div>
-            <div className="price-card__note">
-              {plan.note}
-              {currency === 'USD' && <span> · billed as {plan.price.IDR} via Midtrans</span>}
-            </div>
-            <p>{plan.description}</p>
-            <ul>
-              {plan.features.map((feature) => (
-                <li key={feature}><CheckIcon /> {feature}</li>
-              ))}
-            </ul>
-            <button className="price-card__cta" onClick={() => handleSubscribe(plan.id)} disabled={loading || processingId === plan.id || !snapReady}>
-              {processingId === plan.id ? 'Opening checkout…' : plan.cta} <ArrowIcon />
-            </button>
-          </article>
-        ))}
+        {PLANS.map((plan) => {
+          const price = currency === 'IDR' ? pricing.pro[plan.id].idr : pricing.pro[plan.id].usd
+          return (
+            <article key={plan.id} className={`price-card price-card--${plan.kind}`}>
+              {plan.badge && <div className="price-card__badge">{plan.badge}</div>}
+              <div className="price-card__eyebrow">{plan.eyebrow}</div>
+              <h2>{plan.title}</h2>
+              <div className="price-card__price">
+                <span>{price.display}</span>
+                <small>{plan.unit}</small>
+              </div>
+              <div className="price-card__note">
+                {plan.note}
+                {currency === 'USD' && <span> · billed as {pricing.pro[plan.id].idr.display} via Midtrans</span>}
+              </div>
+              <p>{plan.description}</p>
+              <ul>
+                {plan.features.map((feature) => (
+                  <li key={feature}><CheckIcon /> {feature}</li>
+                ))}
+              </ul>
+              <button className="price-card__cta" onClick={() => handleSubscribe(plan.id)} disabled={loading || processingId === plan.id || !snapReady}>
+                {processingId === plan.id ? 'Opening checkout…' : plan.cta} <ArrowIcon />
+              </button>
+            </article>
+          )
+        })}
       </section>
 
       <section className="pricing-packs" aria-label="Credit packs">
@@ -315,19 +324,23 @@ export default function Pricing() {
           <p>Credits stack on top of your daily limit, never expire, and remove the watermark for that export.</p>
         </div>
         <div className="pricing-packs__grid">
-          {PACKS.map((pack) => (
-            <article key={pack.id} className="pack-card">
-              <h3>{pack.title}</h3>
-              <div className="pack-card__price">
-                <span>{pack.price[currency]}</span>
-                {currency === 'USD' && <small>billed as {pack.price.IDR}</small>}
-              </div>
-              <p>{pack.description}</p>
-              <button className="pack-card__cta" onClick={() => handlePack(pack.id)} disabled={loading || processingId === pack.id || !snapReady}>
-                {processingId === pack.id ? 'Opening checkout…' : `Buy ${pack.credits} credits`} <ArrowIcon />
-              </button>
-            </article>
-          ))}
+          {PACKS.map((pack) => {
+            const packData = pricing.packs[pack.id]
+            const price = currency === 'IDR' ? packData.idr : packData.usd
+            return (
+              <article key={pack.id} className="pack-card">
+                <h3>{pack.title}</h3>
+                <div className="pack-card__price">
+                  <span>{price.display}</span>
+                  {currency === 'USD' && <small>billed as {packData.idr.display}</small>}
+                </div>
+                <p>{pack.description}</p>
+                <button className="pack-card__cta" onClick={() => handlePack(pack.id)} disabled={loading || processingId === pack.id || !snapReady}>
+                  {processingId === pack.id ? 'Opening checkout…' : `Buy ${packData.credits} credits`} <ArrowIcon />
+                </button>
+              </article>
+            )
+          })}
         </div>
       </section>
 

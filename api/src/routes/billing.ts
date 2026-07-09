@@ -35,6 +35,11 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0
 }
 
+// Public — powers frontend pricing page and upgrade CTAs, no auth required.
+billing.get('/pricing', (c) => {
+  return c.json(PRICING)
+})
+
 billing.get('/status', authMiddleware, async (c) => {
   const user = await c.env.DB
     .prepare('SELECT plan, pro_expires_at, cancel_at_period_end, grace_until FROM users WHERE id = ?')

@@ -215,6 +215,28 @@ export function createPackCheckout(packId: 'cv-10' | 'social-50') {
   })
 }
 
+export interface PriceAmount {
+  amount: number
+  currency: string
+  display: string
+}
+
+export interface Pricing {
+  pro: {
+    starter: { idr: PriceAmount; usd: PriceAmount }
+    pro: { idr: PriceAmount; usd: PriceAmount }
+    business: { idr: PriceAmount; usd: PriceAmount }
+  }
+  packs: {
+    'cv-10': { credits: number; idr: PriceAmount; usd: PriceAmount }
+    'social-50': { credits: number; idr: PriceAmount; usd: PriceAmount }
+  }
+}
+
+export function getPricing() {
+  return request<Pricing>('/billing/pricing')
+}
+
 // ── Usage log ───────────────────────────────────────────────────
 export function getMyUsage() {
   return request<{ usage: UsageLogEntry[] }>('/usage/me', { headers: authHeaders() })

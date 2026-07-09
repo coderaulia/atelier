@@ -16,6 +16,12 @@ function proDailyLimit(proTier: ProTier | null): number {
 // Tools that don't consume credits (always free)
 const FREE_TOOLS = new Set(['pdf-merge', 'pdf-compress', 'image-converter'])
 
+// Credit packs are scoped to a specific tool — a CV pack cannot pay for a social export.
+const TOOL_PACK_TYPE: Record<string, string> = {
+  'cv-builder': 'cv-10',
+  'social-generator': 'social-50',
+}
+
 function todayUTC(): string {
   return new Date().toISOString().slice(0, 10)
 }
@@ -142,16 +148,19 @@ usage.get('/:toolId', async (c) => {
     })
   }
 
-  // Check available credits from packs
-  const creditPacks = await c.env.DB
-    .prepare(
-      `SELECT id, pack_type, credits_total, credits_used
-       FROM credit_packs
-       WHERE user_id = ? AND credits_used < credits_total
-       ORDER BY purchased_at ASC`
-    )
-    .bind(userId)
-    .all<{ id: number; pack_type: string; credits_total: number; credits_used: number }>()
+  // Check available credits from packs scoped to this tool
+  const packType = TOOL_PACK_TYPE[toolId]
+  const creditPacks = packType
+    ? await c.env.DB
+        .prepare(
+          `SELECT id, pack_type, credits_total, credits_used
+           FROM credit_packs
+           WHERE user_id = ? AND pack_type = ? AND credits_used < credits_total
+           ORDER BY purchased_at ASC`
+        )
+        .bind(userId, packType)
+        .all<{ id: number; pack_type: string; credits_total: number; credits_used: number }>()
+    : { results: [] }
 
   const totalCredits = (creditPacks.results ?? []).reduce(
     (sum, pack) => sum + (pack.credits_total - pack.credits_used),
@@ -216,17 +225,20 @@ usage.post('/:toolId', async (c) => {
     })
   }
 
-  // Try to use credits first (priority: oldest pack first)
-  const creditPack = await c.env.DB
-    .prepare(
-      `SELECT id
-       FROM credit_packs
-       WHERE user_id = ? AND credits_used < credits_total
-       ORDER BY purchased_at ASC
-       LIMIT 1`
-    )
-    .bind(userId)
-    .first<{ id: number }>()
+  // Try to use credits first (priority: oldest pack first), scoped to this tool
+  const packType = TOOL_PACK_TYPE[toolId]
+  const creditPack = packType
+    ? await c.env.DB
+        .prepare(
+          `SELECT id
+           FROM credit_packs
+           WHERE user_id = ? AND pack_type = ? AND credits_used < credits_total
+           ORDER BY purchased_at ASC
+           LIMIT 1`
+        )
+        .bind(userId, packType)
+        .first<{ id: number }>()
+    : null
 
   if (creditPack) {
     // Atomic deduction: only succeed if credits remain (race-safe)

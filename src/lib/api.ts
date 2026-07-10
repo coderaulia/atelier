@@ -76,8 +76,12 @@ export class UsageLimitError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const method = init?.method?.toUpperCase()
+  const csrfHeader = method && !['GET', 'HEAD', 'OPTIONS'].includes(method)
+    ? { 'X-CSRF-Protection': '1' }
+    : {}
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: { 'Content-Type': 'application/json', ...csrfHeader, ...init?.headers },
     credentials: 'include',
     ...init,
   })

@@ -1,7 +1,8 @@
 import { SignJWT, jwtVerify } from 'jose'
 
 const ALG = 'HS256'
-const EXPIRY_SECONDS = 30 * 24 * 60 * 60 // 30 days
+// Legacy Bearer tokens remain only for the migration path; keep their exposure window bounded.
+const EXPIRY_SECONDS = 7 * 24 * 60 * 60 // 7 days
 
 function secretKey(secret: string) {
   return new TextEncoder().encode(secret)

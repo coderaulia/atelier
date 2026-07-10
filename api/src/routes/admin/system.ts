@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { getClientIP } from '../../lib/rate-limit'
+import { hasSensitiveConfigKey } from '../../lib/request-security'
 import type { Bindings } from '../../types'
 
 const systemAdmin = new Hono<{ Bindings: Bindings; Variables: AdminVariables }>()
@@ -17,17 +18,33 @@ const updateFeatureFlagSchema = z.object({
   user_whitelist: z.array(z.string()).optional(),
 })
 
+type SystemConfig = {
+  key: string
+  value: string
+  type: string
+  description: string | null
+  updated_at: number | null
+  updated_by?: string | null
+}
+
+function redactConfig(config: SystemConfig): SystemConfig {
+  return hasSensitiveConfigKey(config.key) ? { ...config, value: '[REDACTED]' } : config
+}
+
 // ── System Configuration ──────────────────────────────────────────
 
 systemAdmin.get('/config', async (c) => {
   const rows = await c.env.DB.prepare(
     'SELECT key, value, type, description, updated_at FROM system_config ORDER BY key ASC'
-  ).all()
-  return c.json({ config: rows.results ?? [] })
+  ).all<SystemConfig>()
+  return c.json({ config: (rows.results ?? []).map(redactConfig) })
 })
 
 systemAdmin.patch('/config/:key', async (c) => {
   const key = c.req.param('key')
+  if (hasSensitiveConfigKey(key)) {
+    return c.json({ error: 'Sensitive configuration must be stored as a Worker secret' }, 400)
+  }
   const body = await c.req.json().catch(() => null)
   const result = updateConfigSchema.safeParse(body)
   if (!result.success) return c.json({ error: 'Invalid value' }, 400)
@@ -40,13 +57,13 @@ systemAdmin.patch('/config/:key', async (c) => {
     'UPDATE system_config SET value = ?, updated_at = ?, updated_by = ? WHERE key = ? RETURNING *'
   )
     .bind(result.data.value, now, c.var.userId, key)
-    .first()
+    .first<SystemConfig>()
 
   await c.env.DB.prepare('INSERT INTO admin_audit_log (admin_id, action, changes, ip_address) VALUES (?, ?, ?, ?)')
-    .bind(c.var.userId, 'config.update', JSON.stringify({ key, value: result.data.value }), getClientIP(c))
+    .bind(c.var.userId, 'config.update', JSON.stringify({ key, value: '[REDACTED]' }), getClientIP(c))
     .run()
 
-  return c.json({ config: updated })
+  return c.json({ config: updated ? redactConfig(updated) : updated })
 })
 
 // ── Feature Flags ─────────────────────────────────────────────────

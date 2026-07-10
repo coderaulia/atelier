@@ -71,6 +71,13 @@ export async function checkRateLimit(
 /**
  * Get client IP from request headers (Cloudflare sets CF-Connecting-IP).
  */
-export function getClientIP(c: { req: { header: (name: string) => string | undefined } }): string {
-  return c.req.header('CF-Connecting-IP') ?? c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ?? 'unknown'
+export function getClientIP(c: { env?: { ENVIRONMENT?: string }; req: { header: (name: string) => string | undefined } }): string {
+  const cloudflareIp = c.req.header('CF-Connecting-IP')
+  if (cloudflareIp) return cloudflareIp
+
+  // X-Forwarded-For is only useful in local development; public clients can forge it.
+  if (c.env?.ENVIRONMENT !== 'production') {
+    return c.req.header('X-Forwarded-For')?.split(',')[0]?.trim() ?? 'unknown'
+  }
+  return 'unknown'
 }

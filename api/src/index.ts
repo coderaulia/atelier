@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { bodyLimit } from 'hono/body-limit'
 import auth from './auth/routes'
 import usage from './routes/usage'
 import admin from './routes/admin'
@@ -11,26 +12,36 @@ import anonUsage from './routes/anon-usage'
 import { contentPublic } from './routes/admin/content'
 import { checkRateLimit, getClientIP } from './lib/rate-limit'
 import { createAuth } from './lib/better-auth'
+import { isAllowedOrigin, requiresCsrfProtection } from './lib/request-security'
 import type { Bindings } from './types'
-
-const DEFAULT_ORIGINS = ['https://atelier.vanailadigital.com']
 
 const app = new Hono<{ Bindings: Bindings }>()
 
 app.use('*', cors({
   origin: (origin, c) => {
     if (!origin) return ''
-    if (/^http:\/\/localhost:\d+$/.test(origin)) return origin
-    const envOrigins = c.env?.ALLOWED_ORIGINS
-    const allowed = envOrigins ? envOrigins.split(',').map((s: string) => s.trim()) : DEFAULT_ORIGINS
-    return allowed.includes(origin) ? origin : ''
+    return isAllowedOrigin(origin, c.env) ? origin : ''
   },
-  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Protection'],
   exposeHeaders: ['Content-Length'],
   credentials: true,
   maxAge: 86400,
 }))
+
+app.use('*', async (c, next) => {
+  if (!requiresCsrfProtection(c.req.raw)) return next()
+
+  const origin = c.req.header('Origin')
+  const fetchSite = c.req.header('Sec-Fetch-Site')
+  if (!origin || !isAllowedOrigin(origin, c.env) || fetchSite === 'cross-site') {
+    return c.json({ error: 'Invalid request origin' }, 403)
+  }
+  if (c.req.header('X-CSRF-Protection') !== '1') {
+    return c.json({ error: 'Missing CSRF protection' }, 403)
+  }
+  await next()
+})
 
 // Global rate limiter - first layer DDoS protection (100 req/min per IP)
 // Skip OPTIONS preflight requests
@@ -44,14 +55,11 @@ app.use('*', async (c, next) => {
   await next()
 })
 
-// Reject oversized payloads before JSON parsing.
-app.use('*', async (c, next) => {
-  const contentLength = Number(c.req.header('Content-Length') ?? '0')
-  if (contentLength > 1_048_576) {
-    return c.json({ error: 'Payload too large' }, 413)
-  }
-  await next()
-})
+// Enforce the limit for declared and streamed bodies before route parsing.
+app.use('*', bodyLimit({
+  maxSize: 1_048_576,
+  onError: (c) => c.json({ error: 'Payload too large' }, 413),
+}))
 
 app.use('*', async (c, next) => {
   c.header('Content-Security-Policy', "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://app.midtrans.com https://*.midtrans.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.midtrans.com https://app.midtrans.com https://*.midtrans.com; frame-src https://app.midtrans.com https://*.midtrans.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")

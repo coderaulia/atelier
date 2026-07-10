@@ -287,7 +287,8 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const isSocialDemo = mode === 'social';
   const isMarketingDemo = mode !== 'full';
 
-  const { canUse, increment } = useToolLimit("documents");
+  const toolId = mode === "social" ? "social-generator" : "document-generator";
+  const { canUse, increment } = useToolLimit(toolId);
 
   useEffect(() => {
     if (!hasGlobalMetadata(user?.global_metadata)) return;

@@ -75,7 +75,7 @@ export default function App() {
           path={tool.publicPath}
           element={
             <MarketingWrapper tool={tool}>
-              <ErrorBoundary>
+              <ErrorBoundary key={tool.id}>
                 <Suspense fallback={<ToolSkeleton />}>
                   <tool.component />
                 </Suspense>
@@ -96,7 +96,7 @@ export default function App() {
               key={tool.appPath}
               path={`${subPath}/*`}
               element={
-                <ErrorBoundary>
+                <ErrorBoundary key={tool.id}>
                   <Suspense fallback={<ToolSkeleton />}>
                     <tool.component />
                   </Suspense>

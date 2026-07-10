@@ -123,7 +123,7 @@ export default function CVTool() {
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'info' } | null>(null);
   const prevBlobRef = useRef<string | null>(null);
 
-  const { canUse, used, limit, increment } = useToolLimit('cv');
+  const { canUse, used, limit, increment } = useToolLimit('cv-builder');
   const { isPro } = usePlan();
 
   const selectedTpl = CV_TEMPLATES.find((t) => t.id === template)!;

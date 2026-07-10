@@ -39,6 +39,30 @@
   color: #e2e8f0;
 }
 
+.app-topbar__hamburger-icon,
+.app-topbar__hamburger-icon::before,
+.app-topbar__hamburger-icon::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  content: '';
+}
+
+.app-topbar__hamburger-icon {
+  position: relative;
+}
+
+.app-topbar__hamburger-icon::before,
+.app-topbar__hamburger-icon::after {
+  position: absolute;
+  left: 0;
+}
+
+.app-topbar__hamburger-icon::before { top: -6px; }
+.app-topbar__hamburger-icon::after { top: 6px; }
+
 .app-topbar__breadcrumb {
   display: flex;
   align-items: center;

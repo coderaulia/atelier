@@ -21,10 +21,16 @@
   RewriteRule ^ index.html [L]
 </IfModule>
 
+# Vite preserves PDF.js's worker as an ES module with an .mjs extension.
+# Hostinger otherwise serves it as text/plain, which makes browsers reject it.
+<IfModule mod_mime.c>
+  AddType application/javascript .mjs
+</IfModule>
+
 # Long-cache hashed build assets; keep index.html always fresh so new
 # deploys are picked up immediately.
 <IfModule mod_headers.c>
-  <FilesMatch "\.(js|css|woff2?|png|jpe?g|gif|svg|avif|webp|ico|wasm)$">
+  <FilesMatch "\.(js|mjs|css|woff2?|png|jpe?g|gif|svg|avif|webp|ico|wasm)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
   <FilesMatch "index\.html$">

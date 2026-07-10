@@ -27,7 +27,7 @@ export default function TopBar() {
           aria-label="Toggle sidebar"
           onClick={() => setSidebarOpen(true)}
         >
-          ☰
+          <span className="app-topbar__hamburger-icon" aria-hidden="true" />
         </button>
         <nav className="app-topbar__breadcrumb" aria-label="Breadcrumb">
           {breadcrumb}

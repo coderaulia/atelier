@@ -273,11 +273,8 @@ export default function OCRTool() {
 
       const tesseract = await loadTesseract();
       
-      // Create worker with CDN language data
+      // Use the installed Tesseract version's compatible CDN worker, core, and language data.
       const worker = await tesseract.createWorker(language, 1, {
-        workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-        langPath: 'https://cdn.jsdelivr.net/npm/tesseract.js-data@1.0.0',
-        corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5',
         logger: (m: any) => {
           if (m.status === 'recognizing text') {
             setProgress(Math.round(m.progress * 100));

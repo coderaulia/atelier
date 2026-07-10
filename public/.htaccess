@@ -21,10 +21,11 @@
   RewriteRule ^ index.html [L]
 </IfModule>
 
-# Vite preserves PDF.js's worker as an ES module with an .mjs extension.
-# Hostinger otherwise serves it as text/plain, which makes browsers reject it.
+# Vite emits module workers and WASM codecs that Hostinger otherwise serves
+# as text/plain, causing strict module and WebAssembly loaders to reject them.
 <IfModule mod_mime.c>
-  AddType application/javascript .mjs
+  AddType application/javascript .js .mjs
+  AddType application/wasm .wasm
 </IfModule>
 
 # Long-cache hashed build assets; keep index.html always fresh so new

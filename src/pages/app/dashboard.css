@@ -1,6 +1,7 @@
 .dashboard-page {
   max-width: 1200px;
   margin: 0 auto;
+  color: #f8fafc;
 }
 
 .dashboard-hero {
@@ -17,7 +18,7 @@
 }
 
 .dashboard-hero__eyebrow {
-  color: #5a8fc7;
+  color: #93c5fd;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -27,12 +28,13 @@
 .dashboard-hero__title {
   margin: 0.45rem 0 0.75rem;
   font-size: clamp(2.4rem, 6vw, 4.5rem);
-  line-height: 0.92;
-  letter-spacing: -0.06em;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #f8fafc;
 }
 
 .dashboard-hero__text {
-  color: rgba(226, 232, 240, 0.68);
+  color: rgba(241, 245, 249, 0.82);
   font-size: 1.05rem;
   max-width: 560px;
 }
@@ -44,17 +46,17 @@
   gap: 1rem;
   padding: 1.4rem;
   border-radius: 24px;
-  background: linear-gradient(135deg, rgba(44, 74, 107, 0.16), rgba(26, 35, 50, 0.08));
-  border: 1px solid rgba(44, 74, 107, 0.24);
+  background: linear-gradient(135deg, rgba(44, 74, 107, 0.38), rgba(15, 23, 42, 0.72));
+  border: 1px solid rgba(147, 197, 253, 0.24);
   margin-bottom: 1.5rem;
 }
 
-.dashboard-upsell h2 { margin: 0.25rem 0; }
-.dashboard-upsell p { margin: 0; color: rgba(226, 232, 240, 0.68); }
+.dashboard-upsell h2 { margin: 0.25rem 0; color: #f8fafc; }
+.dashboard-upsell p { margin: 0; color: rgba(241, 245, 249, 0.78); }
 
 .dashboard-upsell__badge {
-  color: #111827;
-  background: #2c4a6b;
+  color: #0f172a;
+  background: #bfdbfe;
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
   font-size: 0.72rem;
@@ -83,9 +85,9 @@
 }
 
 .dashboard-upsell__dismiss {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(226, 232, 240, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(248, 250, 252, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .dashboard-verify {
@@ -98,7 +100,7 @@
   border-radius: 16px;
   background: rgba(227, 176, 44, 0.1);
   border: 1px solid rgba(227, 176, 44, 0.3);
-  color: rgba(226, 232, 240, 0.9);
+  color: #fef3c7;
   font-size: 0.9rem;
   margin-bottom: 1.25rem;
 }
@@ -121,17 +123,17 @@
   gap: 1rem;
   padding: 1.4rem;
   border-radius: 24px;
-  background: linear-gradient(135deg, rgba(90, 143, 199, 0.16), rgba(26, 35, 50, 0.08));
-  border: 1px solid rgba(90, 143, 199, 0.24);
+  background: linear-gradient(135deg, rgba(37, 99, 135, 0.36), rgba(15, 23, 42, 0.74));
+  border: 1px solid rgba(125, 211, 252, 0.24);
   margin-bottom: 1.5rem;
 }
 
-.dashboard-welcome h2 { margin: 0.25rem 0; }
-.dashboard-welcome p { margin: 0; color: rgba(226, 232, 240, 0.68); max-width: 46ch; }
+.dashboard-welcome h2 { margin: 0.25rem 0; color: #f8fafc; }
+.dashboard-welcome p { margin: 0; color: rgba(241, 245, 249, 0.78); max-width: 46ch; }
 
 .dashboard-welcome__badge {
-  color: #111827;
-  background: #5a8fc7;
+  color: #082f49;
+  background: #bae6fd;
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
   font-size: 0.72rem;
@@ -161,9 +163,9 @@
 }
 
 .dashboard-welcome__dismiss {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(226, 232, 240, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(248, 250, 252, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 @media (max-width: 640px) {
@@ -185,11 +187,12 @@
 .dashboard-section__header h2 {
   margin: 0;
   font-size: 1.35rem;
+  color: #f8fafc;
 }
 
 .dashboard-section__header a,
 .dashboard-section__header span {
-  color: rgba(148, 163, 184, 0.72);
+  color: rgba(203, 213, 225, 0.9);
   font-size: 0.9rem;
 }
 
@@ -204,7 +207,7 @@
 .dashboard-tool-card {
   position: relative;
   padding: 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 20px;
   background: rgba(15, 23, 42, 0.62);
   transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
@@ -231,7 +234,7 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  color: #5a8fc7;
+  color: #93c5fd;
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -245,16 +248,17 @@
 .dashboard-tool-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
+  color: #f8fafc;
 }
 
 .dashboard-tool-card p {
   margin: 0 0 1rem;
-  color: rgba(226, 232, 240, 0.62);
+  color: rgba(226, 232, 240, 0.82);
   line-height: 1.5;
 }
 
 .dashboard-tool-card__arrow {
-  color: #5a8fc7;
+  color: #93c5fd;
   font-weight: 800;
   font-size: 0.9rem;
 }
@@ -283,7 +287,7 @@
 
 .dashboard-usage-card p {
   margin: 0;
-  color: rgba(148, 163, 184, 0.72);
+  color: rgba(203, 213, 225, 0.9);
   font-size: 0.84rem;
 }
 

@@ -1,4 +1,5 @@
 import { getAuthToken } from './auth'
+import type { GlobalMetadata } from './globalMetadata'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
 
@@ -6,6 +7,7 @@ export interface User {
   id: string
   email: string
   name?: string | null
+  global_metadata?: Partial<GlobalMetadata> | null
   plan: 'free' | 'pro'
   pro_tier?: 'starter' | 'pro' | 'business' | null
   role?: 'user' | 'admin'
@@ -147,11 +149,11 @@ export async function incrementAnonUsage(toolId: string): Promise<UsageStatus> {
 }
 
 // ── Account management ──────────────────────────────────────────
-export function updateProfile(name: string | null) {
+export function updateProfile(name: string | null, global_metadata?: Partial<GlobalMetadata>) {
   return request<{ user: User }>('/auth/profile', {
     method: 'PATCH',
     headers: authHeaders(),
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, global_metadata }),
   })
 }
 

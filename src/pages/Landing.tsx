@@ -979,9 +979,9 @@ function Footer() {
 /* ===================== PAGE ===================== */
 export default function Landing() {
   useEffect(() => {
-    document.title = 'Vanaila Studio — Documents, CVs, conversions & more'
+    document.title = 'Vanaila Studio | Documents, Social Posts, CVs, OCR and File Tools'
     const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', 'Documents, CVs, image and PDF conversions, OCR, and social posts — built in your browser. No installs, no accounts, no watermarks.')
+    if (meta) meta.setAttribute('content', 'Create documents, social posts, CVs, OCR text, and file conversions privately in your browser with no installs or watermarks.')
   }, [])
 
   return (

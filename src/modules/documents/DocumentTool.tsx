@@ -21,6 +21,8 @@ import {
   DEFAULT_SCOPEGUARD, DEFAULT_HANDOVER, DEFAULT_QUOTE, DEFAULT_SOCIAL,
 } from './defaults';
 import { useToolLimit } from '../../hooks/useToolLimit';
+import { useAuth } from '../../hooks/useAuth';
+import { hasGlobalMetadata, metadataFingerprint, metadataToBrand } from '../../lib/globalMetadata';
 import UpgradeModal from '../../components/UpgradeModal';
 
 const AllSocialTemplates = [...SocialTemplates, ...TikTokTemplates];
@@ -44,6 +46,8 @@ const VARIANTS = [
   { id: "modern",    name: "Modern" },
   { id: "editorial", name: "Editorial" },
 ];
+
+const GLOBAL_METADATA_SYNC_KEY = "dg.globalMetadataFingerprint.v1";
 
 /* ---------- Social Preview ---------- */
 function SocialPreview({ template, data, brand, zoom }: any) {
@@ -229,6 +233,7 @@ type DocumentToolMode = 'full' | 'documents' | 'social';
 
 /* ---------- Main app ---------- */
 export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMode }) {
+  const { user } = useAuth();
   const TWEAK_DEFAULTS = { accent: "#1c4532", fontHeader: "serif", fontBody: "sans", paper: "letter" };
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
@@ -283,6 +288,17 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const isMarketingDemo = mode !== 'full';
 
   const { canUse, increment } = useToolLimit("documents");
+
+  useEffect(() => {
+    if (!hasGlobalMetadata(user?.global_metadata)) return;
+    const fingerprint = metadataFingerprint(user?.global_metadata);
+    if (localStorage.getItem(GLOBAL_METADATA_SYNC_KEY) === fingerprint) return;
+    setBrand((current: any) => ({
+      ...current,
+      ...metadataToBrand(user?.global_metadata, user),
+    }));
+    localStorage.setItem(GLOBAL_METADATA_SYNC_KEY, fingerprint);
+  }, [setBrand, user]);
 
   useEffect(() => {
     if (isDocumentsDemo && (docType === "social" || docType === "quote")) setDocType("agreement");

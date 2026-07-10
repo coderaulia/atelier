@@ -226,8 +226,8 @@ export function routeMeta(pathname: string) {
     }
   }
   return {
-    title: 'Vanaila Studio — Browser Tools for Working Freelancers',
-    description: 'Create documents, CVs, social posts, OCR, and file conversions privately in your browser with no watermarks.',
+    title: 'Vanaila Studio | Documents, Social Posts, CVs, OCR and File Tools',
+    description: 'Create documents, social posts, CVs, OCR text, and file conversions privately in your browser with no watermarks.',
     ogImage: `${siteUrl}/og/home.png`,
     name: 'Vanaila Studio',
   }

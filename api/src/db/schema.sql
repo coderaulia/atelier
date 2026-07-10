@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   status         TEXT    NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'banned')),
   email_verified INTEGER NOT NULL DEFAULT 0 CHECK (email_verified IN (0, 1)),
   name           TEXT,
+  global_metadata TEXT,
   pro_expires_at INTEGER,
   cancel_at_period_end INTEGER NOT NULL DEFAULT 0 CHECK (cancel_at_period_end IN (0, 1)),
   grace_until    INTEGER,

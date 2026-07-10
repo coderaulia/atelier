@@ -35,9 +35,64 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8),
 })
 
+const globalMetadataSchema = z.object({
+  company_name: z.string().max(160).optional().nullable(),
+  company_address: z.string().max(1000).optional().nullable(),
+  username: z.string().max(80).optional().nullable(),
+  email: z.string().email().max(254).optional().or(z.literal('')).nullable(),
+  profile_image_url: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  company_logo_url: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  website: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  social_handle: z.string().max(100).optional().nullable(),
+  instagram_url: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  linkedin_url: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  x_url: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  facebook_url: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  tiktok_url: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  youtube_url: z.string().url().max(2000).optional().or(z.literal('')).nullable(),
+  document_signatory: z.string().max(160).optional().nullable(),
+  tax_id: z.string().max(120).optional().nullable(),
+  payment_details: z.string().max(1600).optional().nullable(),
+}).partial()
+
+const profileSchema = z.object({
+  name: z.string().max(120).optional().nullable(),
+  global_metadata: globalMetadataSchema.optional().nullable(),
+})
+
 const deleteAccountSchema = z.object({
   confirm: z.literal('DELETE'),
 })
+
+type GlobalMetadata = z.infer<typeof globalMetadataSchema>
+
+function parseGlobalMetadata(value: string | null | undefined): GlobalMetadata | null {
+  if (!value) return null
+  try {
+    const parsed = JSON.parse(value)
+    const result = globalMetadataSchema.safeParse(parsed)
+    return result.success ? normalizeGlobalMetadata(result.data) : null
+  } catch {
+    return null
+  }
+}
+
+function normalizeGlobalMetadata(value: GlobalMetadata | null | undefined): GlobalMetadata {
+  const normalized: Record<string, string> = {}
+  const fields = Object.keys(globalMetadataSchema.shape) as Array<keyof GlobalMetadata>
+  for (const field of fields) {
+    const raw = value?.[field]
+    normalized[field] = typeof raw === 'string' ? raw.trim() : ''
+  }
+  return normalized as GlobalMetadata
+}
+
+function withParsedGlobalMetadata<T extends { global_metadata?: string | null }>(user: T) {
+  return {
+    ...user,
+    global_metadata: parseGlobalMetadata(user.global_metadata),
+  }
+}
 
 // ─── POST /register ───────────────────────────────────────────────
 auth.post('/register', async (c) => {
@@ -90,7 +145,7 @@ auth.post('/register', async (c) => {
     const t = emailTemplates(lang)
     sendEmail({ to: email, subject: t.verifySubject, html: t.verifyBody(verifyToken, baseUrl) }, c.env.BREVO_API_KEY).catch(() => {})
 
-    return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan, role: user.role, status: user.status, email_verified: 0 } }, 201)
+    return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan, role: user.role, status: user.status, email_verified: 0, global_metadata: null } }, 201)
   } catch (err) {
     const msg = err instanceof Error ? err.message : ''
     if (msg.includes('UNIQUE')) return c.json({ error: 'Email already registered' }, 409)
@@ -124,9 +179,9 @@ auth.post('/login', async (c) => {
   }
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, plan, role, status, password_hash, email_verified, deleted_at FROM users WHERE email = ?')
+    .prepare('SELECT id, email, name, global_metadata, plan, role, status, password_hash, email_verified, deleted_at FROM users WHERE email = ?')
     .bind(email)
-    .first<{ id: string; email: string; plan: string; role: string; status: string; password_hash: string; email_verified: number; deleted_at: number | null }>()
+    .first<{ id: string; email: string; name: string | null; global_metadata: string | null; plan: string; role: string; status: string; password_hash: string; email_verified: number; deleted_at: number | null }>()
 
   if (!user || !(await verifyPassword(password, user.password_hash))) {
     await c.env.DB
@@ -155,7 +210,7 @@ auth.post('/login', async (c) => {
     .bind(Math.floor(Date.now() / 1000), user.id)
     .run()
 
-  return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan, role: user.role, status: user.status, email_verified: user.email_verified } })
+  return c.json({ token, user: withParsedGlobalMetadata({ id: user.id, email: user.email, name: user.name, global_metadata: user.global_metadata, plan: user.plan, role: user.role, status: user.status, email_verified: user.email_verified }) })
 })
 
 // ─── GET /me ──────────────────────────────────────────────────────
@@ -183,14 +238,14 @@ auth.get('/me', async (c) => {
   }
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, name, global_metadata, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
     .bind(userId)
-    .first<{ id: string; email: string; plan: string; pro_tier: string | null; role: string; status: string; pro_expires_at: number | null; cancel_at_period_end: number; grace_until: number | null; email_verified: number; created_at: number }>()
+    .first<{ id: string; email: string; name: string | null; global_metadata: string | null; plan: string; pro_tier: string | null; role: string; status: string; pro_expires_at: number | null; cancel_at_period_end: number; grace_until: number | null; email_verified: number; created_at: number }>()
 
   if (!user) return c.json({ error: 'User not found' }, 404)
   if (user.status === 'banned') return c.json({ error: 'Account banned' }, 403)
 
-  return c.json({ user })
+  return c.json({ user: withParsedGlobalMetadata(user) })
 })
 
 // ─── POST /forgot-password ────────────────────────────────────────
@@ -389,7 +444,7 @@ auth.delete('/account', authMiddleware, async (c) => {
 
   // Soft-delete & anonymize
   await c.env.DB
-    .prepare('UPDATE users SET deleted_at = ?, email = ?, name = NULL, status = ? WHERE id = ?')
+    .prepare('UPDATE users SET deleted_at = ?, email = ?, name = NULL, global_metadata = NULL, status = ? WHERE id = ?')
     .bind(Math.floor(Date.now() / 1000), `deleted-${userId}@vanailadigital.com`, 'banned', userId)
     .run()
 
@@ -425,20 +480,37 @@ auth.post('/logout', authMiddleware, async (c) => {
 // ─── PATCH /profile ────────────────────────────────────────────────
 auth.patch('/profile', authMiddleware, async (c) => {
   const userId = c.var.userId
-  const body = await c.req.json().catch(() => null) as { name?: string | null } | null
-  const name = typeof body?.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 120) : null
+  const body = await c.req.json().catch(() => null)
+  const result = profileSchema.safeParse(body)
+  if (!result.success) {
+    return c.json({ error: 'Invalid profile data' }, 400)
+  }
 
-  await c.env.DB
-    .prepare('UPDATE users SET name = ? WHERE id = ?')
-    .bind(name, userId)
-    .run()
+  const name = typeof result.data.name === 'string' && result.data.name.trim() ? result.data.name.trim().slice(0, 120) : null
+  const globalMetadata = result.data.global_metadata === undefined
+    ? undefined
+    : JSON.stringify(normalizeGlobalMetadata(result.data.global_metadata))
+
+  if (globalMetadata === undefined) {
+    await c.env.DB
+      .prepare('UPDATE users SET name = ? WHERE id = ?')
+      .bind(name, userId)
+      .run()
+  } else {
+    await c.env.DB
+      .prepare('UPDATE users SET name = ?, global_metadata = ? WHERE id = ?')
+      .bind(name, globalMetadata, userId)
+      .run()
+  }
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, name, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, name, global_metadata, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
     .bind(userId)
     .first()
 
-  return c.json({ user })
+  if (!user) return c.json({ error: 'User not found' }, 404)
+
+  return c.json({ user: withParsedGlobalMetadata(user as { global_metadata?: string | null }) })
 })
 
 // ─── GET /sessions ─────────────────────────────────────────────────

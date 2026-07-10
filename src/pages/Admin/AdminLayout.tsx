@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { getMe } from '../../lib/api'
-import { getAuthToken } from '../../lib/auth'
+import { getAuthToken, clearAuth } from '../../lib/auth'
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -86,8 +86,15 @@ export default function AdminLayout({ children, active }: AdminLayoutProps) {
           <NavLink to="/admin/errors" active={active === 'errors'}>Errors</NavLink>
         </nav>
 
-        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', fontSize: 12, color: 'var(--ink-3)' }}>
-          {email}
+        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <span style={{ fontSize: 12, color: 'var(--ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</span>
+          <button
+            type="button"
+            onClick={() => { clearAuth(); navigate('/login', { replace: true }) }}
+            style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}
+          >
+            Sign out
+          </button>
         </div>
       </aside>
 

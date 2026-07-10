@@ -37,6 +37,7 @@ const ScanIcon = () => <>🔎</>
 const GridIcon = () => <>⚡</>
 const CompressIcon = () => <>🗜️</>
 const MergeIcon = () => <>📑</>
+const OrganizeIcon = () => <>🗂️</>
 
 export const TOOLS: ToolDefinition[] = [
   {
@@ -111,6 +112,19 @@ export const TOOLS: ToolDefinition[] = [
     component: lazy(() => import('@/modules/pdf-compress/PDFCompressTool')),
     freeDailyLimit: 3,
     proOnly: false,
+  },
+  {
+    id: 'pdf-organize',
+    name: 'PDF Organize',
+    description: 'Reorder, rotate, remove, and extract pages',
+    icon: <OrganizeIcon />,
+    category: 'pdf',
+    publicPath: '/pdf-organize',
+    appPath: '/app/pdf-organize',
+    component: lazy(() => import('@/modules/pdf-organize/PDFOrganizeTool')),
+    freeDailyLimit: 3,
+    proOnly: false,
+    badge: 'new',
   },
   {
     id: 'image-converter',

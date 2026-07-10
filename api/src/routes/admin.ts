@@ -248,6 +248,7 @@ admin.get('/transactions', async (c) => {
   const page = Math.max(1, Number(c.req.query('page') ?? 1))
   const limit = Math.min(100, Math.max(1, Number(c.req.query('limit') ?? 50)))
   const offset = (page - 1) * limit
+  const search = c.req.query('search')?.trim() ?? ''
 
   const SORT_COLUMNS: Record<string, string> = { amount: 't.amount', created_at: 't.created_at', status: 't.status' }
   const DIRS: Record<string, string> = { asc: 'ASC', desc: 'DESC' }
@@ -256,14 +257,20 @@ admin.get('/transactions', async (c) => {
   const safeSort = SORT_COLUMNS[sort] ?? 'created_at'
   const safeDir = DIRS[direction] ?? 'DESC'
 
+  const where = search ? 'WHERE u.email LIKE ? OR t.midtrans_order_id LIKE ?' : ''
+  const values = search ? [`%${search}%`, `%${search}%`] : []
+
   const rows = await c.env.DB.prepare(
     `SELECT t.id, u.email AS user_email, t.amount, t.currency, t.plan_type, t.status, t.midtrans_order_id, t.created_at
      FROM transactions t
      LEFT JOIN users u ON u.id = t.user_id
+     ${where}
      ORDER BY ${safeSort} ${safeDir}
      LIMIT ? OFFSET ?`
-  ).bind(limit, offset).all()
-  const total = await c.env.DB.prepare('SELECT COUNT(*) AS count FROM transactions').first<{ count: number }>()
+  ).bind(...values, limit, offset).all()
+  const total = await c.env.DB.prepare(
+    `SELECT COUNT(*) AS count FROM transactions t LEFT JOIN users u ON u.id = t.user_id ${where}`
+  ).bind(...values).first<{ count: number }>()
 
   return c.json({ page, limit, total: total?.count ?? 0, transactions: rows.results ?? [] })
 })

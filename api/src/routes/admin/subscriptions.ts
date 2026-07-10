@@ -18,12 +18,18 @@ subscriptionsAdmin.get('/', async (c) => {
   const page = Math.max(1, Number(c.req.query('page') ?? 1))
   const limit = Math.min(100, Math.max(1, Number(c.req.query('limit') ?? 50)))
   const filter = c.req.query('filter') ?? 'active' // active | expiring | cancelled | grace
+  const search = c.req.query('search')?.trim() ?? ''
   const offset = (page - 1) * limit
   const now = Math.floor(Date.now() / 1000)
   const thirtyDaysFromNow = now + 30 * 86400
 
   const filters: string[] = ["plan = 'pro'"]
   const values: unknown[] = []
+
+  if (search) {
+    filters.push('email LIKE ?')
+    values.push(`%${search}%`)
+  }
 
   if (filter === 'expiring') {
     filters.push('pro_expires_at IS NOT NULL', 'pro_expires_at <= ?', 'pro_expires_at > ?')
@@ -42,7 +48,9 @@ subscriptionsAdmin.get('/', async (c) => {
 
   const [rows, total] = await Promise.all([
     c.env.DB.prepare(
-      `SELECT id, email, plan, pro_expires_at, cancel_at_period_end, grace_until, created_at, last_login
+      `SELECT id, email, plan, pro_tier, pro_expires_at, cancel_at_period_end, grace_until, created_at, last_login,
+        (SELECT COALESCE(SUM(credits_total - credits_used), 0) FROM credit_packs cp WHERE cp.user_id = users.id AND cp.pack_type = 'cv-10' AND cp.credits_used < cp.credits_total) AS cv_credits,
+        (SELECT COALESCE(SUM(credits_total - credits_used), 0) FROM credit_packs cp WHERE cp.user_id = users.id AND cp.pack_type = 'social-50' AND cp.credits_used < cp.credits_total) AS social_credits
        FROM users ${where}
        ORDER BY pro_expires_at ASC
        LIMIT ? OFFSET ?`

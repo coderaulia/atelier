@@ -79,11 +79,11 @@ export default function EmailTemplates() {
                     {t.isOverride && <span className="badge badge--pro">custom</span>}
                     {editing === t.template_key ? (
                       <>
-                        <button className="btn btn--accent" onClick={() => save(t.template_key)}>Save</button>
-                        <button onClick={() => setEditing(null)}>Cancel</button>
+                        <button className="admin-btn admin-btn--primary" onClick={() => save(t.template_key)}>Save</button>
+                        <button className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
                       </>
                     ) : (
-                      <button onClick={() => startEdit(t)}>Edit</button>
+                      <button className="admin-btn" onClick={() => startEdit(t)}>Edit</button>
                     )}
                   </div>
                 </div>

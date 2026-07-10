@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import AdminLayout from './AdminLayout'
+import DataTable, { type DataTableColumn } from '../../components/admin/DataTable'
+import RowActions, { RowActionButton } from '../../components/admin/RowActions'
 import { getAdminRefunds, processAdminRefund, type AdminRefund } from '../../lib/api'
 
 const USAGE_THRESHOLD = 5 // users with 5+ uses must be manually reviewed
 
 export default function Refunds() {
   const [params, setParams] = useSearchParams()
+  const [searchInput, setSearchInput] = useState(params.get('search') ?? '')
   const [refunds, setRefunds] = useState<AdminRefund[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -15,16 +18,17 @@ export default function Refunds() {
 
   const page = Number(params.get('page') ?? 1)
   const status = params.get('status') ?? ''
+  const search = params.get('search') ?? ''
 
   function load() {
     setLoading(true)
-    getAdminRefunds({ page, limit: 20, status })
+    getAdminRefunds({ page, limit: 20, status, search })
       .then((data) => { setRefunds(data.refunds); setTotal(data.total) })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed'))
       .finally(() => setLoading(false))
   }
 
-  useEffect(load, [page, status])
+  useEffect(load, [page, status, search])
 
   async function handleProcess(refund: AdminRefund, action: 'approved' | 'rejected') {
     const notes = prompt(`Notes for ${action} refund (${refund.user_email})?`, '') ?? ''
@@ -48,6 +52,41 @@ export default function Refunds() {
   const pendingCount = refunds.filter((r) => r.status === 'pending').length
   const highUsage = refunds.filter((r) => r.status === 'pending' && r.usage_count >= USAGE_THRESHOLD).length
 
+  const columns: DataTableColumn<AdminRefund>[] = [
+    { key: 'user_email', header: 'User', render: (r) => r.user_email },
+    { key: 'amount', header: 'Amount', render: (r) => `${r.currency} ${(r.amount / 100).toLocaleString()}` },
+    {
+      key: 'reason',
+      header: 'Reason',
+      render: (r) => <span style={{ maxWidth: 200, display: 'inline-block', whiteSpace: 'normal', fontSize: 12 }}>{r.reason}</span>,
+    },
+    {
+      key: 'usage_count',
+      header: 'Usage',
+      render: (r) => (
+        <>
+          <span style={{ fontWeight: 700, color: r.usage_count >= USAGE_THRESHOLD ? '#a16207' : '#157347' }}>
+            {r.usage_count} uses
+          </span>
+          {r.usage_count >= USAGE_THRESHOLD && <span style={{ marginLeft: 4, fontSize: 11 }}>⚠️</span>}
+        </>
+      ),
+    },
+    { key: 'status', header: 'Status', render: (r) => <span className={`status status--${r.status}`}>{r.status}</span> },
+    { key: 'requested_at', header: 'Date', render: (r) => new Date(r.requested_at * 1000).toLocaleDateString() },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (r) =>
+        r.status === 'pending' ? (
+          <RowActions>
+            <RowActionButton onClick={() => handleProcess(r, 'approved')} title="Approve refund" variant="success">✓</RowActionButton>
+            <RowActionButton onClick={() => handleProcess(r, 'rejected')} title="Reject refund" variant="danger">✕</RowActionButton>
+          </RowActions>
+        ) : null,
+    },
+  ]
+
   return (
     <AdminLayout active="refunds">
       <section className="admin-page">
@@ -68,56 +107,32 @@ export default function Refunds() {
           </div>
         )}
 
-        <div className="admin-toolbar">
-          <div className="admin-pill-group">
-            {(['', 'pending', 'approved', 'rejected', 'completed'] as const).map((s) => (
-              <button key={s} onClick={() => setParams({ page: '1', status: s })} className={status === s ? 'active' : ''}>
-                {s === '' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)} ({total})
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr><th>User</th><th>Amount</th><th>Reason</th><th>Usage</th><th>Status</th><th>Date</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              {loading && <tr><td colSpan={7}>Loading...</td></tr>}
-              {!loading && !refunds.length && <tr><td colSpan={7}>No refund requests.</td></tr>}
-              {!loading && refunds.map((r) => (
-                <tr key={r.id} style={{ background: r.status === 'pending' && r.usage_count >= USAGE_THRESHOLD ? 'rgba(234,179,8,.05)' : '' }}>
-                  <td>{r.user_email}</td>
-                  <td>{r.currency} {(r.amount / 100).toLocaleString()}</td>
-                  <td style={{ maxWidth: 200, whiteSpace: 'normal', fontSize: 12 }}>{r.reason}</td>
-                  <td>
-                    <span style={{ fontWeight: 700, color: r.usage_count >= USAGE_THRESHOLD ? '#a16207' : '#157347' }}>
-                      {r.usage_count} uses
-                    </span>
-                    {r.usage_count >= USAGE_THRESHOLD && <span style={{ marginLeft: 4, fontSize: 11 }}>⚠️</span>}
-                  </td>
-                  <td><span className={`status status--${r.status}`}>{r.status}</span></td>
-                  <td>{new Date(r.requested_at * 1000).toLocaleDateString()}</td>
-                  <td>
-                    {r.status === 'pending' && (
-                      <>
-                        <button onClick={() => handleProcess(r, 'approved')} title="Approve" style={{ color: '#157347', marginRight: 4 }}>✓</button>
-                        <button onClick={() => handleProcess(r, 'rejected')} title="Reject" style={{ color: '#b52a2a' }}>✕</button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="admin-pagination">
-          <button disabled={page <= 1} onClick={() => setParams({ page: String(page - 1), status })}>← Prev</button>
-          <span>Page {page} / {Math.ceil(total / 20) || 1}</span>
-          <button disabled={page * 20 >= total} onClick={() => setParams({ page: String(page + 1), status })}>Next →</button>
-        </div>
+        <DataTable
+          columns={columns}
+          rows={refunds}
+          loading={loading}
+          rowKey={(r) => r.id}
+          emptyMessage="No refund requests."
+          rowClassName={(r) => (r.status === 'pending' && r.usage_count >= USAGE_THRESHOLD ? 'high-usage' : undefined)}
+          search={{
+            value: searchInput,
+            onChange: setSearchInput,
+            onSubmit: () => setParams({ page: '1', status, search: searchInput }),
+            placeholder: 'Search by email',
+          }}
+          filters={{
+            value: status,
+            options: [
+              { value: '', label: `All (${total})` },
+              { value: 'pending', label: 'Pending' },
+              { value: 'approved', label: 'Approved' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'completed', label: 'Completed' },
+            ],
+            onChange: (value) => setParams({ page: '1', status: value, search }),
+          }}
+          pagination={{ page, total, limit: 20, onPageChange: (p) => setParams({ page: String(p), status, search }) }}
+        />
       </section>
     </AdminLayout>
   )

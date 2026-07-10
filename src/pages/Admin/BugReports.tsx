@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import AdminLayout from './AdminLayout'
+import DataTable, { type DataTableColumn } from '../../components/admin/DataTable'
 import { getAdminBugReports, type BugReport } from '../../lib/api'
 
 export default function BugReports() {
@@ -31,6 +32,16 @@ export default function BugReports() {
     in_progress: reports.filter((r) => r.status === 'in_progress').length,
     resolved: reports.filter((r) => r.status === 'resolved').length,
   }
+
+  const columns: DataTableColumn<BugReport>[] = [
+    { key: 'subject', header: 'Subject', render: (r) => <strong>{r.subject}</strong> },
+    { key: 'email', header: 'User', render: (r) => r.email },
+    { key: 'tool_id', header: 'Tool', render: (r) => r.tool_id ?? '—' },
+    { key: 'severity', header: 'Severity', render: (r) => <span className={`badge badge--${r.severity}`}>{r.severity}</span> },
+    { key: 'status', header: 'Status', render: (r) => <span className={`status status--${r.status}`}>{r.status.replace('_', ' ')}</span> },
+    { key: 'priority', header: 'Priority', render: (r) => r.priority },
+    { key: 'created_at', header: 'Created', render: (r) => new Date(r.created_at * 1000).toLocaleDateString() },
+  ]
 
   return (
     <AdminLayout active="bug-reports">
@@ -74,63 +85,15 @@ export default function BugReports() {
           </div>
         </div>
 
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>User</th>
-                <th>Tool</th>
-                <th>Severity</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && (
-                <tr>
-                  <td colSpan={7}>Loading...</td>
-                </tr>
-              )}
-              {!loading && !reports.length && (
-                <tr>
-                  <td colSpan={7}>No bug reports found.</td>
-                </tr>
-              )}
-              {!loading &&
-                reports.map((report) => (
-                  <tr key={report.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/admin/bug-reports/${report.id}`)}>
-                    <td>
-                      <strong>{report.subject}</strong>
-                    </td>
-                    <td>{report.email}</td>
-                    <td>{report.tool_id ?? '—'}</td>
-                    <td>
-                      <span className={`badge badge--${report.severity}`}>{report.severity}</span>
-                    </td>
-                    <td>
-                      <span className={`status status--${report.status}`}>{report.status.replace('_', ' ')}</span>
-                    </td>
-                    <td>{report.priority}</td>
-                    <td>{new Date(report.created_at * 1000).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="admin-pagination">
-          <button disabled={page <= 1} onClick={() => setParams({ page: String(page - 1), status, severity })}>
-            ← Prev
-          </button>
-          <span>
-            Page {page} / {Math.ceil(total / 20) || 1}
-          </span>
-          <button disabled={page * 20 >= total} onClick={() => setParams({ page: String(page + 1), status, severity })}>
-            Next →
-          </button>
-        </div>
+        <DataTable
+          columns={columns}
+          rows={reports}
+          loading={loading}
+          rowKey={(r) => r.id}
+          emptyMessage="No bug reports found."
+          onRowClick={(r) => navigate(`/admin/bug-reports/${r.id}`)}
+          pagination={{ page, total, limit: 20, onPageChange: (p) => setParams({ page: String(p), status, severity }) }}
+        />
       </section>
     </AdminLayout>
   )

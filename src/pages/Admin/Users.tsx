@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import AdminLayout from './AdminLayout'
 import ManagePlanModal from './ManagePlanModal'
+import DataTable, { type DataTableColumn } from '../../components/admin/DataTable'
+import RowActions, { RowActionButton } from '../../components/admin/RowActions'
 import { getAdminUsers, patchAdminUser, type User } from '../../lib/api'
 
 function planBadge(user: User): { label: string; className: string } {
@@ -9,6 +11,8 @@ function planBadge(user: User): { label: string; className: string } {
   const tier = user.pro_tier ?? 'pro'
   return { label: `Pro · ${tier}`, className: `badge--${tier}` }
 }
+
+type SortKey = 'created_at' | 'total_tool_uses'
 
 export default function Users() {
   const navigate = useNavigate()
@@ -20,6 +24,8 @@ export default function Users() {
   const [success, setSuccess] = useState('')
   const [searchInput, setSearchInput] = useState(params.get('search') ?? '')
   const [manageUser, setManageUser] = useState<User | null>(null)
+  const [sortKey, setSortKey] = useState<SortKey>('created_at')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
 
   const page = Number(params.get('page') ?? 1)
   const search = params.get('search') ?? ''
@@ -38,11 +44,6 @@ export default function Users() {
 
   useEffect(load, [page, search, plan])
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    setParams({ page: '1', search: searchInput, plan })
-  }
-
   function handleModalSaved(message: string) {
     setSuccess(message)
     load()
@@ -58,6 +59,67 @@ export default function Users() {
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed'))
   }
 
+  function handleSort(key: string) {
+    if (key !== 'created_at' && key !== 'total_tool_uses') return
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir('desc')
+    }
+  }
+
+  const sortedUsers = useMemo(() => {
+    const copy = [...users]
+    copy.sort((a, b) => {
+      const av = sortKey === 'created_at' ? (a.created_at ?? 0) : (a.total_tool_uses ?? 0)
+      const bv = sortKey === 'created_at' ? (b.created_at ?? 0) : (b.total_tool_uses ?? 0)
+      return sortDir === 'asc' ? av - bv : bv - av
+    })
+    return copy
+  }, [users, sortKey, sortDir])
+
+  const columns: DataTableColumn<User>[] = [
+    {
+      key: 'email',
+      header: 'Email',
+      render: (user) => (
+        <button className="link-btn" onClick={() => navigate(`/admin/users/${user.id}`)}>
+          {user.email}
+        </button>
+      ),
+    },
+    {
+      key: 'plan',
+      header: 'Plan',
+      render: (user) => {
+        const badge = planBadge(user)
+        return <span className={`badge ${badge.className}`}>{badge.label}</span>
+      },
+    },
+    { key: 'role', header: 'Role', render: (user) => user.role ?? 'user' },
+    { key: 'status', header: 'Status', render: (user) => user.status ?? 'active' },
+    { key: 'total_tool_uses', header: 'Uses', sortable: true, render: (user) => user.total_tool_uses ?? 0 },
+    {
+      key: 'created_at',
+      header: 'Joined',
+      sortable: true,
+      render: (user) => (user.created_at ? new Date(user.created_at * 1000).toLocaleDateString() : '—'),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (user) => (
+        <RowActions>
+          <RowActionButton onClick={() => setManageUser(user)} title="Manage plan & credits">⚙️</RowActionButton>
+          {user.status !== 'banned' && (
+            <RowActionButton onClick={() => handleBan(user)} title="Ban user" variant="danger">🚫</RowActionButton>
+          )}
+        </RowActions>
+      ),
+    },
+  ]
+
   return (
     <AdminLayout active="users">
       <section className="admin-page">
@@ -72,64 +134,31 @@ export default function Users() {
         {error && <div className="admin-error">{error} <button onClick={() => setError('')}>×</button></div>}
         {success && <div className="admin-success">{success} <button onClick={() => setSuccess('')}>×</button></div>}
 
-        <div className="admin-toolbar">
-          <form onSubmit={handleSearch} className="admin-search">
-            <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search by email" />
-            <button type="submit">Search</button>
-          </form>
-          <div className="admin-pill-group">
-            <button onClick={() => setParams({ page: '1', search, plan: '' })} className={plan === '' ? 'active' : ''}>All</button>
-            <button onClick={() => setParams({ page: '1', search, plan: 'free' })} className={plan === 'free' ? 'active' : ''}>Free</button>
-            <button onClick={() => setParams({ page: '1', search, plan: 'pro' })} className={plan === 'pro' ? 'active' : ''}>Pro</button>
-          </div>
-        </div>
-
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Email</th>
-                <th>Plan</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Uses</th>
-                <th>Joined</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && <tr><td colSpan={7}>Loading…</td></tr>}
-              {!loading && !users.length && <tr><td colSpan={7}>No users found.</td></tr>}
-              {!loading && users.map((user) => {
-                const badge = planBadge(user)
-                return (
-                <tr key={user.id} className={user.status === 'banned' ? 'banned' : ''}>
-                  <td><button className="link-btn" onClick={() => navigate(`/admin/users/${user.id}`)}>{user.email}</button></td>
-                  <td><span className={`badge ${badge.className}`}>{badge.label}</span></td>
-                  <td>{user.role ?? 'user'}</td>
-                  <td>{user.status ?? 'active'}</td>
-                  <td>{user.total_tool_uses ?? 0}</td>
-                  <td>{user.created_at ? new Date(user.created_at * 1000).toLocaleDateString() : '—'}</td>
-                  <td>
-                    <div className="admin-row-actions">
-                      <button className="admin-btn-icon" onClick={() => setManageUser(user)} title="Manage plan & credits" aria-label="Manage plan and credits">⚙️</button>
-                      {user.status !== 'banned' && (
-                        <button className="admin-btn-icon admin-btn-icon--danger" onClick={() => handleBan(user)} title="Ban user" aria-label="Ban user">🚫</button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="admin-pagination">
-          <button disabled={page <= 1} onClick={() => setParams({ page: String(page - 1), search, plan })}>← Prev</button>
-          <span>Page {page} / {Math.ceil(total / 20) || 1}</span>
-          <button disabled={(page * 20) >= total} onClick={() => setParams({ page: String(page + 1), search, plan })}>Next →</button>
-        </div>
+        <DataTable
+          columns={columns}
+          rows={sortedUsers}
+          loading={loading}
+          rowKey={(user) => user.id}
+          rowClassName={(user) => (user.status === 'banned' ? 'banned' : undefined)}
+          emptyMessage="No users found."
+          search={{
+            value: searchInput,
+            onChange: setSearchInput,
+            onSubmit: () => setParams({ page: '1', search: searchInput, plan }),
+            placeholder: 'Search by email',
+          }}
+          filters={{
+            value: plan,
+            options: [
+              { value: '', label: 'All' },
+              { value: 'free', label: 'Free' },
+              { value: 'pro', label: 'Pro' },
+            ],
+            onChange: (value) => setParams({ page: '1', search, plan: value }),
+          }}
+          sort={{ key: sortKey, direction: sortDir, onChange: handleSort }}
+          pagination={{ page, total, limit: 20, onPageChange: (p) => setParams({ page: String(p), search, plan }) }}
+        />
       </section>
 
       {manageUser && (

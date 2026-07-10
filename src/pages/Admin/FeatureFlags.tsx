@@ -64,16 +64,8 @@ export default function FeatureFlagsPage() {
                     <p style={{ margin: 0, fontSize: 13, color: 'var(--ink-2)' }}>{flag.description ?? 'No description'}</p>
                   </div>
                   <button
+                    className={`admin-btn${flag.enabled ? ' admin-btn--primary' : ''}`}
                     onClick={() => toggle(flag)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: 999,
-                      border: 'none',
-                      background: flag.enabled ? 'var(--accent)' : 'rgba(0,0,0,.1)',
-                      color: flag.enabled ? 'white' : 'var(--ink-2)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
                   >
                     {flag.enabled ? 'Enabled' : 'Disabled'}
                   </button>

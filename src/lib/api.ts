@@ -299,7 +299,7 @@ export function grantCredits(userId: string, packType: 'cv-10' | 'social-50', cr
   })
 }
 
-export function getAdminTransactions(params: { page?: number; limit?: number; sort?: string; direction?: string }) {
+export function getAdminTransactions(params: { page?: number; limit?: number; sort?: string; direction?: string; search?: string }) {
   const qs = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => value && qs.set(key, String(value)))
   return request<{ page: number; limit: number; total: number; transactions: Transaction[] }>(`/admin/transactions?${qs}`, { headers: authHeaders() })
@@ -505,6 +505,8 @@ export function markAllAdminNotificationsRead() {
 export interface AdminSubscription extends User {
   cancel_at_period_end?: boolean | number
   grace_until?: number | null
+  cv_credits?: number
+  social_credits?: number
 }
 
 export interface SubscriptionSummary {
@@ -514,7 +516,7 @@ export interface SubscriptionSummary {
   in_grace: number
 }
 
-export function getAdminSubscriptions(params: { page?: number; limit?: number; filter?: string }) {
+export function getAdminSubscriptions(params: { page?: number; limit?: number; filter?: string; search?: string }) {
   const qs = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => value && qs.set(key, String(value)))
   return request<{ page: number; limit: number; total: number; subscriptions: AdminSubscription[] }>(
@@ -553,7 +555,7 @@ export interface AdminRefund {
   notes?: string | null
 }
 
-export function getAdminRefunds(params: { page?: number; limit?: number; status?: string }) {
+export function getAdminRefunds(params: { page?: number; limit?: number; status?: string; search?: string }) {
   const qs = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => value && qs.set(key, String(value)))
   return request<{ page: number; limit: number; total: number; refunds: AdminRefund[] }>(

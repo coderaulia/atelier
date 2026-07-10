@@ -1354,6 +1354,7 @@ input, textarea { font: inherit; color: inherit; }
 .admin-table th, .admin-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
 .admin-table th { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-family: var(--mono); background: rgba(0,0,0,.025); }
 .admin-table tr.banned { opacity: .55; }
+.admin-table tr.high-usage { background: rgba(234,179,8,.05); }
 .link-btn { border: 0; background: transparent; color: var(--accent); font: inherit; cursor: pointer; padding: 0; }
 .badge, .status { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .badge--pro { background: rgba(44,74,107,.12); color: var(--accent); }
@@ -1403,6 +1404,7 @@ input, textarea { font: inherit; color: inherit; }
 .admin-btn-icon { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 8px; border: 1px solid var(--border); background: var(--surface); border-radius: 9px; font-size: 16px; cursor: pointer; transition: background .15s, border-color .15s; }
 .admin-btn-icon:hover { background: rgba(0,0,0,.05); border-color: var(--accent); }
 .admin-btn-icon--danger:hover { background: rgba(220,38,38,.1); border-color: rgba(220,38,38,.4); }
+.admin-btn-icon--success:hover { background: rgba(28,142,73,.1); border-color: rgba(28,142,73,.4); }
 
 /* Labeled action buttons */
 .admin-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s, opacity .15s; }
@@ -1430,6 +1432,9 @@ input, textarea { font: inherit; color: inherit; }
 .admin-modal__divider { height: 1px; background: var(--border); margin: 20px 0; }
 
 .admin-table th, .admin-table td { font-size: 14px; }
+.admin-table th.sortable { cursor: pointer; user-select: none; }
+.admin-table th.sortable:hover { color: var(--ink); }
+.admin-table .sort-arrow { font-size: 10px; }
 
 @media (max-width: 960px) { .admin-stat-grid, .admin-stat-grid--wide, .admin-grid-2 { grid-template-columns: 1fr 1fr; } .admin-page { padding: 20px; } }
 @media (max-width: 560px) { .admin-stat-grid, .admin-stat-grid--wide, .admin-grid-2 { grid-template-columns: 1fr; } }

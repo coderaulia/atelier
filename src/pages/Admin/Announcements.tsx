@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from './AdminLayout'
+import RowActions, { RowActionButton } from '../../components/admin/RowActions'
 import {
   getAdminAnnouncements,
   createAdminAnnouncement,
@@ -70,7 +71,7 @@ export default function Announcements() {
             <h1>Announcements</h1>
             <p>Manage in-app announcements visible to users based on plan and schedule.</p>
           </div>
-          <button className="btn btn--accent" onClick={() => setShowForm(!showForm)}>
+          <button className="admin-btn admin-btn--primary" onClick={() => setShowForm(!showForm)}>
             {showForm ? 'Cancel' : '+ New Announcement'}
           </button>
         </div>
@@ -94,7 +95,7 @@ export default function Announcements() {
                 </select>
               </div>
             </div>
-            <button className="btn btn--accent" onClick={handleCreate}>Create Announcement</button>
+            <button className="admin-btn admin-btn--primary" onClick={handleCreate}>Create Announcement</button>
           </div>
         )}
 
@@ -114,12 +115,12 @@ export default function Announcements() {
                 <p style={{ margin: '0 0 8px', color: 'var(--ink-2)' }}>{item.message}</p>
                 <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>Created {new Date(item.created_at * 1000).toLocaleDateString()}</div>
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => toggleActive(item)} title={item.is_active ? 'Deactivate' : 'Activate'}>
+              <RowActions>
+                <RowActionButton onClick={() => toggleActive(item)} title={item.is_active ? 'Deactivate' : 'Activate'} variant={item.is_active ? 'success' : 'default'}>
                   {item.is_active ? '✓' : '○'}
-                </button>
-                <button onClick={() => handleDelete(item)} title="Delete" style={{ color: '#b52a2a' }}>✕</button>
-              </div>
+                </RowActionButton>
+                <RowActionButton onClick={() => handleDelete(item)} title="Delete announcement" variant="danger">✕</RowActionButton>
+              </RowActions>
             </div>
           </div>
         ))}

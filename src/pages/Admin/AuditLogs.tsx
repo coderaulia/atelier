@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from './AdminLayout'
+import DataTable, { type DataTableColumn } from '../../components/admin/DataTable'
 import { getAdminAuditLogs, getAdminAuditActions, type AuditLogEntry } from '../../lib/api'
 
 export default function AuditLogs() {
@@ -28,8 +29,6 @@ export default function AuditLogs() {
       .catch(() => {})
   }, [])
 
-  const totalPages = Math.ceil(total / limit)
-
   function parseChanges(json: string | null | undefined) {
     if (!json) return null
     try {
@@ -39,6 +38,42 @@ export default function AuditLogs() {
       return json
     }
   }
+
+  const columns: DataTableColumn<AuditLogEntry>[] = [
+    {
+      key: 'created_at',
+      header: 'Time',
+      render: (log) => <span style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{new Date(log.created_at * 1000).toLocaleString()}</span>,
+    },
+    { key: 'admin', header: 'Admin', render: (log) => <span style={{ fontSize: 12 }}>{log.admin_email ?? log.admin_id.slice(0, 8)}</span> },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (log) => (
+        <span className={`status status--${log.action.includes('delete') ? 'failed' : log.action.includes('update') ? 'in_progress' : 'new'}`}>
+          {log.action}
+        </span>
+      ),
+    },
+    {
+      key: 'target',
+      header: 'Target',
+      render: (log) => <span style={{ fontSize: 12, fontFamily: 'var(--mono)' }}>{log.target_email ?? log.target_user_id?.slice(0, 8) ?? '—'}</span>,
+    },
+    {
+      key: 'changes',
+      header: 'Changes',
+      render: (log) => (
+        <span
+          style={{ fontSize: 11, color: 'var(--ink-2)', maxWidth: 300, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          title={parseChanges(log.changes) ?? ''}
+        >
+          {parseChanges(log.changes) ?? '—'}
+        </span>
+      ),
+    },
+    { key: 'ip', header: 'IP', render: (log) => <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--ink-3)' }}>{log.ip_address ?? '—'}</span> },
+  ]
 
   return (
     <AdminLayout active="audit-logs">
@@ -61,41 +96,14 @@ export default function AuditLogs() {
           <span style={{ fontSize: 13, color: 'var(--ink-3)', alignSelf: 'center' }}>{total} total logs</span>
         </div>
 
-        {loading && <p>Loading...</p>}
-
-        {!loading && !logs.length && <p style={{ color: 'var(--ink-3)' }}>No audit logs found.</p>}
-
-        {!loading && (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>Changes</th><th>IP</th></tr>
-              </thead>
-              <tbody>
-                {logs.map((log) => (
-                  <tr key={log.id}>
-                    <td style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{new Date(log.created_at * 1000).toLocaleString()}</td>
-                    <td style={{ fontSize: 12 }}>{log.admin_email ?? log.admin_id.slice(0, 8)}</td>
-                    <td><span className={`status status--${log.action.includes('delete') ? 'failed' : log.action.includes('update') ? 'in_progress' : 'new'}`}>{log.action}</span></td>
-                    <td style={{ fontSize: 12, fontFamily: 'var(--mono)' }}>{log.target_email ?? log.target_user_id?.slice(0, 8) ?? '—'}</td>
-                    <td style={{ fontSize: 11, color: 'var(--ink-2)', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={parseChanges(log.changes) ?? ''}>
-                      {parseChanges(log.changes) ?? '—'}
-                    </td>
-                    <td style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--ink-3)' }}>{log.ip_address ?? '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>← Prev</button>
-            <span style={{ fontSize: 13, alignSelf: 'center', color: 'var(--ink-3)' }}>Page {page} of {totalPages}</span>
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next →</button>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          rows={logs}
+          loading={loading}
+          rowKey={(log) => log.id}
+          emptyMessage="No audit logs found."
+          pagination={{ page, total, limit, onPageChange: setPage }}
+        />
       </section>
     </AdminLayout>
   )

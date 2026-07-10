@@ -24,6 +24,7 @@ refundsAdmin.get('/', async (c) => {
   const page = Math.max(1, Number(c.req.query('page') ?? 1))
   const limit = Math.min(100, Math.max(1, Number(c.req.query('limit') ?? 50)))
   const status = c.req.query('status')
+  const search = c.req.query('search')?.trim() ?? ''
   const offset = (page - 1) * limit
   const values: unknown[] = []
   const filters: string[] = []
@@ -31,6 +32,10 @@ refundsAdmin.get('/', async (c) => {
   if (status && ['pending', 'approved', 'rejected', 'completed'].includes(status)) {
     filters.push('r.status = ?')
     values.push(status)
+  }
+  if (search) {
+    filters.push('u.email LIKE ?')
+    values.push(`%${search}%`)
   }
 
   const where = filters.length ? `WHERE ${filters.join(' AND ')}` : ''
@@ -50,7 +55,7 @@ refundsAdmin.get('/', async (c) => {
     .bind(...values, limit, offset)
     .all()
 
-  const total = await c.env.DB.prepare(`SELECT COUNT(*) AS count FROM refunds r ${where}`)
+  const total = await c.env.DB.prepare(`SELECT COUNT(*) AS count FROM refunds r LEFT JOIN users u ON u.id = r.user_id ${where}`)
     .bind(...values)
     .first<{ count: number }>()
 

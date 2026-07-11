@@ -1,0 +1,30 @@
+.img-compress-mode-toggle {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.img-compress-mode-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--shell-muted);
+}
+
+.img-compress-size-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  color: var(--shell-text);
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.img-compress-size-input:focus {
+  outline: none;
+  border-color: var(--shell-accent);
+}

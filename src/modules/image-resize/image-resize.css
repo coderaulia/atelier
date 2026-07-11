@@ -1,0 +1,63 @@
+.img-resize-dimensions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.img-resize-dim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.img-resize-dim-field label {
+  font-size: 13px;
+  color: var(--shell-muted);
+}
+
+.img-resize-dim-field input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  color: var(--shell-text);
+  font-size: 14px;
+}
+
+.img-resize-dim-field input:focus {
+  outline: none;
+  border-color: var(--shell-accent);
+}
+
+.img-resize-lock-ratio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--shell-text);
+  cursor: pointer;
+}
+
+.img-resize-select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--shell-bg-2);
+  border: 1px solid var(--shell-rule);
+  color: var(--shell-text);
+  font-size: 14px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.img-resize-select:focus {
+  outline: none;
+  border-color: var(--shell-accent);
+}
+
+.img-resize-presets {
+  display: grid;
+  gap: 6px;
+}

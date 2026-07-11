@@ -1,0 +1,47 @@
+.img-bg-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--shell-text);
+  cursor: pointer;
+}
+
+.img-bg-color-picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.img-bg-color-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--shell-rule);
+  background: var(--shell-bg-2);
+  color: var(--shell-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.img-bg-color-btn.active {
+  border-color: var(--shell-accent);
+  background: var(--shell-bg-3);
+}
+
+.img-bg-custom-color {
+  border: 0;
+  padding: 0;
+  width: 32px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.img-bg-color-key {
+  margin-top: 8px;
+  border: 1px solid var(--shell-rule);
+  padding: 10px;
+  border-radius: 6px;
+  background: var(--shell-bg-2);
+}

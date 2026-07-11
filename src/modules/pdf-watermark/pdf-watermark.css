@@ -1,0 +1,222 @@
+.pdfwatermark-tool {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  min-height: 100%;
+  background: var(--shell-bg-1, #10151d);
+  color: var(--shell-text, #edf2f7);
+}
+
+.pdfwatermark-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--shell-bg-2, #171d26);
+  border-right: 1px solid var(--shell-rule, #2b3542);
+  overflow-y: auto;
+}
+
+.pdfwatermark-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pdfwatermark-heading span {
+  color: var(--shell-accent, #6bc4a2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.pdfwatermark-heading h1 {
+  margin: 4px 0 0;
+  font-size: 20px;
+}
+
+.pdfwatermark-heading button {
+  border: 0;
+  background: transparent;
+  color: var(--shell-muted, #a8b4c2);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pdfwatermark-upload {
+  min-height: 210px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  border: 1px dashed var(--shell-rule, #506071);
+  background: var(--shell-bg-3, #1d2530);
+  color: var(--shell-muted, #cbd5e1);
+  cursor: pointer;
+}
+
+.pdfwatermark-upload:hover {
+  border-color: var(--shell-accent, #6bc4a2);
+}
+
+.pdfwatermark-upload b {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 58px;
+  border: 1px solid var(--shell-accent, #6bc4a2);
+  color: var(--shell-accent, #6bc4a2);
+  font-size: 11px;
+}
+
+.pdfwatermark-upload strong {
+  color: var(--shell-text, #f8fafc);
+  font-size: 14px;
+}
+
+.pdfwatermark-upload small {
+  color: var(--shell-muted, #94a3b8);
+  font-size: 12px;
+}
+
+.pdfwatermark-controls {
+  display: grid;
+  gap: 16px;
+}
+
+.pdfwatermark-file {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--shell-rule, #2b3542);
+}
+
+.pdfwatermark-file strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.pdfwatermark-file span {
+  color: var(--shell-muted, #94a3b8);
+  font-size: 12px;
+}
+
+.pdfwatermark-settings {
+  display: grid;
+  gap: 12px;
+}
+
+.pdfwatermark-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pdfwatermark-field label {
+  font-size: 12px;
+  color: var(--shell-muted, #94a3b8);
+}
+
+.pdfwatermark-field input[type="text"],
+.pdfwatermark-field select {
+  padding: 8px 12px;
+  background: var(--shell-bg-1, #10151d);
+  border: 1px solid var(--shell-rule, #3c4756);
+  color: var(--shell-text, #f8fafc);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.pdfwatermark-field input[type="range"] {
+  width: 100%;
+}
+
+.pdfwatermark-field span {
+  font-size: 12px;
+  color: var(--shell-muted, #94a3b8);
+  text-align: right;
+}
+
+.pdfwatermark-field input[type="color"] {
+  border: 0;
+  padding: 0;
+  width: 100%;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pdfwatermark-export {
+  min-height: 40px;
+  border: 0;
+  background: var(--shell-accent, #6bc4a2);
+  color: var(--shell-bg-1, #11211d);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.pdfwatermark-workspace {
+  min-width: 0;
+  overflow: auto;
+  padding: 28px;
+}
+
+.pdfwatermark-empty {
+  max-width: 510px;
+  margin: 14vh auto 0;
+}
+
+.pdfwatermark-empty span {
+  color: var(--shell-accent, #6bc4a2);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.pdfwatermark-empty h2 {
+  margin: 12px 0;
+  font-size: 38px;
+  line-height: 1.05;
+}
+
+.pdfwatermark-empty p {
+  max-width: 430px;
+  color: var(--shell-muted, #a8b4c2);
+  line-height: 1.6;
+}
+
+.pdfwatermark-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.pdfwatermark-preview-wrapper {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: #fff;
+}
+
+.pdfwatermark-preview-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 760px) {
+  .pdfwatermark-tool {
+    grid-template-columns: 1fr;
+  }
+  .pdfwatermark-panel {
+    border-right: 0;
+    border-bottom: 1px solid var(--shell-rule, #2b3542);
+  }
+  .pdfwatermark-workspace {
+    padding: 18px;
+  }
+}

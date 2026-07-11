@@ -1,0 +1,236 @@
+.pdfsplit-tool {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  min-height: 100%;
+  background: #10151d;
+  color: #edf2f7;
+}
+
+.pdfsplit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+  background: #171d26;
+  border-right: 1px solid #2b3542;
+}
+
+.pdfsplit-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pdfsplit-heading span {
+  color: #6bc4a2;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.pdfsplit-heading h1 {
+  margin: 4px 0 0;
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+.pdfsplit-heading button {
+  border: 0;
+  background: transparent;
+  color: #a8b4c2;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pdfsplit-upload {
+  min-height: 210px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  border: 1px dashed #506071;
+  background: #1d2530;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.pdfsplit-upload:hover {
+  border-color: #6bc4a2;
+}
+
+.pdfsplit-upload b {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 58px;
+  border: 1px solid #6bc4a2;
+  color: #6bc4a2;
+  font-size: 11px;
+}
+
+.pdfsplit-upload strong {
+  color: #f8fafc;
+  font-size: 14px;
+}
+
+.pdfsplit-upload small, .pdfsplit-file span, .pdfsplit-upgrade-text {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.pdfsplit-controls {
+  display: grid;
+  gap: 16px;
+}
+
+.pdfsplit-file {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #2b3542;
+  min-width: 0;
+}
+
+.pdfsplit-file strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.pdfsplit-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pdfsplit-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pdfsplit-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #10151d;
+  border: 1px solid #3c4756;
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.pdfsplit-export {
+  min-height: 40px;
+  border: 0;
+  background: #6bc4a2;
+  color: #11211d;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.pdfsplit-workspace {
+  min-width: 0;
+  overflow: auto;
+  padding: 28px;
+}
+
+.pdfsplit-empty {
+  max-width: 510px;
+  margin: 14vh auto 0;
+}
+
+.pdfsplit-empty span {
+  color: #6bc4a2;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.pdfsplit-empty h2 {
+  margin: 12px 0;
+  font-size: 38px;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.pdfsplit-empty p {
+  max-width: 430px;
+  color: #a8b4c2;
+  line-height: 1.6;
+}
+
+.pdfsplit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  align-items: start;
+  gap: 18px;
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.pdfsplit-page {
+  position: relative;
+  min-height: 208px;
+  padding: 10px;
+  border: 1px solid #364152;
+  background: #f8fafc;
+}
+
+.pdfsplit-page span {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  left: 8px;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  background: #17202c;
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pdfsplit-page img {
+  display: block;
+  width: 100%;
+  height: 185px;
+  object-fit: contain;
+}
+
+@media (max-width: 760px) {
+  .pdfsplit-tool {
+    grid-template-columns: 1fr;
+  }
+  .pdfsplit-panel {
+    border-right: 0;
+    border-bottom: 1px solid #2b3542;
+  }
+  .pdfsplit-workspace {
+    padding: 18px;
+    min-height: 55vh;
+  }
+  .pdfsplit-empty {
+    margin-top: 6vh;
+  }
+  .pdfsplit-empty h2 {
+    font-size: 30px;
+  }
+  .pdfsplit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .pdfsplit-page {
+    min-height: 160px;
+  }
+  .pdfsplit-page img {
+    height: 140px;
+  }
+}

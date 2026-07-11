@@ -24,6 +24,8 @@ import { useToolLimit } from '../../hooks/useToolLimit';
 import { useAuth } from '../../hooks/useAuth';
 import { hasGlobalMetadata, metadataFingerprint, metadataToBrand } from '../../lib/globalMetadata';
 import UpgradeModal from '../../components/UpgradeModal';
+import { usePlan } from '../../hooks/usePlan';
+import { parseCSV, generateCSVTemplate, autoMapHeaders, constructRowData, convertPngToPdf, DOCUMENT_FIELDS, FIELD_LABELS } from './bulk-utils';
 
 const AllSocialTemplates = [...SocialTemplates, ...TikTokTemplates];
 
@@ -282,6 +284,114 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const [zoom, setZoom] = useState(0.5);
   const [copyState, setCopyState] = useState("idle");
   const [showUpgrade, setShowUpgrade] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<'editor' | 'bulk'>('editor');
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [csvRows, setCsvRows] = useState<string[][]>([]);
+  const [mappings, setMappings] = useState<Record<string, string>>({});
+  const [bulkExportFormat, setBulkExportFormat] = useState<'png' | 'pdf'>('pdf');
+  const [bulkQueue, setBulkQueue] = useState<{ id: string; name: string; data: any; status: 'pending' | 'processing' | 'done' | 'error'; url?: string }[]>([]);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [bulkProgressIndex, setBulkProgressIndex] = useState(-1);
+  const { plan } = usePlan();
+
+  const handleBulkUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const text = evt.target?.result as string;
+      const rows = parseCSV(text);
+      if (rows.length < 2) { alert("CSV must have headers and at least one row."); return; }
+      const headers = rows[0].map(h => h.trim());
+      const dataRows = rows.slice(1);
+      setCsvHeaders(headers);
+      setCsvRows(dataRows);
+      const fields = DOCUMENT_FIELDS[docType] || [];
+      setMappings(autoMapHeaders(headers, fields));
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const startBulkGeneration = async () => {
+    if (csvRows.length === 0) return;
+    let itemsToProcess = [...csvRows];
+    if (plan !== 'pro') {
+      if (csvRows.length > 3) {
+        itemsToProcess = csvRows.slice(0, 3);
+        alert("Free plan limited to 3 items per bulk run. Upgrade to Pro for unlimited.");
+      }
+    }
+    const newQueue = itemsToProcess.map((row, idx) => {
+      const rowData = constructRowData(row, csvHeaders, mappings, docType, cfg.defaults);
+      const fileName = `${docType}-${rowData.invoiceNo || rowData.title || rowData.clientName || idx}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      return { id: `item-${idx}`, name: fileName, data: rowData, status: 'pending' as const };
+    });
+    setBulkQueue(newQueue);
+    setBulkProcessing(true);
+    setBulkProgressIndex(0);
+  };
+
+  useEffect(() => {
+    if (!bulkProcessing || bulkProgressIndex < 0 || bulkProgressIndex >= bulkQueue.length) {
+      if (bulkProcessing && bulkProgressIndex === bulkQueue.length) {
+        (async () => {
+          const { default: JSZip } = await import('jszip');
+          const zip = new JSZip();
+          for (const item of bulkQueue) {
+            if (item.status === 'done' && item.url) {
+              const res = await fetch(item.url);
+              const blob = await res.blob();
+              zip.file(`${item.name}.${bulkExportFormat === 'pdf' ? 'pdf' : 'png'}`, blob);
+            }
+          }
+          const zipBlob = await zip.generateAsync({ type: 'blob' });
+          const url = URL.createObjectURL(zipBlob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `bulk-${docType}-${new Date().toISOString().slice(0, 10)}.zip`;
+          a.click();
+          URL.revokeObjectURL(url);
+          setBulkProcessing(false);
+        })();
+      }
+      return;
+    }
+
+    let isMounted = true;
+    const processItem = async () => {
+      setBulkQueue(prev => prev.map((q, idx) => idx === bulkProgressIndex ? { ...q, status: 'processing' } : q));
+      try {
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const { captureImage } = await import('./utils');
+        const dataUrl = await captureImage("#bulk-paper-target", "png");
+        if (!dataUrl) throw new Error("Capture failed");
+
+        let fileBlob: Blob;
+        if (bulkExportFormat === 'pdf') {
+          fileBlob = await convertPngToPdf(dataUrl, t.paper as any);
+        } else {
+          const res = await fetch(dataUrl);
+          fileBlob = await res.blob();
+        }
+
+        const objectUrl = URL.createObjectURL(fileBlob);
+        if (isMounted) {
+          setBulkQueue(prev => prev.map((q, idx) => idx === bulkProgressIndex ? { ...q, status: 'done', url: objectUrl } : q));
+          increment();
+          setBulkProgressIndex(prev => prev + 1);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setBulkQueue(prev => prev.map((q, idx) => idx === bulkProgressIndex ? { ...q, status: 'error' } : q));
+          setBulkProgressIndex(prev => prev + 1);
+        }
+      }
+    };
+    processItem();
+    return () => { isMounted = false; };
+  }, [bulkProgressIndex, bulkProcessing]);
 
   const isDocumentsDemo = mode === 'documents';
   const isSocialDemo = mode === 'social';
@@ -569,41 +679,158 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
             </div>
           )}
           {cfg.hasVariants && !cfg.isTool && (
-            <div className="editor__variants">
-              {VARIANTS.map(v => (
+            <div className="editor__variants" style={{ flexWrap: 'wrap', gap: '8px 12px' }}>
+              <div className="bulk-tab-header" style={{ marginBottom: 0, marginRight: 16 }}>
+                <button className={`tab-btn ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>Editor</button>
+                <button className={`tab-btn ${activeTab === 'bulk' ? 'active' : ''}`} onClick={() => setActiveTab('bulk')}>Bulk CSV</button>
+              </div>
+              {activeTab === 'editor' && VARIANTS.map(v => (
                 <button
                   key={v.id}
                   className={"variant-pill " + (variant === v.id ? "variant-pill--active" : "")}
                   onClick={() => setVariant(v.id)}
                 >{v.name}</button>
               ))}
+              {activeTab === 'bulk' && (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span style={{ fontSize: 12, color: 'var(--shell-muted)' }}>Variant:</span>
+                  <select
+                    value={variant}
+                    onChange={(e: any) => setVariant(e.target.value)}
+                    style={{ background: "var(--shell-field-bg)", color: "var(--shell-ink)", border: "1px solid var(--shell-rule)", borderRadius: 6, padding: "4px 8px", fontSize: 12, cursor: 'pointer' }}
+                  >
+                    {VARIANTS.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                  </select>
+                </div>
+              )}
             </div>
           )}
         </div>
         <div className="editor__body">
-          {docType === "agreement"  && <AgreementEditor  data={data} onChange={setData} />}
-          {docType === "invoice"    && <InvoiceEditor    data={data} onChange={setData} />}
-          {docType === "proposal"   && <ProposalEditor   data={data} onChange={setData} />}
-          {docType === "prd"        && <PRDEditor        data={data} onChange={setData} />}
-          {docType === "retainer"   && <RetainerEditor   data={data} onChange={setData} />}
-          {docType === "receipt"    && <ReceiptEditor    data={data} onChange={setData} />}
-          {docType === "onboarding" && <OnboardingEditor data={data} onChange={setData} />}
-          {docType === "scopeguard" && <ScopeGuardEditor data={data} onChange={setData} />}
-          {docType === "handover"   && <HandoverEditor   data={data} onChange={setData} />}
-          {docType === "quote"      && <QuoteCalculatorPanel data={data} onChange={setData} />}
-          {docType === "social" && (
-            <SocialEditor
-              key={socialPickerKey}
-              data={data}
-              onChange={setData}
-              templates={AllSocialTemplates}
-              activeId={socialTemplateId}
-              setActiveId={setSocialTemplateId}
-              recentId={recentSocialTemplateId}
-              setRecentId={setRecentSocialTemplateId}
-              defaults={DEFAULT_SOCIAL}
-              onStepChange={setSocialStep}
-            />
+          {activeTab === 'bulk' && !cfg.isTool && docType !== 'social' ? (
+            <div style={{ padding: '0 20px 40px' }}>
+              <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 500 }}>Bulk Generation ({cfg.name})</h3>
+                <button
+                  onClick={() => {
+                    const csv = generateCSVTemplate(docType);
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${docType}-template.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="export-btn export-btn--ghost"
+                  style={{ fontSize: 12, padding: '4px 8px', border: '1px solid var(--shell-rule)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  {Icon.download} CSV Template
+                </button>
+              </div>
+
+              <label className="bulk-dropzone" style={{ display: 'block' }}>
+                <input type="file" accept=".csv" onChange={handleBulkUpload} style={{ display: 'none' }} />
+                <div style={{ marginBottom: 8 }}>{Icon.doc}</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--shell-ink)', marginBottom: 4 }}>Upload CSV Data</div>
+                <div style={{ fontSize: 12 }}>Drag and drop or click to browse</div>
+              </label>
+
+              {csvHeaders.length > 0 && (
+                <div className="bulk-mapping-wrap">
+                  <div style={{ marginBottom: 16, fontSize: 13, fontWeight: 500, color: 'var(--shell-ink)', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Map Fields</span>
+                    <span style={{ color: 'var(--shell-muted)', fontWeight: 400 }}>{csvRows.length} rows detected</span>
+                  </div>
+
+                  <div style={{ maxHeight: 300, overflowY: 'auto', paddingRight: 10, marginBottom: 20 }}>
+                    {(DOCUMENT_FIELDS[docType] || []).map(field => (
+                      <div className="bulk-mapping-row" key={field}>
+                        <div style={{ color: 'var(--shell-muted)' }}>{FIELD_LABELS[docType]?.[field] || field}</div>
+                        <select
+                          value={mappings[field] || ''}
+                          onChange={(e: any) => setMappings({ ...mappings, [field]: e.target.value })}
+                        >
+                          <option value="">-- Ignore --</option>
+                          {csvHeaders.map(h => <option key={h} value={h}>{h}</option>)}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', paddingTop: 16, borderTop: '1px solid var(--shell-rule)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                      <span style={{ fontSize: 12, color: 'var(--shell-muted)' }}>Format:</span>
+                      <select
+                        value={bulkExportFormat}
+                        onChange={(e: any) => setBulkExportFormat(e.target.value)}
+                        style={{ background: "var(--shell-field-bg)", color: "var(--shell-ink)", border: "1px solid var(--shell-rule)", borderRadius: 6, padding: "6px 10px", fontSize: 12, cursor: 'pointer' }}
+                      >
+                        <option value="pdf">PDF (Vector)</option>
+                        <option value="png">PNG (Image)</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={startBulkGeneration}
+                      disabled={bulkProcessing}
+                      style={{ background: "var(--shell-ink)", color: "var(--shell-bg)", border: "none", borderRadius: 6, padding: "8px 16px", fontSize: 13, fontWeight: 500, cursor: bulkProcessing ? "default" : "pointer", opacity: bulkProcessing ? 0.7 : 1 }}
+                    >
+                      {bulkProcessing ? "Processing..." : `Generate ${csvRows.length} Files`}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {bulkQueue.length > 0 && (
+                <div className="bulk-progress-wrap">
+                  <div style={{ fontSize: 12, display: 'flex', justifyContent: 'space-between', color: 'var(--shell-muted)' }}>
+                    <span>Processing {bulkProgressIndex >= 0 ? Math.min(bulkProgressIndex + 1, bulkQueue.length) : 0} of {bulkQueue.length}</span>
+                    <span>{Math.round((Math.max(0, bulkProgressIndex) / Math.max(1, bulkQueue.length)) * 100)}%</span>
+                  </div>
+                  <div className="bulk-progress-bar">
+                    <div className="bulk-progress-fill" style={{ width: `${(Math.max(0, bulkProgressIndex) / Math.max(1, bulkQueue.length)) * 100}%` }}></div>
+                  </div>
+                  <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+                    {bulkQueue.map((q) => (
+                      <div key={q.id} className="bulk-queue-item">
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>{q.name}</span>
+                        <span className={`bulk-status--${q.status}`}>
+                          {q.status === 'pending' ? 'Waiting' : q.status === 'processing' ? 'Rendering...' : q.status === 'done' ? 'Success' : 'Failed'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: activeTab === 'editor' || cfg.isTool || docType === 'social' ? 'block' : 'none' }}>
+              {docType === "agreement"  && <AgreementEditor  data={data} onChange={setData} />}
+              {docType === "invoice"    && <InvoiceEditor    data={data} onChange={setData} />}
+              {docType === "proposal"   && <ProposalEditor   data={data} onChange={setData} />}
+              {docType === "prd"        && <PRDEditor        data={data} onChange={setData} />}
+              {docType === "retainer"   && <RetainerEditor   data={data} onChange={setData} />}
+              {docType === "receipt"    && <ReceiptEditor    data={data} onChange={setData} />}
+              {docType === "onboarding" && <OnboardingEditor data={data} onChange={setData} />}
+              {docType === "scopeguard" && <ScopeGuardEditor data={data} onChange={setData} />}
+              {docType === "handover"   && <HandoverEditor   data={data} onChange={setData} />}
+              {docType === "quote"      && <QuoteCalculatorPanel data={data} onChange={setData} />}
+              {docType === "social" && (
+                <SocialEditor
+                  key={socialPickerKey}
+                  data={data}
+                  onChange={setData}
+                  templates={AllSocialTemplates}
+                  activeId={socialTemplateId}
+                  setActiveId={setSocialTemplateId}
+                  recentId={recentSocialTemplateId}
+                  setRecentId={setRecentSocialTemplateId}
+                  defaults={DEFAULT_SOCIAL}
+                  onStepChange={setSocialStep}
+                />
+              )}
+            </div>
           )}
         </div>
       </section>
@@ -709,6 +936,16 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
           />
         </TweaksPanel>
       )}
+      <div
+        id="bulk-render-target-container"
+        style={{ position: 'fixed', left: '-9999px', top: '-9999px', width: t.paper === 'a4' ? '210mm' : '8.5in', height: t.paper === 'a4' ? '297mm' : '11in', overflow: 'hidden', pointerEvents: 'none', zIndex: -999 }}
+      >
+        {bulkProgressIndex >= 0 && bulkProgressIndex < bulkQueue.length && TplComponent && (
+          <div id="bulk-paper-target" className={paperClass} style={{ transform: 'none', boxShadow: 'none' }}>
+            <TplComponent data={bulkQueue[bulkProgressIndex].data} brand={brand} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

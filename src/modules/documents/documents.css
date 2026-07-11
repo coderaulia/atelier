@@ -1394,3 +1394,109 @@ input, textarea, select { font-family: inherit; color: inherit; }
   color: var(--accent);
   font-size: 20px;
 }
+
+/* ---------- Bulk Generate ---------- */
+.bulk-tab-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.bulk-tab-header .tab-btn {
+  flex: 1;
+  background: var(--shell-field-bg);
+  color: var(--shell-muted);
+  border: 1px solid var(--shell-rule);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.bulk-tab-header .tab-btn:hover {
+  border-color: var(--shell-ink);
+  color: var(--shell-ink);
+}
+.bulk-tab-header .tab-btn.active {
+  background: var(--shell-ink);
+  color: var(--shell-bg);
+  border-color: var(--shell-ink);
+}
+.bulk-dropzone {
+  border: 2px dashed var(--shell-rule);
+  padding: 30px 20px;
+  text-align: center;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--shell-muted);
+  margin-bottom: 20px;
+  transition: border-color 0.2s, color 0.2s;
+  background: var(--shell-field-bg);
+}
+.bulk-dropzone:hover {
+  border-color: var(--accent);
+  color: var(--shell-ink);
+}
+.bulk-mapping-wrap {
+  background: var(--shell-bg);
+  border: 1px solid var(--shell-rule);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.bulk-mapping-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.bulk-mapping-row:last-child {
+  margin-bottom: 0;
+}
+.bulk-mapping-row select {
+  width: 100%;
+  background: var(--shell-field-bg);
+  color: var(--shell-ink);
+  border: 1px solid var(--shell-rule);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.bulk-progress-wrap {
+  margin-top: 24px;
+}
+.bulk-progress-bar {
+  height: 6px;
+  background: var(--shell-rule);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 10px 0 15px;
+}
+.bulk-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+.bulk-queue-item {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--shell-rule);
+}
+.bulk-status--pending {
+  color: var(--shell-muted);
+}
+.bulk-status--processing {
+  color: var(--shell-ink);
+}
+.bulk-status--done {
+  color: var(--accent);
+}
+.bulk-status--error {
+  color: var(--vc-red);
+}

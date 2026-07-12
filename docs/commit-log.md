@@ -1,5 +1,15 @@
 # Commit Log
 
+## 2026-07-12 — Tool marketing + registry sync
+
+Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pages, and dashboard registry consumers after PDF Organize/Split/Watermark, Image Compress/Resize/Background, and CSV bulk generation shipped.
+
+- `feat(seo): add marketing metadata for all tools` — added `toolPages.ts` metadata (features/FAQs) for pdf-organize, pdf-split, pdf-watermark, image-compress, image-resize, image-bg; documented CSV bulk generation on document-generator; derived `allStaticRoutes` from `toolPages` so prerender covers all 14 tools.
+- `feat(landing): drive tool grid from registry` — landing tool grid, counts, and footer links now derive from `TOOLS`; Document Generator kept as hero card with CSV bulk copy.
+- `feat(app): group tools and sync support options` — dashboard quick access groups tools by category with a recent-tool section and registry badges; manual `toolTips` cover all 14 tools with CSV bulk steps; bug report tool select is registry-driven.
+- Verified: `npm run typecheck`, `npm run build`, `npm run prerender` (16 pages); public tool routes checked via preview server.
+- Out of scope (recommend follow-up): stale tool counts/lists in `src/locales/**` legal/common copy require product/legal review.
+
 ## 2026-07-09 — Onboarding + pricing fixes
 
 - Removed unimplemented "14-day Pro trial" copy from landing and register (no trial logic existed).

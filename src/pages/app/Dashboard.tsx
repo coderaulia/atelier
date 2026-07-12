@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
-import { TOOLS } from '@/lib/tools'
+import { TOOLS, TOOL_CATEGORIES, getAllCategories, getToolsByCategory, type ToolDefinition } from '@/lib/tools'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { getAuthToken } from '@/lib/auth'
@@ -27,13 +27,21 @@ export default function Dashboard() {
   const [upsellVisible, setUpsellVisible] = useState(() => shouldShowUpsell())
   const [welcomeVisible, setWelcomeVisible] = useState(() => !localStorage.getItem(WELCOME_KEY) && !localStorage.getItem(LAST_TOOL_KEY))
 
-  const tools = useMemo(() => {
+  const recentTool = useMemo(() => {
     const lastToolId = localStorage.getItem(LAST_TOOL_KEY)
-    if (!lastToolId) return TOOLS
-    const recent = TOOLS.find((tool) => tool.id === lastToolId)
-    if (!recent) return TOOLS
-    return [recent, ...TOOLS.filter((tool) => tool.id !== lastToolId)]
+    if (!lastToolId) return undefined
+    return TOOLS.find((tool) => tool.id === lastToolId)
   }, [])
+
+  const categoryGroups = useMemo(
+    () =>
+      getAllCategories()
+        .map((category) => ({ category, meta: TOOL_CATEGORIES[category], tools: getToolsByCategory(category) }))
+        .filter((group) => group.tools.length > 0),
+    []
+  )
+
+  const startTool = recentTool ?? TOOLS[0]
 
   const emailUnverified = user != null && user.email_verified === 0
 
@@ -98,11 +106,11 @@ export default function Dashboard() {
           <div>
             <span className="dashboard-welcome__badge">Welcome</span>
             <h2>New here? Start with one tool.</h2>
-            <p>All processing runs locally in your browser — files never upload. Pick {tools[0]?.name || 'a tool'} to try your first export.</p>
+            <p>All processing runs locally in your browser — files never upload. Pick {startTool?.name || 'a tool'} to try your first export.</p>
           </div>
           <div className="dashboard-welcome__actions">
-            <Link to={tools[0]?.appPath || '/app/dashboard'} className="dashboard-welcome__btn" onClick={dismissWelcome}>
-              Open {tools[0]?.name || 'a tool'} →
+            <Link to={startTool?.appPath || '/app/dashboard'} className="dashboard-welcome__btn" onClick={dismissWelcome}>
+              Open {startTool?.name || 'a tool'} →
             </Link>
             <button type="button" onClick={dismissWelcome} className="dashboard-welcome__dismiss">Dismiss</button>
           </div>
@@ -161,26 +169,54 @@ export default function Dashboard() {
       <section className="dashboard-section">
         <div className="dashboard-section__header">
           <h2>Quick access</h2>
-          <span>{tools.length} tools</span>
+          <span>{TOOLS.length} tools</span>
         </div>
-        <div className="dashboard-tool-grid">
-          {tools.map((tool, index) => (
-            <Link
-              key={tool.id}
-              to={tool.appPath}
-              className={`dashboard-tool-card ${index === 0 ? 'dashboard-tool-card--recent' : ''}`}
-              onClick={() => localStorage.setItem(LAST_TOOL_KEY, tool.id)}
-            >
-              <span className="dashboard-tool-card__icon">{tool.icon}</span>
-              {index === 0 && <span className="dashboard-tool-card__recent">Recent</span>}
-              <h3>{tool.name}</h3>
-              <p>{tool.description}</p>
-              <span className="dashboard-tool-card__arrow">Open →</span>
-            </Link>
+
+        {recentTool && (
+          <div className="dashboard-recent-section">
+            <h3 className="dashboard-recent-title">Recently used</h3>
+            <div className="dashboard-tool-grid dashboard-tool-grid--recent">
+              <ToolCard tool={recentTool} recent />
+            </div>
+          </div>
+        )}
+
+        <div className="dashboard-categories-container">
+          {categoryGroups.map((group) => (
+            <div className="dashboard-category-group" key={group.category}>
+              <div className="dashboard-category-header">
+                <span className="dashboard-category-icon">{group.meta.icon}</span>
+                <h3 className="dashboard-category-name">{group.meta.label}</h3>
+              </div>
+              <div className="dashboard-tool-grid">
+                {group.tools.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
+              </div>
+            </div>
           ))}
         </div>
       </section>
     </div>
+  )
+}
+
+function ToolCard({ tool, recent = false }: { tool: ToolDefinition; recent?: boolean }) {
+  return (
+    <Link
+      to={tool.appPath}
+      className={`dashboard-tool-card ${recent ? 'dashboard-tool-card--recent' : ''}`}
+      onClick={() => localStorage.setItem(LAST_TOOL_KEY, tool.id)}
+    >
+      <span className="dashboard-tool-card__icon">{tool.icon}</span>
+      {recent && <span className="dashboard-tool-card__recent">Recent</span>}
+      {!recent && tool.badge && (
+        <span className={`dashboard-tool-card__badge dashboard-tool-card__badge--${tool.badge}`}>
+          {tool.badge}
+        </span>
+      )}
+      <h3>{tool.name}</h3>
+      <p>{tool.description}</p>
+      <span className="dashboard-tool-card__arrow">Open →</span>
+    </Link>
   )
 }
 

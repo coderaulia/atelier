@@ -230,13 +230,74 @@
   border-color: rgba(44, 74, 107, 0.26);
 }
 
-.dashboard-tool-card__recent {
+.dashboard-tool-card__recent,
+.dashboard-tool-card__badge {
   position: absolute;
   top: 1rem;
   right: 1rem;
   color: #93c5fd;
   font-size: 0.72rem;
   font-weight: 900;
+}
+
+.dashboard-tool-card__badge {
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(147, 197, 253, 0.14);
+  text-transform: uppercase;
+}
+
+.dashboard-tool-card__badge--pro {
+  color: #fde68a;
+  background: rgba(253, 230, 138, 0.12);
+}
+
+.dashboard-tool-card__badge--beta {
+  color: #c4b5fd;
+  background: rgba(196, 181, 253, 0.12);
+}
+
+.dashboard-recent-section {
+  margin-bottom: 2rem;
+}
+
+.dashboard-recent-title {
+  margin: 0 0 0.75rem;
+  color: rgba(203, 213, 225, 0.75);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-tool-grid--recent {
+  grid-template-columns: minmax(0, 280px);
+}
+
+.dashboard-categories-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+
+.dashboard-category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.dashboard-category-icon {
+  display: inline-flex;
+  font-size: 1.2rem;
+}
+
+.dashboard-category-name {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.05rem;
 }
 
 .dashboard-tool-card__icon {

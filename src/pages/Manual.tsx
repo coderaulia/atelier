@@ -13,9 +13,9 @@ const sections = [
 
 const toolTips: Record<string, string[]> = {
   'document-generator': [
-    'Choose a document type and style variant.',
-    'Fill Studio Settings once, then reuse across invoices, proposals, and agreements.',
-    'Use PDF export when final copy is ready.',
+    'Choose a document type and style variant, then fill Studio Settings once for reusable brand details.',
+    'For bulk work, download or match CSV headers for selected document type, then upload CSV and map fields.',
+    'Export generated documents as a PDF or PNG ZIP when final copy is ready.',
   ],
   'social-generator': [
     'Pick square, vertical, or carousel templates.',
@@ -42,10 +42,40 @@ const toolTips: Record<string, string[]> = {
     'Choose light, balanced, or maximum compression.',
     'Preview size savings before download.',
   ],
+  'pdf-organize': [
+    'Upload a PDF file and view pages as visual thumbnails.',
+    'Drag page thumbnails to reorder, or select and rotate/delete.',
+    'Export organized document or extract selected pages as PDF/ZIP.',
+  ],
+  'pdf-split': [
+    'Upload a PDF file.',
+    'Choose to split every page, every N pages, or specify custom ranges.',
+    'Download split PDF files as a ZIP package.',
+  ],
+  'pdf-watermark': [
+    'Upload a PDF file.',
+    'Set custom text and adjust size, opacity, rotation, color, and placement.',
+    'Preview changes on the first page, then apply and download watermarked PDF.',
+  ],
   'image-converter': [
     'Upload one or more images.',
     'Choose output format: PNG, JPG, WebP, or AVIF.',
     'Resize or adjust quality before export.',
+  ],
+  'image-compress': [
+    'Upload one or more images (JPG, PNG, WebP, AVIF).',
+    'Adjust quality slider or input target file size in KB.',
+    'Compare file sizes and download optimized output.',
+  ],
+  'image-resize': [
+    'Upload your image.',
+    'Enter target width/height or select custom preset (like social crop ratios).',
+    'Set fit/crop mode and download resized image.',
+  ],
+  'image-bg': [
+    'Upload image (PNG, JPG, WebP, AVIF).',
+    'Select keyed color to make background transparent or replace it with custom color.',
+    'Optionally view basic metadata fields or strip them during local re-encode.',
   ],
   ocr: [
     'Upload image or PDF scan.',

@@ -25,6 +25,32 @@ wrangler secret put GROQ_API_KEY
 
 `wrangler secret put` prompts for the value. Paste the secret, press Enter. It will not be printed back.
 
+## Brevo email setup
+
+The Worker sends transactional email through Brevo's v3 API. The sender is currently fixed as `Vanaila Studio <studio@vanaila.com>` in `api/src/lib/email.ts`.
+
+1. In [Brevo Senders & IP](https://app.brevo.com/senders/list), add `studio@vanaila.com` as a sender, or authenticate the full `vanaila.com` domain.
+2. Add the DKIM and other authentication DNS records shown by Brevo to the `vanaila.com` DNS zone. Use the exact names and values Brevo provides, then wait until Brevo reports the sender/domain as authenticated.
+3. Open [Brevo API keys](https://app.brevo.com/settings/keys/api) and create a v3 API key for the production Worker.
+4. Set the production Worker secret from the API directory:
+
+   ```bash
+   cd api
+   rtk npx wrangler secret put BREVO_API_KEY
+   ```
+
+5. Validate the key without sending email:
+
+   ```bash
+   curl --silent --output /dev/null --write-out "%{http_code}\n" \
+     --header "api-key: $BREVO_API_KEY" \
+     https://api.brevo.com/v3/account
+   ```
+
+   HTTP `200` means the key is valid. HTTP `401` means the key is missing or invalid.
+
+Sender verification must finish before registration, password reset, or billing emails can deliver. If sender address changes, update `api/src/lib/email.ts` and verify the new sender/domain in Brevo first.
+
 ## Production non-secret vars
 
 These are not secrets, so keep them in `api/wrangler.toml` under `[vars]` **after replacing values with your real domains**:
@@ -71,7 +97,7 @@ cd api
 cp .dev.vars.example .dev.vars
 ```
 
-Then fill values in `api/.dev.vars`:
+Then fill values in `api/.dev.vars`. Use a separate Brevo v3 API key for local development when possible, so it can be revoked without affecting production:
 
 ```dotenv
 ENVIRONMENT=development

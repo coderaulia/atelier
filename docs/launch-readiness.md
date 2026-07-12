@@ -93,7 +93,7 @@ if (event.transaction_status === 'settlement' || event.transaction_status === 'c
 ```bash
 # Production secrets
 wrangler secret put JWT_SECRET
-wrangler secret put RESEND_API_KEY
+wrangler secret put BREVO_API_KEY
 wrangler secret put MIDTRANS_SERVER_KEY  # Production key, not SB-Mid-*
 wrangler secret put MIDTRANS_CLIENT_KEY  # Production key
 wrangler secret put GROQ_API_KEY

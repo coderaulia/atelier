@@ -1,0 +1,8 @@
+ENVIRONMENT=development
+JWT_SECRET=replace-with-local-random-secret
+BREVO_API_KEY=replace-with-brevo-v3-api-key
+MIDTRANS_SERVER_KEY=replace-with-midtrans-sandbox-server-key
+GROQ_API_KEY=replace-with-groq-key
+APP_URL=http://localhost:5173
+ALLOWED_ORIGINS=http://localhost:5173
+MIDTRANS_BASE_URL=https://api.sandbox.midtrans.com

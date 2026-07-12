@@ -110,8 +110,8 @@ export default function MarketingWrapper({ tool, children }: MarketingWrapperPro
               <div className="mw-section__eyebrow">FAQ</div>
               <h2 className="mw-section__title">Questions people ask</h2>
               <div className="mw-faq__list">
-                {toolPage.faqs.map((faq) => (
-                  <details key={faq.question} className="mw-faq__item" open>
+                {toolPage.faqs.map((faq, index) => (
+                  <details key={faq.question} className="mw-faq__item" open={index === 0}>
                     <summary className="mw-faq__question">{faq.question}</summary>
                     <p className="mw-faq__answer">{faq.answer}</p>
                   </details>

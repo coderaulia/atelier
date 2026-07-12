@@ -67,8 +67,8 @@ export default function ToolLanding({ tool, children }: { tool: ToolPage; childr
         <div className="tool-section__eyebrow">FAQ</div>
         <h2>Questions people ask</h2>
         <div className="tool-faq__list">
-          {tool.faqs.map((faq) => (
-            <details key={faq.question} open>
+          {tool.faqs.map((faq, index) => (
+            <details key={faq.question} open={index === 0}>
               <summary>{faq.question}</summary>
               <p>{faq.answer}</p>
             </details>

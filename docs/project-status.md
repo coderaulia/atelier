@@ -24,14 +24,22 @@ Implemented routes:
 
 Implemented tools:
 
-- Document Generator
+- Document Generator, including CSV bulk generation and ZIP export
 - Social Generator
 - CV Builder
 - PDF to Image
 - PDF Merge
 - PDF Compress
+- PDF Organize
+- PDF Split
+- PDF Watermark
 - Image Converter
+- Image Compress
+- Image Resize & Crop
+- Image Background & Metadata
 - OCR
+
+Tool discovery and support surfaces now stay aligned with `src/lib/tools.tsx`: landing cards and footer links use registry data, dashboard quick access groups tools by category, manual guides cover all tools, and bug reports use registry-backed tool options. Public marketing metadata and static prerender routes cover all 14 tools.
 
 ## CV Builder
 
@@ -82,8 +90,9 @@ D1 schema includes:
 
 Build checks passing:
 
-- Frontend typecheck: pass
-- Frontend production build: pass
+- Frontend typecheck: pass (`npm run typecheck`, 2026-07-12)
+- Frontend production build: pass (`npm run build`, 2026-07-12)
+- Frontend prerender: pass (`npm run prerender`, 16 pages, 2026-07-12)
 - Backend typecheck: pass
 
 Deployment prerequisites still requiring operator action:

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MarketingNav from '../components/navigation/MarketingNav'
+import { TOOLS } from '../lib/tools'
 
 /* ---- Inline icons ---- */
 const ArrowIcon = () => (
@@ -33,24 +34,6 @@ const ConvertIcon = () => (
     <path d="M3 11V9a4 4 0 0 1 4-4h14" />
     <polyline points="7 23 3 19 7 15" />
     <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-  </svg>
-)
-const ScanIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
-    <line x1="3" y1="12" x2="21" y2="12" />
-  </svg>
-)
-const ImageIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
-  </svg>
-)
-const SocialIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
   </svg>
 )
 const BriefcaseIcon = () => (
@@ -152,7 +135,7 @@ function Hero() {
         <div className="hero__copy">
           <div className="hero__tag">
             <span className="hero__tag-dot" />
-            Now live · v0.1 + 4 new tools coming
+            Now live · {TOOLS.length} browser tools
           </div>
           <h1>
             One tab.<br />
@@ -163,7 +146,7 @@ function Hero() {
           </p>
           <div className="hero__ctas">
             <Link className="btn btn--accent btn--lg" to="/document-generator">Start free <ArrowIcon /></Link>
-            <a className="btn btn--ghost btn--lg" href="#tools">See all 8 tools</a>
+            <a className="btn btn--ghost btn--lg" href="#tools">See all {TOOLS.length} tools</a>
           </div>
           <div className="hero__proof">
             <div className="hero__proof-dots">
@@ -202,30 +185,139 @@ function Logos() {
 /* ===================== TOOLS GRID ===================== */
 const DOC_TYPES = [
   'Agreement', 'Invoice', 'Proposal', 'PRD',
-  'Retainer', 'Receipt', 'Onboarding', 'Handover', 'Social',
+  'Retainer', 'Receipt', 'Onboarding', 'Handover', 'Social', 'CSV Bulk',
 ]
+
+interface LandingToolCopy {
+  group: string
+  title: string
+  description: string
+  cta: string
+  size: 'lg' | 'md'
+}
+
+const LANDING_TOOL_COPY: Record<string, LandingToolCopy> = {
+  'social-generator': {
+    group: 'Social',
+    title: 'Posts that look designed.',
+    description: 'Square, vertical, and carousel templates with your brand baked in. Export individual slides.',
+    cta: 'Open Social',
+    size: 'md',
+  },
+  'cv-builder': {
+    group: 'CV Studio',
+    title: 'A CV that lands.',
+    description: 'ATS-friendly. Editorial. Designer-portfolio. Pick a template, type once, export to PDF. No paywall on download.',
+    cta: 'Try the live demo',
+    size: 'lg',
+  },
+  'pdf-to-image': {
+    group: 'Convert',
+    title: 'PDF pages into images.',
+    description: 'PDF → JPG or PNG. Batch pages, pick resolution, and keep files local in your browser.',
+    cta: 'Convert PDFs',
+    size: 'lg',
+  },
+  'pdf-merge': {
+    group: 'PDF Merge',
+    title: 'Merge PDFs instantly.',
+    description: 'Combine up to 20 PDFs into one file. Drag to reorder. Done locally.',
+    cta: 'Merge PDFs',
+    size: 'md',
+  },
+  'pdf-compress': {
+    group: 'PDF Compress',
+    title: 'Compress PDFs for sharing.',
+    description: 'Reduce PDF file size in-browser with light, balanced, or maximum compression.',
+    cta: 'Compress PDFs',
+    size: 'md',
+  },
+  'pdf-organize': {
+    group: 'PDF Organize',
+    title: 'Reorder pages without Acrobat.',
+    description: 'Rotate, remove, extract, and rearrange PDF pages in one private browser workspace.',
+    cta: 'Organize PDFs',
+    size: 'md',
+  },
+  'pdf-split': {
+    group: 'PDF Split',
+    title: 'Split PDFs into clean sets.',
+    description: 'Break large PDFs into pages or custom ranges without uploading client files.',
+    cta: 'Split PDFs',
+    size: 'md',
+  },
+  'pdf-watermark': {
+    group: 'PDF Watermark',
+    title: 'Mark PDFs before sending.',
+    description: 'Add styled text watermarks for drafts, approvals, client review, and internal files.',
+    cta: 'Watermark PDFs',
+    size: 'md',
+  },
+  'image-converter': {
+    group: 'Image Lab',
+    title: 'WebP, AVIF, whatever.',
+    description: "Convert PNG, JPG, WebP, and AVIF for your CMS, client, or aunt's iPhone.",
+    cta: 'Convert images',
+    size: 'md',
+  },
+  'image-compress': {
+    group: 'Image Compress',
+    title: 'Shrink images without drama.',
+    description: 'Reduce image size for web, email, storefronts, and client handoff without leaving the tab.',
+    cta: 'Compress images',
+    size: 'md',
+  },
+  'image-resize': {
+    group: 'Image Resize',
+    title: 'Resize crops to spec.',
+    description: 'Crop, scale, and export images for thumbnails, banners, avatars, and social posts.',
+    cta: 'Resize images',
+    size: 'md',
+  },
+  'image-bg': {
+    group: 'Image Cleanup',
+    title: 'Backgrounds and metadata handled.',
+    description: 'Remove backgrounds, inspect metadata, and strip hidden image details before sharing.',
+    cta: 'Clean images',
+    size: 'md',
+  },
+  ocr: {
+    group: 'Scan',
+    title: 'OCR that just works.',
+    description: 'Image or PDF in, plain text out. Receipts, screenshots, scanned docs.',
+    cta: 'Extract text',
+    size: 'md',
+  },
+}
+
+const TOOL_BADGE_LABELS: Record<string, string> = {
+  new: '● New',
+  beta: '● Beta',
+  pro: '● Pro',
+}
+
+const otherTools = TOOLS.filter((tool) => tool.id !== 'document-generator')
 
 function ToolsGrid() {
   return (
     <section className="section" id="tools">
       <div className="container">
         <div className="section__head">
-          <span className="eyebrow eyebrow--accent">The Suite · 08 Tools</span>
-          <h2>Eight tools that replace a <span className="accent">monthly stack</span> of subscriptions.</h2>
+          <span className="eyebrow eyebrow--accent">The Suite · {TOOLS.length.toString().padStart(2, '0')} Tools</span>
+          <h2>Fourteen tools that replace a <span className="accent">monthly stack</span> of subscriptions.</h2>
           <p className="section__lede">
             Each one solves a real, recurring annoyance. Use them standalone. Or as a chain — write the proposal, convert the PDF, post the win.
           </p>
         </div>
 
         <div className="tools">
-          {/* Document generator — hero tool, full-width */}
           <Link className="tool-card tool-card--hero" to="/document-generator">
             <div className="tool-card__body">
               <div className="tool-card__num">Tool 01 / Documents</div>
               <div className="tool-card__icon"><DocIcon /></div>
               <h3 className="tool-card__title">The document generator <span className="it">that ships.</span></h3>
               <p className="tool-card__desc">
-                Nine document types, three style variants each, live preview, PDF and image export. Built for the work between the work — agreements, invoices, retainers, the lot.
+                Nine document types, CSV bulk generation, three style variants each, live preview, PDF and image export. Built for the work between the work — agreements, invoices, retainers, the lot.
               </p>
               <div className="tool-card__doctypes">
                 {DOC_TYPES.map((d) => <span key={d} className="dt-pill">{d}</span>)}
@@ -259,96 +351,28 @@ function ToolsGrid() {
             </div>
           </Link>
 
-          <Link className="tool-card tool-card--lg" to="/cv-builder">
-            <div className="tool-card__num">Tool 02 / CV Studio</div>
-            <div className="tool-card__icon"><BriefcaseIcon /></div>
-            <h3 className="tool-card__title">A <span className="it">CV that lands.</span></h3>
-            <p className="tool-card__desc">
-              ATS-friendly. Editorial. Designer-portfolio. Pick a template, type once, export to PDF. No paywall on download.
-            </p>
-            <div className="tool-card__foot">
-              <span className="tool-card__cta">Try the live demo <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--live">● Live demo</span>
-            </div>
-          </Link>
-
-          <Link className="tool-card tool-card--lg" to="/pdf-to-image">
-            <div className="tool-card__num">Tool 03 / Convert</div>
-            <div className="tool-card__icon"><ConvertIcon /></div>
-            <h3 className="tool-card__title">PDF &amp; image, <span className="it">in either direction.</span></h3>
-            <p className="tool-card__desc">
-              PDF → JPG, PNG. JPG → PDF. Batch a folder. Done locally. Your files never leave the browser.
-            </p>
-            <div className="tool-card__foot">
-              <span className="tool-card__cta">Convert PDFs <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--live">● Live</span>
-            </div>
-          </Link>
-
-          <Link className="tool-card tool-card--md" to="/ocr">
-            <div className="tool-card__num">Tool 04 / Scan</div>
-            <div className="tool-card__icon"><ScanIcon /></div>
-            <h3 className="tool-card__title">OCR <span className="it">that just works.</span></h3>
-            <p className="tool-card__desc">
-              Image or PDF in, plain text out. Receipts, screenshots, scanned docs.
-            </p>
-            <div className="tool-card__foot">
-              <span className="tool-card__cta">Extract text <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--live">● Live</span>
-            </div>
-          </Link>
-
-          <Link className="tool-card tool-card--md" to="/image-converter">
-            <div className="tool-card__num">Tool 05 / Image Lab</div>
-            <div className="tool-card__icon"><ImageIcon /></div>
-            <h3 className="tool-card__title">WebP, AVIF, <span className="it">whatever.</span></h3>
-            <p className="tool-card__desc">
-              Convert, resize, compress. Match the format your CMS, client, or aunt's iPhone needs.
-            </p>
-            <div className="tool-card__foot">
-              <span className="tool-card__cta">Convert images <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--live">● Live</span>
-            </div>
-          </Link>
-
-          <Link className="tool-card tool-card--md" to="/social-generator">
-            <div className="tool-card__num">Inside Documents / Social</div>
-            <div className="tool-card__icon"><SocialIcon /></div>
-            <h3 className="tool-card__title">Posts that look <span className="it">designed.</span></h3>
-            <p className="tool-card__desc">
-              Square, vertical and carousel templates with your brand baked in. Export individual slides.
-            </p>
-            <div className="tool-card__foot">
-              <span className="tool-card__cta">Open Social <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--live">● Live</span>
-            </div>
-          </Link>
-
-          <Link className="tool-card tool-card--md" to="/pdf-merge">
-            <div className="tool-card__num">Tool 07 / PDF Merge</div>
-            <div className="tool-card__icon"><ConvertIcon /></div>
-            <h3 className="tool-card__title">Merge PDFs <span className="it">instantly.</span></h3>
-            <p className="tool-card__desc">
-              Combine up to 20 PDFs into one file. Drag to reorder. Done locally.
-            </p>
-            <div className="tool-card__foot">
-              <span className="tool-card__cta">Merge PDFs <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--live">● Live</span>
-            </div>
-          </Link>
-
-          <Link className="tool-card tool-card--md" to="/pdf-compress">
-            <div className="tool-card__num">Tool 08 / PDF Compress</div>
-            <div className="tool-card__icon"><ConvertIcon /></div>
-            <h3 className="tool-card__title">Compress PDFs <span className="it">for sharing.</span></h3>
-            <p className="tool-card__desc">
-              Reduce PDF file size in-browser with light, balanced, or maximum compression.
-            </p>
-            <div className="tool-card__foot">
-              <span className="tool-card__cta">Compress PDFs <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
-              <span className="tool-card__badge tool-card__badge--live">● Live</span>
-            </div>
-          </Link>
+          {otherTools.map((tool, index) => {
+            const copy = LANDING_TOOL_COPY[tool.id] ?? {
+              group: tool.category,
+              title: tool.name,
+              description: tool.description,
+              cta: `Open ${tool.name}`,
+              size: 'md' as const,
+            }
+            const badgeLabel = tool.badge ? TOOL_BADGE_LABELS[tool.badge] ?? `● ${tool.badge}` : '● Live'
+            return (
+              <Link key={tool.id} className={`tool-card tool-card--${copy.size}`} to={tool.publicPath}>
+                <div className="tool-card__num">Tool {String(index + 2).padStart(2, '0')} / {copy.group}</div>
+                <div className="tool-card__icon">{tool.icon}</div>
+                <h3 className="tool-card__title">{copy.title}</h3>
+                <p className="tool-card__desc">{copy.description}</p>
+                <div className="tool-card__foot">
+                  <span className="tool-card__cta">{copy.cta} <span className="tool-card__cta-arrow"><ArrowSmIcon /></span></span>
+                  <span className="tool-card__badge tool-card__badge--live">{badgeLabel}</span>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       </div>
     </section>
@@ -861,7 +885,7 @@ function Pricing() {
             </div>
             <div className="price-tier__tag">For 90% of people.</div>
             <ul className="price-tier__list" style={{ color: 'rgb(0, 0, 0)' }}>
-              <li>All 5 tools, fully functional</li>
+              <li>All {TOOLS.length} tools, fully functional</li>
               <li>All 9 document types + social</li>
               <li>Full CV template library</li>
               <li>PDF &amp; image exports (no watermark)</li>
@@ -944,12 +968,9 @@ function Footer() {
           </div>
           <div>
             <div className="footer__col-title">Tools</div>
-            <Link className="footer__col-link" to="/document-generator">Document Generator</Link>
-            <Link className="footer__col-link" to="/cv-builder">CV Builder</Link>
-            <Link className="footer__col-link" to="/pdf-to-image">PDF to Image</Link>
-            <Link className="footer__col-link" to="/ocr">Scan (OCR)</Link>
-            <Link className="footer__col-link" to="/image-converter">Image Converter</Link>
-            <Link className="footer__col-link" to="/social-generator">Social Generator</Link>
+            {TOOLS.map((tool) => (
+              <Link key={tool.id} className="footer__col-link" to={tool.publicPath}>{tool.name}</Link>
+            ))}
           </div>
           <div>
             <div className="footer__col-title">Company</div>

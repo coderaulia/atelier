@@ -147,7 +147,7 @@ ENVIRONMENT = "production"
 
 ### Setup Email Alerts
 
-**Option A: Cloudflare Cron + Resend**
+**Option A: Cloudflare Cron + Brevo**
 
 Add to `api/src/index.ts` scheduled handler:
 
@@ -170,7 +170,7 @@ async function handleScheduled(env: Bindings) {
       to: 'admin@vanaila.com',
       subject: '⚠️ High payment failure rate',
       html: `${recentFailures.count} payments failed in the last hour. Check /admin/transactions.`,
-    }, env.RESEND_API_KEY)
+    }, env.BREVO_API_KEY)
   }
 }
 ```

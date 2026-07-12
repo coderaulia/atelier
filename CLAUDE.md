@@ -9,7 +9,7 @@ Freemium browser-based toolkit with 8 professional tools: documents, social cont
 - Frontend: Vite + React 19 + React Router v7 + Tailwind CSS 4
 - Backend: Cloudflare Workers + Hono + Zod
 - Database: Cloudflare D1 (SQLite)
-- Email: Resend (bilingual EN/ID templates)
+- Email: Brevo (bilingual EN/ID templates)
 - Payments: Midtrans (recurring subscriptions)
 - AI: Groq API (`llama-3.3-70b-versatile`) for Pro-gated CV suggestions
 - Client-side processing: pdf.js, Tesseract.js, Canvas API, JSZip, pdf-lib, mammoth, docx, @jsquash/webp, @jsquash/avif
@@ -129,7 +129,7 @@ api/
       jwt.ts
       password.ts
       tokens.ts                   # Token generation + SHA256 hashing
-      email.ts                    # Resend integration + bilingual templates (EN/ID)
+      email.ts                    # Brevo integration + bilingual templates (EN/ID)
       pricing.ts                  # Pricing configuration
       rate-limit.ts               # Rate limiting logic
       rate-limit-cache.ts         # Rate limit caching

@@ -23,7 +23,7 @@ Run after passing `npm run test:flows` (API layer already verified).
 **Setup:** Real email address (use Mailinator or your own inbox).
 
 1. Register new account via `/register`
-2. Check inbox for "Verify your email" message from Resend/Atelier
+2. Check inbox for "Verify your email" message from Atelier (sent via Brevo)
 3. Click the verification link — should redirect to `/account?verified=1`
 4. Log in with the same credentials
 5. Confirm `/auth/me` or `/account` shows `email_verified: 1`
@@ -158,5 +158,5 @@ npx lighthouse https://atelier.vanailadigital.com/pdf-to-image --only-categories
 | Webhook flow (6) | `MIDTRANS_SERVER_KEY` |
 | Admin cron (6) | `ADMIN_EMAIL`, `ADMIN_PASSWORD` |
 | AI rewrite (4) | `GROQ_API_KEY` + pro plan |
-| Email verification (2) | `RESEND_API_KEY` + real inbox |
+| Email verification (2) | `BREVO_API_KEY` + real inbox |
 | Prerender SEO (8) | Production deploy (`npm run prerender`) |

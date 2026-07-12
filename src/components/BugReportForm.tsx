@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { submitBugReport } from '../lib/api'
+import { TOOLS } from '../lib/tools'
 
 interface BugReportFormProps {
   onSuccess?: () => void
@@ -8,9 +9,10 @@ interface BugReportFormProps {
 }
 
 export default function BugReportForm({ onSuccess, onCancel, defaultToolId }: BugReportFormProps) {
+  const knownDefault = TOOLS.some((t) => t.id === defaultToolId)
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
-  const [toolId, setToolId] = useState(defaultToolId ?? '')
+  const [toolId, setToolId] = useState(knownDefault ? (defaultToolId ?? '') : '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -88,14 +90,11 @@ export default function BugReportForm({ onSuccess, onCancel, defaultToolId }: Bu
           style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 6, fontSize: 14 }}
         >
           <option value="">-- Select a tool --</option>
-          <option value="pdf-to-image">PDF to Image</option>
-          <option value="pdf-merge">PDF Merge</option>
-          <option value="pdf-compress">PDF Compress</option>
-          <option value="image-converter">Image Converter</option>
-          <option value="ocr">OCR</option>
-          <option value="cv-builder">CV Builder</option>
-          <option value="document-generator">Document Generator</option>
-          <option value="social-generator">Social Media Generator</option>
+          {TOOLS.map((tool) => (
+            <option key={tool.id} value={tool.id}>
+              {tool.name}
+            </option>
+          ))}
         </select>
       </div>
 

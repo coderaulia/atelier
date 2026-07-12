@@ -2,6 +2,7 @@
 node_modules/
 api/node_modules/
 .rtk/
+.claude
 
 
 # build output

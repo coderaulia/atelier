@@ -4,6 +4,7 @@ import { usePlan } from '../../hooks/usePlan'
 import type { CompressionJob, ImageFormat } from './types'
 import UpgradeModal from '../../components/UpgradeModal'
 import Toast from '../../components/Toast'
+import JobThumb from '../../components/JobThumb'
 import { validateImage } from '../../lib/fileValidation'
 import { getFriendlyErrorMessage, isLowPowerDevice } from '../../lib/errorHandler'
 import '../image-converter/image-converter.css'
@@ -85,6 +86,8 @@ export default function ImageCompressTool() {
       progress: 0,
       originalSize: file.size
     }))
+
+    if (newJobs.length === 0) return
 
     setJobs(prev => [...prev, ...newJobs])
 
@@ -361,8 +364,8 @@ export default function ImageCompressTool() {
               {jobs.map(job => (
                 <div key={job.id} className="img-job">
                   <div className="img-job__header">
-                    <img
-                      src={URL.createObjectURL(job.file)}
+                    <JobThumb
+                      file={job.file}
                       alt={job.file.name}
                       className="img-job__thumb"
                     />

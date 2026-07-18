@@ -65,3 +65,6 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 
 ### Phase 8: DOCX Export
 - `9c2411c` — Added DOCX export via docx library (structured Word documents)
+
+### Maintenance: Image tool fixes
+- `eb11d92` — Fixed blob URL memory leak in 4 image tools via shared JobThumb component; guarded usage increment against failed runs; pinned dev port 5199

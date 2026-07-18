@@ -90,8 +90,8 @@ D1 schema includes:
 
 Build checks passing:
 
-- Frontend typecheck: pass (`npm run typecheck`, 2026-07-12)
-- Frontend production build: pass (`npm run build`, 2026-07-12)
+- Frontend typecheck: pass (`npm run typecheck`, 2026-07-18)
+- Frontend production build: pass (`npm run build`, 2026-07-18)
 - Frontend prerender: pass (`npm run prerender`, 16 pages, 2026-07-12)
 - Backend typecheck: pass
 

@@ -12,20 +12,78 @@ import '../../modules/documents/documents.css'
 
 const KINDS = ['Single', 'Carousel', 'CTA', 'News', 'Photo', 'Pricing', 'Social Proof']
 
-const STARTER_HTML = `<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:90px;box-sizing:border-box;background:var(--vc-cream)">
+interface Starter {
+  label: string
+  html: string
+  css: string
+  fields: SocialTemplateField[]
+}
+
+// Clone-able starter presets so admins have working examples to build from.
+const STARTERS: Record<string, Starter> = {
+  headline: {
+    label: 'Kicker + Headline',
+    html: `<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:90px;box-sizing:border-box;background:var(--vc-cream)">
   <div class="kick">{{kicker}}</div>
   <div class="head">{{headline}}</div>
   <div class="foot">{{brand.studioName}} · {{brand.handle}}</div>
-</div>`
-
-const STARTER_CSS = `.kick{font-family:var(--font-mono);font-size:28px;letter-spacing:.14em;text-transform:uppercase;color:var(--vc-red)}
+</div>`,
+    css: `.kick{font-family:var(--font-mono);font-size:28px;letter-spacing:.14em;text-transform:uppercase;color:var(--vc-red)}
 .head{font-family:var(--font-display);font-size:120px;line-height:1;color:var(--vc-ink);margin:24px 0 auto}
-.foot{font-family:var(--font-mono);font-size:22px;color:var(--vc-ink);opacity:.7}`
+.foot{font-family:var(--font-mono);font-size:22px;color:var(--vc-ink);opacity:.7}`,
+    fields: [
+      { key: 'kicker', label: 'Kicker', type: 'text', placeholder: 'Fresh Drop' },
+      { key: 'headline', label: 'Headline', type: 'textarea', placeholder: 'Say something bold' },
+    ],
+  },
+  stat: {
+    label: 'Big Stat',
+    html: `<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:90px;box-sizing:border-box;background:var(--vc-ink)">
+  <div class="lead">{{lead}}</div>
+  <div class="stat">{{stat}}</div>
+  <div class="cap">{{caption}}</div>
+</div>`,
+    css: `.lead{font-family:var(--font-display);font-style:italic;font-size:46px;color:var(--vc-cream)}
+.stat{font-family:var(--font-helvetica);font-weight:700;font-size:360px;line-height:.86;color:var(--vc-red);letter-spacing:-.04em}
+.cap{font-family:var(--font-display);font-style:italic;font-size:34px;color:var(--vc-cream);opacity:.8;margin-top:20px;max-width:760px}`,
+    fields: [
+      { key: 'lead', label: 'Lead-in', type: 'text', placeholder: 'Why do most posts fail?' },
+      { key: 'stat', label: 'Stat', type: 'text', placeholder: '91%' },
+      { key: 'caption', label: 'Caption', type: 'textarea', placeholder: 'of posts get zero engagement.' },
+    ],
+  },
+  list: {
+    label: 'Carousel-ready List',
+    html: `<div style="width:100%;height:100%;display:flex;flex-direction:column;padding:90px;box-sizing:border-box;background:var(--vc-cream)">
+  <div class="kick">{{kicker}}</div>
+  <div class="items">{{#each items}}<div class="item"><span class="n">{{@index}}</span>{{this}}</div>{{/each}}</div>
+  <div class="foot">{{brand.handle}}</div>
+</div>`,
+    css: `.kick{font-family:var(--font-mono);font-size:26px;letter-spacing:.14em;text-transform:uppercase;color:var(--vc-red);margin-bottom:40px}
+.items{flex:1;display:flex;flex-direction:column;gap:28px;justify-content:center}
+.item{font-family:var(--font-helvetica);font-weight:600;font-size:56px;color:var(--vc-ink);display:flex;gap:24px;align-items:baseline}
+.n{font-family:var(--font-mono);font-size:32px;color:var(--vc-red)}
+.foot{font-family:var(--font-mono);font-size:22px;color:var(--vc-ink);opacity:.6}`,
+    fields: [
+      { key: 'kicker', label: 'Kicker', type: 'text', placeholder: 'Five Rules' },
+      { key: 'items', label: 'Items (one per line)', type: 'textarea', placeholder: 'Ship daily\nCut scope\nStay close to users', hint: 'Each line becomes a numbered row via {{#each items}}.' },
+    ],
+  },
+}
 
-const STARTER_FIELDS: SocialTemplateField[] = [
-  { key: 'kicker', label: 'Kicker', type: 'text', placeholder: 'Fresh Drop' },
-  { key: 'headline', label: 'Headline', type: 'textarea', placeholder: 'Say something bold' },
-]
+// Split an uploaded HTML file into body markup + extracted <style> CSS.
+function splitHtmlFile(raw: string): { html: string; css: string } {
+  let css = ''
+  const html = raw.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_m, body) => { css += body + '\n'; return '' })
+  // If there's a <body>, keep only its contents.
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+  const cleaned = (bodyMatch ? bodyMatch[1] : html)
+    .replace(/<!DOCTYPE[^>]*>/gi, '')
+    .replace(/<\/?html[^>]*>/gi, '')
+    .replace(/<head[\s\S]*?<\/head>/gi, '')
+    .trim()
+  return { html: cleaned, css: css.trim() }
+}
 
 type Tab = 'html' | 'css' | 'fields'
 
@@ -40,9 +98,9 @@ export default function SocialTemplateEditor() {
   const [width, setWidth] = useState(1080)
   const [height, setHeight] = useState(1080)
   const [isPro, setIsPro] = useState(false)
-  const [html, setHtml] = useState(isNew ? STARTER_HTML : '')
-  const [css, setCss] = useState(isNew ? STARTER_CSS : '')
-  const [fieldsText, setFieldsText] = useState(isNew ? JSON.stringify(STARTER_FIELDS, null, 2) : '[]')
+  const [html, setHtml] = useState(isNew ? STARTERS.headline.html : '')
+  const [css, setCss] = useState(isNew ? STARTERS.headline.css : '')
+  const [fieldsText, setFieldsText] = useState(isNew ? JSON.stringify(STARTERS.headline.fields, null, 2) : '[]')
   const [status, setStatus] = useState('draft')
 
   const [tab, setTab] = useState<Tab>('html')
@@ -100,6 +158,33 @@ export default function SocialTemplateEditor() {
     }
   }
 
+  function loadStarter(key: string) {
+    const s = STARTERS[key]
+    if (!s) return
+    setHtml(s.html); setCss(s.css); setFieldsText(JSON.stringify(s.fields, null, 2))
+    setTab('html'); setSuccess(`Loaded "${s.label}" starter — edit and publish`)
+  }
+
+  async function handleFileUpload(file: File) {
+    setError(''); setSuccess('')
+    if (!/\.html?$/i.test(file.name)) { setError('Please upload an .html file'); return }
+    if (file.size > 256 * 1024) { setError('File too large (max 256 KB)'); return }
+    const raw = await file.text()
+    const { html: h, css: c } = splitHtmlFile(raw)
+    setHtml(h); if (c) setCss(c)
+    setTab('html')
+    // Immediately sanitize + detect fields from the uploaded markup.
+    try {
+      const res = await importSocialTemplateHtml(h, c || css)
+      setHtml(res.html); setCss(res.css)
+      setFieldsText(JSON.stringify(res.suggestedFields, null, 2))
+      setWarnings(res.warnings)
+      setSuccess(`Imported ${file.name} — detected ${res.tokens.length} token(s)`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Import failed')
+    }
+  }
+
   async function handleSave(): Promise<boolean> {
     setError(''); setSuccess(''); setWarnings([])
     if (!fieldsValid) { setError('Fields JSON is not a valid array'); return false }
@@ -152,7 +237,18 @@ export default function SocialTemplateEditor() {
             <h1>{isNew ? 'New template' : name || id}</h1>
             <p>Author a runtime social template. Published templates appear in the social generator without a redeploy.</p>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <select defaultValue="" onChange={(e) => { if (e.target.value) loadStarter(e.target.value); e.target.value = '' }}
+              title="Load a starter preset into the editor"
+              style={{ padding: '8px 10px', fontSize: 13, borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink-2)' }}>
+              <option value="">Start from…</option>
+              {Object.entries(STARTERS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
+            </select>
+            <label className="admin-btn" style={{ cursor: 'pointer' }}>
+              ⬆ Upload HTML
+              <input type="file" accept=".html,.htm,text/html" style={{ display: 'none' }}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = '' }} />
+            </label>
             <button className="admin-btn" onClick={() => navigate('/admin/content/social-templates')}>← Back</button>
             <button className="admin-btn" onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save draft'}</button>
             <button className="admin-btn admin-btn--primary" onClick={handlePublish}>Publish</button>

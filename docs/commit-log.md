@@ -87,3 +87,8 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 - `Admin/SocialTemplateEditor.tsx` — split editor: HTML/CSS/Fields JSON tabs + meta (id/name/kind/size/pro), live preview via RuntimeTemplate with sample data + default brand, "Detect fields" (HTML import), sanitizer warnings panel, Save/Publish/Disable
 - AdminLayout nav + App routes (`/admin/content/social-templates`, `/new`, `/:id`)
 - Verified full UI round-trip: create in editor → live preview → publish → admin list → appears in social generator
+
+### Runtime Social Templates — Phase 4/5: HTML Import + Starters
+- Editor: "Upload HTML" file input — extracts <style> into CSS, keeps <body> contents, then sanitizes + auto-detects {{tokens}} into fields
+- 3 clone-able starter presets (Kicker+Headline, Big Stat, Carousel-ready List with {{#each}}) via a "Start from…" picker
+- Verified: uploaded HTML with <script>+external-img stripped (warnings surfaced), token detection, starter loading, and {{#each items}} rendering 3 rows with {{@index}}/{{this}}

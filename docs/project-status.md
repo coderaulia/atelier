@@ -103,6 +103,10 @@ Deployment prerequisites still requiring operator action:
 - Seed production admin user
 - Run manual browser/payment/device test plan on staging
 
+## In progress
+
+- **Runtime social templates** (feat/runtime-social-templates) — admin-authored, data-driven templates for the social generator. Phase 1 (backend foundation) complete: `social_templates` table (migration `010`), Workers-safe template sanitizer with 26-case XSS test suite, admin CRUD + import API, public published-only feed. See `docs/plan-runtime-social-templates.md`. Remaining: renderer, admin editor UI, HTML importer UI, polish.
+
 ## Known limitations for launch
 
 - R2 cloud save is not part of the launch surface and has been removed from user-facing copy.

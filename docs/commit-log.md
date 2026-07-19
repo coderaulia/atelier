@@ -68,3 +68,9 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 
 ### Maintenance: Image tool fixes
 - `eb11d92` — Fixed blob URL memory leak in 4 image tools via shared JobThumb component; guarded usage increment against failed runs; pinned dev port 5199
+
+### Runtime Social Templates — Phase 1: Backend Foundation
+- Migration `010_social_templates.sql` — data-driven template store (html/css/fields JSON, status, versioning, pro gate, audit columns)
+- `lib/template-sanitize.ts` — Workers-safe HTML/CSS sanitizer + token extractor (write layer of dual-layer XSS defense; client DOMPurify is authoritative). Verified against 26 XSS payloads.
+- `routes/admin/social-templates.ts` — admin CRUD + publish/disable + HTML import (token detection), public published-only feed
+- Wired into admin aggregator and public routes

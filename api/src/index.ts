@@ -10,6 +10,7 @@ import bugReports from './routes/bug-reports'
 import cvAi from './routes/cv-ai'
 import anonUsage from './routes/anon-usage'
 import { contentPublic } from './routes/admin/content'
+import { socialTemplatesPublic } from './routes/admin/social-templates'
 import { checkRateLimit, getClientIP } from './lib/rate-limit'
 import { createAuth } from './lib/better-auth'
 import { isAllowedOrigin, requiresCsrfProtection } from './lib/request-security'
@@ -79,6 +80,7 @@ app.route('/api/log-error', logError)
 app.route('/billing', billing)
 app.route('/bug-reports', bugReports)
 app.route('/content', contentPublic)
+app.route('/social-templates', socialTemplatesPublic)
 app.route('/api', cvAi)
 app.route('/anon-usage', anonUsage)
 

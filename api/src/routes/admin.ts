@@ -7,6 +7,7 @@ import refundsAdmin from './admin/refunds'
 import analyticsAdmin from './admin/analytics'
 import systemAdmin from './admin/system'
 import { contentAdmin } from './admin/content'
+import { socialTemplatesAdmin } from './admin/social-templates'
 import auditAdmin from './admin/audit'
 import { checkRateLimit, getClientIP } from '../lib/rate-limit'
 import { PRICING } from '../lib/pricing'
@@ -323,6 +324,7 @@ admin.route('/refunds', refundsAdmin)
 admin.route('/analytics', analyticsAdmin)
 admin.route('/system', systemAdmin)
 admin.route('/content', contentAdmin)
+admin.route('/social-templates', socialTemplatesAdmin)
 admin.route('/audit', auditAdmin)
 
 // ── Notifications ─────────────────────────────────────────────────

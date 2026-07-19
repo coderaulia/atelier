@@ -38,6 +38,8 @@ const AdminFeatureFlags = lazy(() => import('./pages/Admin/FeatureFlags'))
 const AdminHealthMonitor = lazy(() => import('./pages/Admin/HealthMonitor'))
 const AdminAnnouncements = lazy(() => import('./pages/Admin/Announcements'))
 const AdminEmailTemplates = lazy(() => import('./pages/Admin/EmailTemplates'))
+const AdminSocialTemplates = lazy(() => import('./pages/Admin/SocialTemplates'))
+const AdminSocialTemplateEditor = lazy(() => import('./pages/Admin/SocialTemplateEditor'))
 const AdminAuditLogs = lazy(() => import('./pages/Admin/AuditLogs'))
 const AdminErrors = lazy(() => import('./pages/Admin/Errors'))
 const Receipt = lazy(() => import('./pages/Receipt'))
@@ -236,6 +238,30 @@ export default function App() {
         element={
           <Suspense fallback={null}>
             <AdminEmailTemplates />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/content/social-templates"
+        element={
+          <Suspense fallback={null}>
+            <AdminSocialTemplates />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/content/social-templates/new"
+        element={
+          <Suspense fallback={null}>
+            <AdminSocialTemplateEditor />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/content/social-templates/:id"
+        element={
+          <Suspense fallback={null}>
+            <AdminSocialTemplateEditor />
           </Suspense>
         }
       />

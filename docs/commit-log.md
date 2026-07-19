@@ -81,3 +81,9 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 - api.ts: public feed + admin CRUD/import client functions
 - DocumentTool: `useAllSocialTemplates()` merges built-ins with published runtime templates (built-ins always work offline)
 - Verified: render (tokens+brand resolved, scoped style), registry merge (count 31→32), export parity with built-ins, render-time XSS neutralized (field payload escaped, no exec)
+
+### Runtime Social Templates — Phase 3: Admin Editor
+- `Admin/SocialTemplates.tsx` — list page (name/kind/status/pro/version/updated) with publish-toggle, edit, delete; empty state
+- `Admin/SocialTemplateEditor.tsx` — split editor: HTML/CSS/Fields JSON tabs + meta (id/name/kind/size/pro), live preview via RuntimeTemplate with sample data + default brand, "Detect fields" (HTML import), sanitizer warnings panel, Save/Publish/Disable
+- AdminLayout nav + App routes (`/admin/content/social-templates`, `/new`, `/:id`)
+- Verified full UI round-trip: create in editor → live preview → publish → admin list → appears in social generator

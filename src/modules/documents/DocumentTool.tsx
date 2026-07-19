@@ -15,6 +15,8 @@ import {
 } from './tweaks-panel';
 import { SocialTemplates } from '../social/social-templates';
 import { TikTokTemplates } from '../social/tiktok-templates';
+import { toRegistryTemplate, type RuntimeTemplateDef } from '../social/RuntimeTemplate';
+import { getPublishedSocialTemplates, type SocialTemplateRow } from '../../lib/api';
 import {
   DEFAULT_BRAND, DEFAULT_AGREEMENT, DEFAULT_INVOICE, DEFAULT_PROPOSAL,
   DEFAULT_PRD, DEFAULT_RETAINER, DEFAULT_RECEIPT, DEFAULT_ONBOARDING,
@@ -27,7 +29,34 @@ import UpgradeModal from '../../components/UpgradeModal';
 import { usePlan } from '../../hooks/usePlan';
 import { parseCSV, generateCSVTemplate, autoMapHeaders, constructRowData, convertPngToPdf, DOCUMENT_FIELDS, FIELD_LABELS } from './bulk-utils';
 
-const AllSocialTemplates = [...SocialTemplates, ...TikTokTemplates];
+const BuiltInSocialTemplates = [...SocialTemplates, ...TikTokTemplates];
+
+// Convert a stored template row into a registry-compatible template object.
+function rowToRegistry(row: SocialTemplateRow) {
+  let fields: RuntimeTemplateDef['fields'] = [];
+  let slides: string[] | undefined;
+  try { fields = JSON.parse(row.fields_json || '[]'); } catch { fields = []; }
+  try { slides = row.slides_json ? JSON.parse(row.slides_json) : undefined; } catch { slides = undefined; }
+  const def: RuntimeTemplateDef = {
+    id: row.id, name: row.name, kind: row.kind, category: row.category ?? undefined,
+    width: row.width, height: row.height, fields, html: row.html, css: row.css,
+    slides, is_pro: !!row.is_pro, __runtime: true,
+  };
+  return toRegistryTemplate(def);
+}
+
+// Hook: built-in templates plus any published runtime templates from the API.
+function useAllSocialTemplates() {
+  const [runtime, setRuntime] = useState<any[]>([]);
+  useEffect(() => {
+    let alive = true;
+    getPublishedSocialTemplates()
+      .then((res) => { if (alive) setRuntime((res.templates || []).map(rowToRegistry)); })
+      .catch(() => { /* built-ins always work offline; ignore feed errors */ });
+    return () => { alive = false; };
+  }, []);
+  return useMemo(() => [...BuiltInSocialTemplates, ...runtime], [runtime]);
+}
 
 const DOC_TYPES = [
   { id: "agreement",  name: "Agreement",   icon: Icon.doc,      Editor: AgreementEditor,      defaults: DEFAULT_AGREEMENT,  hasVariants: true },
@@ -236,6 +265,7 @@ type DocumentToolMode = 'full' | 'documents' | 'social';
 /* ---------- Main app ---------- */
 export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMode }) {
   const { user } = useAuth();
+  const AllSocialTemplates = useAllSocialTemplates();
   const TWEAK_DEFAULTS = { accent: "#1c4532", fontHeader: "serif", fontBody: "sans", paper: "letter" };
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 

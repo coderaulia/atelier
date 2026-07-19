@@ -74,3 +74,10 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 - `lib/template-sanitize.ts` — Workers-safe HTML/CSS sanitizer + token extractor (write layer of dual-layer XSS defense; client DOMPurify is authoritative). Verified against 26 XSS payloads.
 - `routes/admin/social-templates.ts` — admin CRUD + publish/disable + HTML import (token detection), public published-only feed
 - Wired into admin aggregator and public routes
+
+### Runtime Social Templates — Phase 2: Client Renderer
+- `RuntimeTemplate.tsx` — authoritative client render boundary: resolves {{tokens}} + {{#each}} + {{brand.*}} (values HTML-escaped), DOMPurify sanitize (html+svg profile), CSS scoped to a unique wrapper id; renders into `.social-frame` so existing html-to-image export is inherited unchanged
+- `toRegistryTemplate()` synthesizes a `.slides()` so runtime templates plug into AllSocialTemplates transparently
+- api.ts: public feed + admin CRUD/import client functions
+- DocumentTool: `useAllSocialTemplates()` merges built-ins with published runtime templates (built-ins always work offline)
+- Verified: render (tokens+brand resolved, scoped style), registry merge (count 31→32), export parity with built-ins, render-time XSS neutralized (field payload escaped, no exec)

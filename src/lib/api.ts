@@ -794,3 +794,120 @@ export function generateCVAI(payload: { action: CVAIAction; text?: string; conte
     body: JSON.stringify(payload),
   })
 }
+
+// ── Runtime social templates ─────────────────────────────────────────
+
+export interface SocialTemplateField {
+  key: string
+  label: string
+  type?: 'text' | 'textarea' | 'image' | 'select'
+  placeholder?: string
+  hint?: string
+  options?: { value: string; label: string }[]
+}
+
+export interface SocialTemplateRow {
+  id: string
+  name: string
+  kind: string
+  category?: string | null
+  width: number
+  height: number
+  fields_json: string
+  html: string
+  css: string
+  slides_json?: string | null
+  is_pro: number
+  version: number
+  status?: string
+  html_source?: string | null
+  css_source?: string | null
+  updated_at?: number
+  created_at?: number
+}
+
+export interface SocialTemplateWriteResult {
+  id: string
+  tokens: string[]
+  repeats: string[]
+  warnings: string[]
+}
+
+export interface SocialTemplatePayload {
+  id?: string
+  name: string
+  kind: string
+  category?: string
+  width: number
+  height: number
+  fields: SocialTemplateField[]
+  html: string
+  css: string
+  slides?: string[]
+  is_pro: boolean
+}
+
+// Public published-only feed (works unauthenticated for anonymous users).
+export function getPublishedSocialTemplates() {
+  return request<{ templates: SocialTemplateRow[] }>('/social-templates')
+}
+
+export function getAdminSocialTemplates() {
+  return request<{ templates: SocialTemplateRow[] }>('/admin/social-templates', { headers: authHeaders() })
+}
+
+export function getAdminSocialTemplate(id: string) {
+  return request<{ template: SocialTemplateRow }>(`/admin/social-templates/${id}`, { headers: authHeaders() })
+}
+
+export function createSocialTemplate(payload: SocialTemplatePayload) {
+  return request<SocialTemplateWriteResult>('/admin/social-templates', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateSocialTemplate(id: string, payload: Partial<SocialTemplatePayload>) {
+  return request<SocialTemplateWriteResult>(`/admin/social-templates/${id}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function publishSocialTemplate(id: string) {
+  return request<{ ok: boolean; status: string }>(`/admin/social-templates/${id}/publish`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+}
+
+export function disableSocialTemplate(id: string) {
+  return request<{ ok: boolean; status: string }>(`/admin/social-templates/${id}/disable`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+}
+
+export function deleteSocialTemplate(id: string) {
+  return request<{ ok: boolean }>(`/admin/social-templates/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+}
+
+export function importSocialTemplateHtml(html: string, css?: string) {
+  return request<{
+    html: string
+    css: string
+    tokens: string[]
+    repeats: string[]
+    suggestedFields: SocialTemplateField[]
+    warnings: string[]
+  }>('/admin/social-templates/import', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ html, css }),
+  })
+}

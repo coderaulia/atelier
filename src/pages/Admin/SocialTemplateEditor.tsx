@@ -102,6 +102,9 @@ export default function SocialTemplateEditor() {
   const [css, setCss] = useState(isNew ? STARTERS.headline.css : '')
   const [fieldsText, setFieldsText] = useState(isNew ? JSON.stringify(STARTERS.headline.fields, null, 2) : '[]')
   const [status, setStatus] = useState('draft')
+  // Carousel authoring: extra slides beyond the first. Slide 1 is always `html`.
+  const [extraSlides, setExtraSlides] = useState<string[]>([])
+  const [slideIdx, setSlideIdx] = useState(0)
 
   const [tab, setTab] = useState<Tab>('html')
   const [loading, setLoading] = useState(!isNew)
@@ -120,6 +123,8 @@ export default function SocialTemplateEditor() {
         setHtml(t.html_source ?? t.html)
         setCss(t.css_source ?? t.css)
         setFieldsText(JSON.stringify(safeParse(t.fields_json, []), null, 2))
+        const stored = safeParse<string[]>(t.slides_json ?? 'null', [])
+        setExtraSlides(Array.isArray(stored) && stored.length > 1 ? stored.slice(1) : [])
       })
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
       .finally(() => setLoading(false))
@@ -137,6 +142,29 @@ export default function SocialTemplateEditor() {
     for (const f of fields) d[f.key] = f.placeholder || f.label || f.key
     return d
   }, [fields])
+
+  // Carousel slides: slide 1 is `html`, the rest live in extraSlides.
+  const isCarousel = kind === 'Carousel'
+  const allSlides = useMemo(() => [html, ...extraSlides], [html, extraSlides])
+  const safeSlideIdx = Math.min(slideIdx, allSlides.length - 1)
+  const currentSlideHtml = isCarousel ? allSlides[safeSlideIdx] ?? '' : html
+
+  function setCurrentSlideHtml(v: string) {
+    if (!isCarousel || safeSlideIdx === 0) { setHtml(v); return }
+    setExtraSlides((prev) => prev.map((s, i) => (i === safeSlideIdx - 1 ? v : s)))
+  }
+
+  function addSlide() {
+    setExtraSlides((prev) => [...prev, currentSlideHtml])
+    setSlideIdx(allSlides.length)
+    setTab('html')
+  }
+
+  function removeSlide(idx: number) {
+    if (idx === 0) return // slide 1 is the base template
+    setExtraSlides((prev) => prev.filter((_, i) => i !== idx - 1))
+    setSlideIdx((i) => (i >= idx ? i - 1 : i))
+  }
 
   const previewDef: RuntimeTemplateDef = useMemo(() => ({
     id: id || 'preview', name: name || 'Preview', kind, category: undefined,
@@ -188,7 +216,11 @@ export default function SocialTemplateEditor() {
   async function handleSave(): Promise<boolean> {
     setError(''); setSuccess(''); setWarnings([])
     if (!fieldsValid) { setError('Fields JSON is not a valid array'); return false }
-    const payload: SocialTemplatePayload = { id, name, kind, width, height, fields, html, css, is_pro: isPro }
+    const payload: SocialTemplatePayload = {
+      id, name, kind, width, height, fields, html, css, is_pro: isPro,
+      // Only carousels persist a slide list; a single template renders `html`.
+      ...(isCarousel && allSlides.length > 1 ? { slides: allSlides } : {}),
+    }
     setSaving(true)
     try {
       const res = isNew ? await createSocialTemplate(payload) : await updateSocialTemplate(id, payload)
@@ -315,8 +347,38 @@ export default function SocialTemplateEditor() {
             </div>
 
             {tab === 'html' && (
-              <textarea value={html} onChange={(e) => setHtml(e.target.value)} spellCheck={false}
-                style={editorTextareaStyle} placeholder="Template markup with {{tokens}}…" />
+              <>
+                {isCarousel && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+                    {allSlides.map((_, i) => (
+                      <span key={i} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <button onClick={() => setSlideIdx(i)}
+                          style={{
+                            padding: '5px 10px', fontSize: 12, borderRadius: 6,
+                            border: `1px solid ${i === safeSlideIdx ? 'var(--accent)' : 'var(--border)'}`,
+                            background: i === safeSlideIdx ? 'rgba(227,88,44,0.08)' : 'transparent',
+                            color: i === safeSlideIdx ? 'var(--accent)' : 'var(--ink-2)', cursor: 'pointer',
+                          }}>Slide {i + 1}</button>
+                        {i > 0 && (
+                          <button onClick={() => removeSlide(i)} title={`Remove slide ${i + 1}`}
+                            style={{ marginLeft: 2, padding: '4px 6px', fontSize: 12, border: 'none', background: 'transparent', color: 'var(--ink-3)', cursor: 'pointer' }}>×</button>
+                        )}
+                      </span>
+                    ))}
+                    <button onClick={addSlide} title="Duplicate the current slide as a new one"
+                      style={{ padding: '5px 10px', fontSize: 12, borderRadius: 6, border: '1px dashed var(--border)', background: 'transparent', color: 'var(--ink-2)', cursor: 'pointer' }}>
+                      + Add slide
+                    </button>
+                  </div>
+                )}
+                <textarea value={currentSlideHtml} onChange={(e) => setCurrentSlideHtml(e.target.value)} spellCheck={false}
+                  style={editorTextareaStyle} placeholder="Template markup with {{tokens}}…" />
+                {isCarousel && (
+                  <p style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 6 }}>
+                    Editing slide {safeSlideIdx + 1} of {allSlides.length}. Each slide exports as its own image; users download them together as a carousel.
+                  </p>
+                )}
+              </>
             )}
             {tab === 'css' && (
               <textarea value={css} onChange={(e) => setCss(e.target.value)} spellCheck={false}
@@ -344,12 +406,14 @@ export default function SocialTemplateEditor() {
           {/* ── Live preview column ── */}
           <div style={{ position: 'sticky', top: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-              Live preview {status !== 'draft' && <span className="badge badge--free" style={{ marginLeft: 6 }}>{status}</span>}
+              Live preview{isCarousel ? ` · slide ${safeSlideIdx + 1}/${allSlides.length}` : ''}
+              {status !== 'draft' && <span className="badge badge--free" style={{ marginLeft: 6 }}>{status}</span>}
             </div>
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: 16, overflow: 'hidden' }}>
               <div style={{ height: height * previewScale, overflow: 'hidden' }}>
                 <div style={{ transform: `scale(${previewScale})`, transformOrigin: 'top left', width, height }}>
-                  <RuntimeTemplate template={previewDef} data={sampleData} brand={DEFAULT_BRAND as Record<string, unknown>} />
+                  <RuntimeTemplate template={previewDef} data={sampleData} brand={DEFAULT_BRAND as Record<string, unknown>}
+                    slideHtml={isCarousel ? currentSlideHtml : undefined} />
                 </div>
               </div>
             </div>

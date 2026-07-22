@@ -92,3 +92,8 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 - Editor: "Upload HTML" file input — extracts <style> into CSS, keeps <body> contents, then sanitizes + auto-detects {{tokens}} into fields
 - 3 clone-able starter presets (Kicker+Headline, Big Stat, Carousel-ready List with {{#each}}) via a "Start from…" picker
 - Verified: uploaded HTML with <script>+external-img stripped (warnings surfaced), token detection, starter loading, and {{#each items}} rendering 3 rows with {{@index}}/{{this}}
+
+### Runtime Social Templates — Phase 6: Gap fixes
+- Multi-slide carousels are now authorable: editor gains a slide strip (Slide 1..N, add/remove) that edits each slide's HTML independently and previews the selected one; saves `slides[]`
+- `is_pro` is now enforced: Pro-gated templates show a PRO badge, raise the upgrade modal on click instead of opening the editor, and are blocked at all four export paths as a backstop
+- `toRegistryTemplate` now derives picker `category` from the canvas aspect, so 1080x1920 runtime templates group under "TikTok / Threads" instead of "Instagram 1:1"

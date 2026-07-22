@@ -496,6 +496,19 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const ActiveSocial = docType === "social" ? AllSocialTemplates.find((s: any) => s.id === socialTemplateId) : null;
   const socialSlides = ActiveSocial ? (ActiveSocial as any).slides({ data: socialActiveData || {}, brand }) : [];
 
+  // Pro-gated templates: block selection for non-Pro users and surface the
+  // upgrade modal instead of silently letting them author an unusable design.
+  const isTemplateLocked = (tpl: any) => !!tpl?.isPro && plan !== 'pro';
+  const selectSocialTemplate = (nextId: string) => {
+    const tpl = AllSocialTemplates.find((s: any) => s.id === nextId);
+    if (isTemplateLocked(tpl)) { setShowUpgrade(true); return; }
+    setSocialTemplateId(nextId);
+  };
+
+  // Backstop: if a Pro template is somehow active (e.g. plan downgraded after
+  // it was persisted to localStorage), block export rather than emit it.
+  const activeSocialLocked = docType === "social" && isTemplateLocked(ActiveSocial);
+
   const paperClass = `paper paper--${t.paper}`;
   const TplComponent = docType !== "social" ? ((DocTemplates as any)[docType] || {})[variant] : null;
   const exportTarget = docType === "social" ? "#social-target-0" : "#paper-target";
@@ -515,18 +528,21 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   }, [docType, data, socialTemplateId]);
 
   const handlePrint = () => {
+    if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     exportPrint(exportTarget);
     increment();
   };
 
   const handleImage = async (fmt: string) => {
+    if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     await exportImage(exportTarget, filename, fmt);
     increment();
   };
 
   const handleCopyImage = async () => {
+    if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     setCopyState("copying");
     try {
@@ -547,6 +563,7 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   };
 
   const downloadAllSlides = async (fmt: string) => {
+    if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     for (let i = 0; i < socialSlides.length; i++) {
       await exportImage(`#social-target-${i}`, `${filename}-${String(i + 1).padStart(2, "0")}`, fmt);
@@ -853,7 +870,8 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
                   onChange={setData}
                   templates={AllSocialTemplates}
                   activeId={socialTemplateId}
-                  setActiveId={setSocialTemplateId}
+                  setActiveId={selectSocialTemplate}
+                  isLocked={isTemplateLocked}
                   recentId={recentSocialTemplateId}
                   setRecentId={setRecentSocialTemplateId}
                   defaults={DEFAULT_SOCIAL}

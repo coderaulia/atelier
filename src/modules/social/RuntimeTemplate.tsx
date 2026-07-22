@@ -174,6 +174,9 @@ export function toRegistryTemplate(def: RuntimeTemplateDef) {
     id: def.id,
     name: def.name,
     kind: def.kind,
+    // The picker groups by aspect ("square" | "vertical"), so derive it from the
+    // canvas rather than the admin's free-text category label.
+    category: def.height > def.width ? 'vertical' : 'square',
     isPro: !!def.is_pro,
     __runtime: true,
     fields: def.fields,

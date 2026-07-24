@@ -20,10 +20,11 @@ async function loadPdfJs() {
   return pdfjs
 }
 
-type Tool = 'select' | 'text' | 'cover'
+type Tool = 'select' | 'text' | 'sign' | 'cover'
 type TextOverlay = { id: string; type: 'text'; x: number; y: number; text: string; size: number; color: string }
 type CoverOverlay = { id: string; type: 'cover'; x: number; y: number; width: number; height: number }
-type Overlay = TextOverlay | CoverOverlay
+type SignatureOverlay = { id: string; type: 'signature'; x: number; y: number; width: number; height: number; data: string }
+type Overlay = TextOverlay | CoverOverlay | SignatureOverlay
 type Point = { x: number; y: number }
 
 const FREE_PAGE_LIMIT = 20
@@ -54,9 +55,12 @@ export default function PDFEditTool() {
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [isLight, setIsLight] = useState(false)
+  const [signatureReady, setSignatureReady] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
+  const signaturePadRef = useRef<HTMLCanvasElement>(null)
+  const isSigningRef = useRef(false)
   const { isPro } = usePlan()
   const { canUse, increment } = useToolLimit('pdf-edit')
   const pageLimit = isPro ? PRO_PAGE_LIMIT : FREE_PAGE_LIMIT
@@ -131,8 +135,13 @@ export default function PDFEditTool() {
       if (!text.trim()) return setToast({ message: 'Enter text before placing it on the page.', type: 'error' })
       addOverlay({ id: crypto.randomUUID(), type: 'text', x: point.x, y: point.y, text: text.trim(), size: textSize, color: textColor })
       setActiveTool('select')
+    } else if (activeTool === 'sign') {
+      const signature = signaturePadRef.current
+      if (!signature || !signatureReady) return setToast({ message: 'Draw your signature before placing it on the page.', type: 'error' })
+      addOverlay({ id: crypto.randomUUID(), type: 'signature', x: point.x, y: point.y, width: 28, height: 12, data: signature.toDataURL('image/png') })
+      setActiveTool('select')
     } else setDraftCover({ start: point, end: point })
-  }, [activeTool, addOverlay, pointFromEvent, text, textColor, textSize])
+  }, [activeTool, addOverlay, pointFromEvent, signatureReady, text, textColor, textSize])
 
   const onPointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
     if (!draftCover) return
@@ -150,6 +159,36 @@ export default function PDFEditTool() {
 
   const deleteOverlay = useCallback((id: string) => setOverlays((current) => ({ ...current, [selectedPage]: (current[selectedPage] ?? []).filter((item) => item.id !== id) })), [selectedPage])
 
+  const signaturePoint = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = signaturePadRef.current
+    if (!canvas) return null
+    const rect = canvas.getBoundingClientRect()
+    return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }
+  }, [])
+
+  const startSignature = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
+    const point = signaturePoint(event); const context = signaturePadRef.current?.getContext('2d')
+    if (!point || !context) return
+    isSigningRef.current = true; event.currentTarget.setPointerCapture(event.pointerId)
+    context.beginPath(); context.moveTo(point.x, point.y)
+  }, [signaturePoint])
+
+  const drawSignature = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isSigningRef.current) return
+    const point = signaturePoint(event); const context = signaturePadRef.current?.getContext('2d')
+    if (!point || !context) return
+    context.lineCap = 'round'; context.lineJoin = 'round'; context.lineWidth = 5; context.strokeStyle = '#0a0f18'
+    context.lineTo(point.x, point.y); context.stroke(); setSignatureReady(true)
+  }, [signaturePoint])
+
+  const endSignature = useCallback(() => { isSigningRef.current = false }, [])
+
+  const clearSignature = useCallback(() => {
+    const canvas = signaturePadRef.current; const context = canvas?.getContext('2d')
+    if (canvas && context) context.clearRect(0, 0, canvas.width, canvas.height)
+    setSignatureReady(false)
+  }, [])
+
   const exportPdf = useCallback(async () => {
     if (!file) return
     if (!canUse) return setShowUpgrade(true)
@@ -159,15 +198,21 @@ export default function PDFEditTool() {
       const source = await PDFDocument.load(await file.arrayBuffer(), { ignoreEncryption: false })
       const output = await PDFDocument.create(); const font = await output.embedFont(StandardFonts.Helvetica)
       const pages = await output.copyPages(source, pageOrder.map((page) => page - 1))
-      pages.forEach((page, index) => {
+      for (let index = 0; index < pages.length; index++) {
+        const page = pages[index]
+        output.addPage(page)
         const originalPage = pageOrder[index]
         if (rotations[originalPage]) page.setRotation(degrees(rotations[originalPage]))
         const { width, height } = page.getSize()
         for (const overlay of overlays[originalPage] ?? []) {
           if (overlay.type === 'text') page.drawText(overlay.text, { x: width * overlay.x / 100, y: height * (1 - overlay.y / 100) - overlay.size, size: overlay.size, maxWidth: width * (1 - overlay.x / 100), font, color: hexToRgb(overlay.color) })
-          else page.drawRectangle({ x: width * overlay.x / 100, y: height * (1 - overlay.y / 100) - height * overlay.height / 100, width: width * overlay.width / 100, height: height * overlay.height / 100, color: rgb(0, 0, 0) })
+          else if (overlay.type === 'cover') page.drawRectangle({ x: width * overlay.x / 100, y: height * (1 - overlay.y / 100) - height * overlay.height / 100, width: width * overlay.width / 100, height: height * overlay.height / 100, color: rgb(0, 0, 0) })
+          else {
+            const signature = await output.embedPng(await (await fetch(overlay.data)).arrayBuffer())
+            page.drawImage(signature, { x: width * overlay.x / 100, y: height * (1 - overlay.y / 100) - height * overlay.height / 100, width: width * overlay.width / 100, height: height * overlay.height / 100 })
+          }
         }
-      })
+      }
       const outputBytes = new Uint8Array(await output.save())
       const url = URL.createObjectURL(new Blob([outputBytes.buffer], { type: 'application/pdf' }))
       const link = document.createElement('a'); link.href = url; link.download = `${file.name.replace(/\.pdf$/i, '')}-edited.pdf`; link.click()
@@ -184,7 +229,7 @@ export default function PDFEditTool() {
     <section className="pdfedit-workspace">
       {!file ? <div className="pdfmd-empty"><strong>Make visual PDF changes.</strong><span>Upload a PDF to place text and covers directly on the rendered page.</span></div> : <>
         <div className="pdfedit-toolbar"><label>Page<select value={selectedPage} onChange={(event) => setSelectedPage(Number(event.target.value))}>{pageOrder.map((page, index) => <option value={page} key={page}>Page {page} (position {index + 1})</option>)}</select></label><div className="pdfedit-actions"><button type="button" onClick={() => move(-1)}>Move left</button><button type="button" onClick={() => move(1)}>Move right</button><button type="button" onClick={() => rotate(-90)}>Rotate left</button><button type="button" onClick={() => rotate(90)}>Rotate right</button><button type="button" className="pdfedit-danger" onClick={removePage}>Remove page</button></div></div>
-        <div className="pdfedit-editor"><aside className="pdfedit-tools"><div className="pdfedit-tool-tabs"><button type="button" className={activeTool === 'select' ? 'is-active' : ''} onClick={() => setActiveTool('select')}>Select</button><button type="button" className={activeTool === 'text' ? 'is-active' : ''} onClick={() => setActiveTool('text')}>Add text</button><button type="button" className={activeTool === 'cover' ? 'is-active' : ''} onClick={() => setActiveTool('cover')}>Cover block</button></div>{activeTool === 'text' && <div className="pdfedit-control"><label>Text<textarea value={text} onChange={(event) => setText(event.target.value)} placeholder="Type text, then click the page" /></label><label>Size<input type="number" min="8" max="72" value={textSize} onChange={(event) => setTextSize(Number(event.target.value))} /></label><label>Color<input type="color" value={textColor} onChange={(event) => setTextColor(event.target.value)} /></label><p>Click a spot on the PDF page to place this text.</p></div>}{activeTool === 'cover' && <div className="pdfedit-control"><p>Drag on the PDF page to add a black cover block.</p><p className="pdfedit-warning">A cover block only hides content visually. It is not secure redaction.</p></div>}<div className="pdfedit-layer-list"><strong>Page layers</strong>{currentOverlays.length ? currentOverlays.map((overlay, index) => <div key={overlay.id}><span>{overlay.type === 'text' ? `Text ${index + 1}` : `Cover ${index + 1}`}</span><button type="button" onClick={() => deleteOverlay(overlay.id)} aria-label={`Delete layer ${index + 1}`}>x</button></div>) : <small>No added layers</small>}</div></aside><div className={`pdfedit-stage-wrap tool-${activeTool}`}><div ref={stageRef} className="pdfedit-stage" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}><canvas ref={canvasRef} />{previewLoading && <div className="pdfedit-loading">Rendering page</div>}{currentOverlays.map((overlay) => overlay.type === 'text' ? <div key={overlay.id} className="pdfedit-overlay pdfedit-overlay--text" style={{ left: `${overlay.x}%`, top: `${overlay.y}%`, fontSize: `${overlay.size}px`, color: overlay.color }}>{overlay.text}</div> : <div key={overlay.id} className="pdfedit-overlay pdfedit-overlay--cover" style={{ left: `${overlay.x}%`, top: `${overlay.y}%`, width: `${overlay.width}%`, height: `${overlay.height}%` }} />)}{draftCover && <div className="pdfedit-overlay pdfedit-overlay--cover pdfedit-overlay--draft" style={{ left: `${Math.min(draftCover.start.x, draftCover.end.x)}%`, top: `${Math.min(draftCover.start.y, draftCover.end.y)}%`, width: `${Math.abs(draftCover.start.x - draftCover.end.x)}%`, height: `${Math.abs(draftCover.start.y - draftCover.end.y)}%` }} />}</div></div></div>
+        <div className="pdfedit-editor"><aside className="pdfedit-tools"><div className="pdfedit-tool-tabs"><button type="button" className={activeTool === 'select' ? 'is-active' : ''} onClick={() => setActiveTool('select')}>Select</button><button type="button" className={activeTool === 'text' ? 'is-active' : ''} onClick={() => setActiveTool('text')}>Add text</button><button type="button" className={activeTool === 'sign' ? 'is-active' : ''} onClick={() => setActiveTool('sign')}>Sign PDF</button><button type="button" className={activeTool === 'cover' ? 'is-active' : ''} onClick={() => setActiveTool('cover')}>Cover block</button></div>{activeTool === 'text' && <div className="pdfedit-control"><label>Text<textarea value={text} onChange={(event) => setText(event.target.value)} placeholder="Type text, then click the page" /></label><label>Size<input type="number" min="8" max="72" value={textSize} onChange={(event) => setTextSize(Number(event.target.value))} /></label><label>Color<input type="color" value={textColor} onChange={(event) => setTextColor(event.target.value)} /></label><p>Click a spot on the PDF page to place this text.</p></div>}{activeTool === 'sign' && <div className="pdfedit-control"><label>Draw signature<canvas ref={signaturePadRef} className="pdfedit-signature-pad" width="560" height="190" onPointerDown={startSignature} onPointerMove={drawSignature} onPointerUp={endSignature} onPointerLeave={endSignature} /></label><button type="button" className="pdfedit-clear-signature" onClick={clearSignature}>Clear signature</button><p>Draw above, then click the PDF page to place it.</p></div>}{activeTool === 'cover' && <div className="pdfedit-control"><p>Drag on the PDF page to add a black cover block.</p><p className="pdfedit-warning">A cover block only hides content visually. It is not secure redaction.</p></div>}<div className="pdfedit-layer-list"><strong>Page layers</strong>{currentOverlays.length ? currentOverlays.map((overlay, index) => <div key={overlay.id}><span>{overlay.type === 'text' ? `Text ${index + 1}` : overlay.type === 'signature' ? `Signature ${index + 1}` : `Cover ${index + 1}`}</span><button type="button" onClick={() => deleteOverlay(overlay.id)} aria-label={`Delete layer ${index + 1}`}>x</button></div>) : <small>No added layers</small>}</div></aside><div className={`pdfedit-stage-wrap tool-${activeTool}`}><div ref={stageRef} className="pdfedit-stage" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp}><canvas ref={canvasRef} />{previewLoading && <div className="pdfedit-loading">Rendering page</div>}{currentOverlays.map((overlay) => overlay.type === 'text' ? <div key={overlay.id} className="pdfedit-overlay pdfedit-overlay--text" style={{ left: `${overlay.x}%`, top: `${overlay.y}%`, fontSize: `${overlay.size}px`, color: overlay.color }}>{overlay.text}</div> : overlay.type === 'signature' ? <img key={overlay.id} className="pdfedit-overlay pdfedit-overlay--signature" src={overlay.data} alt="Signature" style={{ left: `${overlay.x}%`, top: `${overlay.y}%`, width: `${overlay.width}%`, height: `${overlay.height}%` }} /> : <div key={overlay.id} className="pdfedit-overlay pdfedit-overlay--cover" style={{ left: `${overlay.x}%`, top: `${overlay.y}%`, width: `${overlay.width}%`, height: `${overlay.height}%` }} />)}{draftCover && <div className="pdfedit-overlay pdfedit-overlay--cover pdfedit-overlay--draft" style={{ left: `${Math.min(draftCover.start.x, draftCover.end.x)}%`, top: `${Math.min(draftCover.start.y, draftCover.end.y)}%`, width: `${Math.abs(draftCover.start.x - draftCover.end.x)}%`, height: `${Math.abs(draftCover.start.y - draftCover.end.y)}%` }} />}</div></div></div>
       </>}
     </section>
     {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

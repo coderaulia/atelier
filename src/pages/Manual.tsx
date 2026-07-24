@@ -74,7 +74,7 @@ const toolTips: Record<string, string[]> = {
   ],
   'pdf-edit': [
     'Choose a PDF and select the page to adjust.',
-    'Move, rotate, or remove pages, then add text or configure black cover blocks.',
+    'Move, rotate, or remove pages, then add text, draw a signature, or configure black cover blocks.',
     'Cover blocks only hide content visually; do not use them as secure redaction.',
   ],
   'image-converter': [

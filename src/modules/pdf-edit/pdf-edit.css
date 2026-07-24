@@ -26,10 +26,13 @@
 .pdfedit-stage-wrap { display: grid; place-items: start center; min-height: 560px; overflow: auto; padding: 18px; border: 1px solid var(--pdf-line); background: #0e141d; }
 .pdfedit-stage { position: relative; width: fit-content; max-width: 100%; line-height: 0; box-shadow: 0 10px 26px rgba(0,0,0,.35); touch-action: none; }
 .pdfedit-stage canvas { display: block; max-width: 100%; height: auto; background: #fff; }
-.pdfedit-stage-wrap.tool-text .pdfedit-stage, .pdfedit-stage-wrap.tool-cover .pdfedit-stage { cursor: crosshair; }
+.pdfedit-stage-wrap.tool-text .pdfedit-stage, .pdfedit-stage-wrap.tool-sign .pdfedit-stage, .pdfedit-stage-wrap.tool-cover .pdfedit-stage { cursor: crosshair; }
 .pdfedit-overlay { position: absolute; box-sizing: border-box; pointer-events: none; }
 .pdfedit-overlay--text { line-height: 1.2; max-width: 80%; white-space: pre-wrap; text-shadow: 0 1px 2px rgba(255,255,255,.75); transform: translateY(-1px); }
 .pdfedit-overlay--cover { background: #000; }
+.pdfedit-overlay--signature { object-fit: contain; object-position: left top; }
 .pdfedit-overlay--draft { opacity: .72; outline: 1px dashed #fff; }
 .pdfedit-loading { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(13,20,29,.72); color: var(--pdf-accent); font-size: 13px; line-height: 1; }
+.pdfedit-signature-pad { width: 100%; height: auto; border: 1px dashed var(--pdf-line); background: #fff; cursor: crosshair; touch-action: none; }
+.pdfedit-clear-signature { min-height: 32px; border: 1px solid var(--pdf-line); background: transparent; color: var(--pdf-text); cursor: pointer; font-size: 12px; font-weight: 700; }
 @media (max-width: 900px) { .pdfedit-tool { grid-template-columns: 1fr; } .pdfedit-sidebar { min-height: 0; border-right: 0; border-bottom: 1px solid var(--pdf-line); } .pdfedit-editor { grid-template-columns: 1fr; } .pdfedit-toolbar { align-items: start; flex-direction: column; } .pdfedit-actions { justify-content: start; } }

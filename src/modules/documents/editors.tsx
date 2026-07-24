@@ -234,7 +234,7 @@ export function PRDEditor({ data, onChange }: any) {
 }
 
 /* ---------- SOCIAL ---------- */
-export function SocialEditor({ data, onChange, templates, activeId, setActiveId, recentId, setRecentId, defaults, onStepChange }: any) {
+export function SocialEditor({ data, onChange, templates, activeId, setActiveId, recentId, setRecentId, defaults, onStepChange, isLocked }: any) {
   const [step, setStep] = useState("pick");
   const [search, setSearch] = useState("");
   const [filterKey, setFilterKey] = useState("all");
@@ -296,15 +296,22 @@ export function SocialEditor({ data, onChange, templates, activeId, setActiveId,
     const tplW = t.width || 1080;
     const tplH = t.height || 1080;
     const scale = TILE_W / tplW;
+    const locked = isLocked ? isLocked(t) : false;
     return (
       <button
         key={t.id}
         className={"social-grid__tile " + (cat === "vertical" ? "social-grid__tile--vertical " : "") + (t.id === activeId ? "social-grid__tile--active " : "") + (t.id === recentId ? "social-grid__tile--recent" : "")}
         style={{ aspectRatio: `${tplW} / ${tplH}` }}
-        onClick={() => { setActiveId(t.id); if (setRecentId) setRecentId(t.id); changeStep("edit"); }}
-        title={t.name}
+        onClick={() => {
+          // Locked templates hand off to setActiveId, which raises the upgrade
+          // modal; don't advance to the editor or mark it recent.
+          if (locked) { setActiveId(t.id); return; }
+          setActiveId(t.id); if (setRecentId) setRecentId(t.id); changeStep("edit");
+        }}
+        title={locked ? `${t.name} — Pro only` : t.name}
       >
-        {t.id === recentId && <span className="social-grid__recent-badge">Recent</span>}
+        {locked && <span className="social-grid__pro-badge">PRO</span>}
+        {t.id === recentId && !locked && <span className="social-grid__recent-badge">Recent</span>}
         <div className="social-grid__tile-thumb" style={{ width: tplW, height: tplH, transform: `scale(${scale})` }}>
           {firstSlide}
         </div>

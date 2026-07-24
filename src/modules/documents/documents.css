@@ -1029,6 +1029,22 @@ input, textarea, select { font-family: inherit; color: inherit; }
   text-transform: uppercase;
   box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
+.social-grid__pro-badge {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 3;
+  background: #0e0e0e;
+  color: #f4c542;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+}
 .social-grid__tile-thumb {
   transform-origin: top left;
   pointer-events: none;

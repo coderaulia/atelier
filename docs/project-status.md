@@ -103,6 +103,15 @@ Deployment prerequisites still requiring operator action:
 - Seed production admin user
 - Run manual browser/payment/device test plan on staging
 
+## In progress
+
+- **Runtime social templates** (feat/runtime-social-templates) — admin-authored, data-driven templates for the social generator, addable without a redeploy. All core phases complete:
+  - Phase 1 — `social_templates` table (migration `010`), Workers-safe sanitizer (26-case XSS suite), admin CRUD + import API, public published-only feed.
+  - Phase 2 — `RuntimeTemplate.tsx` render boundary (token/brand/`{{#each}}` resolution, HTML-escaped values, DOMPurify, scoped CSS), merged into the social registry; export parity with built-ins.
+  - Phase 3 — admin list + split editor with live preview (`/admin/content/social-templates`).
+  - Phase 4/5 — HTML file upload (extracts `<style>`, sanitizes, detects tokens), 3 clone-able starter presets incl. a `{{#each}}` carousel list, Pro gating via `is_pro`.
+  - See `docs/plan-runtime-social-templates.md`. Remaining: optional CodeMirror editor upgrade; remote D1 migration on deploy.
+
 ## Known limitations for launch
 
 - R2 cloud save is not part of the launch surface and has been removed from user-facing copy.

@@ -15,6 +15,8 @@ import {
 } from './tweaks-panel';
 import { SocialTemplates } from '../social/social-templates';
 import { TikTokTemplates } from '../social/tiktok-templates';
+import { toRegistryTemplate, type RuntimeTemplateDef } from '../social/RuntimeTemplate';
+import { getPublishedSocialTemplates, type SocialTemplateRow } from '../../lib/api';
 import {
   DEFAULT_BRAND, DEFAULT_AGREEMENT, DEFAULT_INVOICE, DEFAULT_PROPOSAL,
   DEFAULT_PRD, DEFAULT_RETAINER, DEFAULT_RECEIPT, DEFAULT_ONBOARDING,
@@ -27,7 +29,34 @@ import UpgradeModal from '../../components/UpgradeModal';
 import { usePlan } from '../../hooks/usePlan';
 import { parseCSV, generateCSVTemplate, autoMapHeaders, constructRowData, convertPngToPdf, DOCUMENT_FIELDS, FIELD_LABELS } from './bulk-utils';
 
-const AllSocialTemplates = [...SocialTemplates, ...TikTokTemplates];
+const BuiltInSocialTemplates = [...SocialTemplates, ...TikTokTemplates];
+
+// Convert a stored template row into a registry-compatible template object.
+function rowToRegistry(row: SocialTemplateRow) {
+  let fields: RuntimeTemplateDef['fields'] = [];
+  let slides: string[] | undefined;
+  try { fields = JSON.parse(row.fields_json || '[]'); } catch { fields = []; }
+  try { slides = row.slides_json ? JSON.parse(row.slides_json) : undefined; } catch { slides = undefined; }
+  const def: RuntimeTemplateDef = {
+    id: row.id, name: row.name, kind: row.kind, category: row.category ?? undefined,
+    width: row.width, height: row.height, fields, html: row.html, css: row.css,
+    slides, is_pro: !!row.is_pro, __runtime: true,
+  };
+  return toRegistryTemplate(def);
+}
+
+// Hook: built-in templates plus any published runtime templates from the API.
+function useAllSocialTemplates() {
+  const [runtime, setRuntime] = useState<any[]>([]);
+  useEffect(() => {
+    let alive = true;
+    getPublishedSocialTemplates()
+      .then((res) => { if (alive) setRuntime((res.templates || []).map(rowToRegistry)); })
+      .catch(() => { /* built-ins always work offline; ignore feed errors */ });
+    return () => { alive = false; };
+  }, []);
+  return useMemo(() => [...BuiltInSocialTemplates, ...runtime], [runtime]);
+}
 
 const DOC_TYPES = [
   { id: "agreement",  name: "Agreement",   icon: Icon.doc,      Editor: AgreementEditor,      defaults: DEFAULT_AGREEMENT,  hasVariants: true },
@@ -236,6 +265,7 @@ type DocumentToolMode = 'full' | 'documents' | 'social';
 /* ---------- Main app ---------- */
 export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMode }) {
   const { user } = useAuth();
+  const AllSocialTemplates = useAllSocialTemplates();
   const TWEAK_DEFAULTS = { accent: "#1c4532", fontHeader: "serif", fontBody: "sans", paper: "letter" };
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
@@ -466,6 +496,19 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const ActiveSocial = docType === "social" ? AllSocialTemplates.find((s: any) => s.id === socialTemplateId) : null;
   const socialSlides = ActiveSocial ? (ActiveSocial as any).slides({ data: socialActiveData || {}, brand }) : [];
 
+  // Pro-gated templates: block selection for non-Pro users and surface the
+  // upgrade modal instead of silently letting them author an unusable design.
+  const isTemplateLocked = (tpl: any) => !!tpl?.isPro && plan !== 'pro';
+  const selectSocialTemplate = (nextId: string) => {
+    const tpl = AllSocialTemplates.find((s: any) => s.id === nextId);
+    if (isTemplateLocked(tpl)) { setShowUpgrade(true); return; }
+    setSocialTemplateId(nextId);
+  };
+
+  // Backstop: if a Pro template is somehow active (e.g. plan downgraded after
+  // it was persisted to localStorage), block export rather than emit it.
+  const activeSocialLocked = docType === "social" && isTemplateLocked(ActiveSocial);
+
   const paperClass = `paper paper--${t.paper}`;
   const TplComponent = docType !== "social" ? ((DocTemplates as any)[docType] || {})[variant] : null;
   const exportTarget = docType === "social" ? "#social-target-0" : "#paper-target";
@@ -485,18 +528,21 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   }, [docType, data, socialTemplateId]);
 
   const handlePrint = () => {
+    if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     exportPrint(exportTarget);
     increment();
   };
 
   const handleImage = async (fmt: string) => {
+    if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     await exportImage(exportTarget, filename, fmt);
     increment();
   };
 
   const handleCopyImage = async () => {
+    if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     setCopyState("copying");
     try {
@@ -517,6 +563,7 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   };
 
   const downloadAllSlides = async (fmt: string) => {
+    if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     for (let i = 0; i < socialSlides.length; i++) {
       await exportImage(`#social-target-${i}`, `${filename}-${String(i + 1).padStart(2, "0")}`, fmt);
@@ -823,7 +870,8 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
                   onChange={setData}
                   templates={AllSocialTemplates}
                   activeId={socialTemplateId}
-                  setActiveId={setSocialTemplateId}
+                  setActiveId={selectSocialTemplate}
+                  isLocked={isTemplateLocked}
                   recentId={recentSocialTemplateId}
                   setRecentId={setRecentSocialTemplateId}
                   defaults={DEFAULT_SOCIAL}

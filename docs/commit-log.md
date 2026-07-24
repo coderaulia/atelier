@@ -68,3 +68,32 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 
 ### Maintenance: Image tool fixes
 - `eb11d92` — Fixed blob URL memory leak in 4 image tools via shared JobThumb component; guarded usage increment against failed runs; pinned dev port 5199
+
+### Runtime Social Templates — Phase 1: Backend Foundation
+- Migration `010_social_templates.sql` — data-driven template store (html/css/fields JSON, status, versioning, pro gate, audit columns)
+- `lib/template-sanitize.ts` — Workers-safe HTML/CSS sanitizer + token extractor (write layer of dual-layer XSS defense; client DOMPurify is authoritative). Verified against 26 XSS payloads.
+- `routes/admin/social-templates.ts` — admin CRUD + publish/disable + HTML import (token detection), public published-only feed
+- Wired into admin aggregator and public routes
+
+### Runtime Social Templates — Phase 2: Client Renderer
+- `RuntimeTemplate.tsx` — authoritative client render boundary: resolves {{tokens}} + {{#each}} + {{brand.*}} (values HTML-escaped), DOMPurify sanitize (html+svg profile), CSS scoped to a unique wrapper id; renders into `.social-frame` so existing html-to-image export is inherited unchanged
+- `toRegistryTemplate()` synthesizes a `.slides()` so runtime templates plug into AllSocialTemplates transparently
+- api.ts: public feed + admin CRUD/import client functions
+- DocumentTool: `useAllSocialTemplates()` merges built-ins with published runtime templates (built-ins always work offline)
+- Verified: render (tokens+brand resolved, scoped style), registry merge (count 31→32), export parity with built-ins, render-time XSS neutralized (field payload escaped, no exec)
+
+### Runtime Social Templates — Phase 3: Admin Editor
+- `Admin/SocialTemplates.tsx` — list page (name/kind/status/pro/version/updated) with publish-toggle, edit, delete; empty state
+- `Admin/SocialTemplateEditor.tsx` — split editor: HTML/CSS/Fields JSON tabs + meta (id/name/kind/size/pro), live preview via RuntimeTemplate with sample data + default brand, "Detect fields" (HTML import), sanitizer warnings panel, Save/Publish/Disable
+- AdminLayout nav + App routes (`/admin/content/social-templates`, `/new`, `/:id`)
+- Verified full UI round-trip: create in editor → live preview → publish → admin list → appears in social generator
+
+### Runtime Social Templates — Phase 4/5: HTML Import + Starters
+- Editor: "Upload HTML" file input — extracts <style> into CSS, keeps <body> contents, then sanitizes + auto-detects {{tokens}} into fields
+- 3 clone-able starter presets (Kicker+Headline, Big Stat, Carousel-ready List with {{#each}}) via a "Start from…" picker
+- Verified: uploaded HTML with <script>+external-img stripped (warnings surfaced), token detection, starter loading, and {{#each items}} rendering 3 rows with {{@index}}/{{this}}
+
+### Runtime Social Templates — Phase 6: Gap fixes
+- Multi-slide carousels are now authorable: editor gains a slide strip (Slide 1..N, add/remove) that edits each slide's HTML independently and previews the selected one; saves `slides[]`
+- `is_pro` is now enforced: Pro-gated templates show a PRO badge, raise the upgrade modal on click instead of opening the editor, and are blocked at all four export paths as a backstop
+- `toRegistryTemplate` now derives picker `category` from the canvas aspect, so 1080x1920 runtime templates group under "TikTok / Threads" instead of "Instagram 1:1"

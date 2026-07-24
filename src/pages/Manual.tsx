@@ -57,6 +57,26 @@ const toolTips: Record<string, string[]> = {
     'Set custom text and adjust size, opacity, rotation, color, and placement.',
     'Preview changes on the first page, then apply and download watermarked PDF.',
   ],
+  'pdf-markdown': [
+    'Upload a PDF with selectable text.',
+    'Convert the first 10 pages on Free, or up to 100 pages on Pro.',
+    'Copy the editable preview or download a Markdown file; Pro can OCR scanned pages.',
+  ],
+  'pdf-word': [
+    'Upload a PDF with selectable text.',
+    'Convert the first 10 pages on Free, or up to 100 pages on Pro.',
+    'Open the downloaded DOCX in Word or another compatible editor to continue editing.',
+  ],
+  'pdf-powerpoint': [
+    'Upload a PDF document.',
+    'Choose editable text slides for revision or visual slides to preserve page appearance.',
+    'Download the resulting PPTX and continue working in PowerPoint or a compatible presentation editor.',
+  ],
+  'pdf-edit': [
+    'Choose a PDF and select the page to adjust.',
+    'Move, rotate, or remove pages, then add text or configure black cover blocks.',
+    'Cover blocks only hide content visually; do not use them as secure redaction.',
+  ],
   'image-converter': [
     'Upload one or more images.',
     'Choose output format: PNG, JPG, WebP, or AVIF.',

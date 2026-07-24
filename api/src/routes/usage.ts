@@ -14,7 +14,7 @@ function proDailyLimit(proTier: ProTier | null): number {
 }
 
 // Tools that don't consume credits (always free)
-const FREE_TOOLS = new Set(['pdf-merge', 'pdf-compress', 'pdf-organize', 'image-converter', 'image-compress', 'image-resize', 'pdf-split', 'pdf-watermark', 'image-bg'])
+const FREE_TOOLS = new Set(['pdf-merge', 'pdf-compress', 'pdf-organize', 'image-converter', 'image-compress', 'image-resize', 'pdf-split', 'pdf-watermark', 'pdf-markdown', 'pdf-word', 'pdf-powerpoint', 'pdf-edit', 'image-bg'])
 
 // Credit packs are scoped to a specific tool — a CV pack cannot pay for a social export.
 const TOOL_PACK_TYPE: Record<string, string> = {

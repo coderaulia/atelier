@@ -1,0 +1,19 @@
+.pdfedit-tool { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 600px; background: #f7f8fb; color: #172033; }
+.pdfedit-sidebar { min-height: 600px; }
+.pdfedit-sidebar .pdfmd-limit { margin-top: 18px; }
+.pdfedit-workspace { min-width: 0; padding: 22px; }
+.pdfedit-pages { display: flex; justify-content: space-between; align-items: end; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid #dce1eb; }
+.pdfedit-pages label, .pdfedit-panels label { display: grid; gap: 6px; color: #536278; font-size: 12px; font-weight: 600; }
+.pdfedit-pages select, .pdfedit-panels select, .pdfedit-panels input, .pdfedit-panels textarea { border: 1px solid #cbd4e1; background: #fff; color: #172033; font: inherit; }
+.pdfedit-pages select { width: 180px; height: 36px; padding: 0 8px; }
+.pdfedit-page-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.pdfedit-page-actions button { min-height: 34px; padding: 0 9px; border: 1px solid #cbd4e1; background: #fff; color: #31435b; cursor: pointer; font-size: 12px; font-weight: 700; }
+.pdfedit-page-actions .pdfedit-danger { border-color: #b84d4d; color: #a13d3d; }
+.pdfedit-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+.pdfedit-panels section { padding: 18px; border: 1px solid #dce1eb; background: #fff; }
+.pdfedit-panels h3 { margin: 0 0 13px; font-size: 15px; }
+.pdfedit-panels p { margin: 0 0 14px; color: #69788d; font-size: 12px; line-height: 1.5; }
+.pdfedit-panels textarea { width: 100%; min-height: 94px; padding: 9px; resize: vertical; }
+.pdfedit-panels select, .pdfedit-panels input { min-height: 34px; padding: 0 8px; }
+.pdfedit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; margin: 12px 0; }
+@media (max-width: 860px) { .pdfedit-tool { grid-template-columns: 1fr; } .pdfedit-sidebar { min-height: 0; border-right: 0; border-bottom: 1px solid #dce1eb; } .pdfedit-panels { grid-template-columns: 1fr; } .pdfedit-pages { align-items: start; flex-direction: column; } }

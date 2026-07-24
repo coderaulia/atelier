@@ -3,6 +3,7 @@ import { usePlan } from '../../hooks/usePlan'
 import { useToolLimit } from '../../hooks/useToolLimit'
 import UpgradeModal from '../../components/UpgradeModal'
 import Toast from '../../components/Toast'
+import PDFThemeToggle from '../../components/PDFThemeToggle'
 import { validatePDF } from '../../lib/fileValidation'
 import { getFriendlyErrorMessage, releaseCanvas } from '../../lib/errorHandler'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
@@ -88,6 +89,7 @@ export default function PDFMarkdownTool() {
   const [language, setLanguage] = useState<Language>('eng')
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [isLight, setIsLight] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const { isPro } = usePlan()
   const { canUse, increment } = useToolLimit('pdf-markdown')
@@ -189,12 +191,12 @@ export default function PDFMarkdownTool() {
   }, [markdown])
 
   return (
-    <div className="pdfmd-tool">
+    <div className={`pdfmd-tool ${isLight ? 'pdfmd-tool--light' : ''}`}>
       <aside className="pdfmd-sidebar">
         <div className="pdfmd-sidebar__head">
           <span className="pdfmd-kicker">Private browser conversion</span>
           <h2>PDF to Markdown</h2>
-          <p>Extract readable text without uploading the document.</p>
+          <p>Extract readable text without uploading the document.</p><PDFThemeToggle isLight={isLight} onToggle={() => setIsLight((current) => !current)} />
         </div>
         {!file ? (
           <div className={`pdfmd-dropzone ${isDragging ? 'pdfmd-dropzone--active' : ''}`} onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={(event) => { event.preventDefault(); setIsDragging(false); void inspectFile(event.dataTransfer.files[0]) }}>

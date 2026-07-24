@@ -3,6 +3,7 @@ import { usePlan } from '../../hooks/usePlan'
 import { useToolLimit } from '../../hooks/useToolLimit'
 import UpgradeModal from '../../components/UpgradeModal'
 import Toast from '../../components/Toast'
+import PDFThemeToggle from '../../components/PDFThemeToggle'
 import { validatePDF } from '../../lib/fileValidation'
 import { getFriendlyErrorMessage, releaseCanvas } from '../../lib/errorHandler'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
@@ -34,6 +35,7 @@ export default function PDFPowerPointTool() {
   const [progress, setProgress] = useState(0)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' } | null>(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [isLight, setIsLight] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const { isPro } = usePlan()
   const { canUse, increment } = useToolLimit('pdf-powerpoint')
@@ -99,9 +101,9 @@ export default function PDFPowerPointTool() {
     finally { setIsProcessing(false); setProgress(0) }
   }, [canUse, file, increment, mode, pageLimit])
 
-  return <div className="pdfmd-tool">
+  return <div className={`pdfmd-tool ${isLight ? 'pdfmd-tool--light' : ''}`}>
     <aside className="pdfmd-sidebar">
-      <div className="pdfmd-sidebar__head"><span className="pdfmd-kicker">Private browser conversion</span><h2>PDF to PowerPoint</h2><p>Turn PDF pages into a PPTX without uploading your document.</p></div>
+      <div className="pdfmd-sidebar__head"><span className="pdfmd-kicker">Private browser conversion</span><h2>PDF to PowerPoint</h2><p>Turn PDF pages into a PPTX without uploading your document.</p><PDFThemeToggle isLight={isLight} onToggle={() => setIsLight((current) => !current)} /></div>
       {!file ? <div className={`pdfmd-dropzone ${isDragging ? 'pdfmd-dropzone--active' : ''}`} onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={(event) => { event.preventDefault(); setIsDragging(false); void inspectFile(event.dataTransfer.files[0]) }}><strong>Choose a PDF</strong><span>or drop one here</span><small>Up to 50 MB</small><input ref={inputRef} type="file" accept=".pdf,application/pdf" hidden onChange={(event) => void inspectFile(event.target.files?.[0] ?? null)} /></div> : <><div className="pdfmd-file"><div><strong>{file.name}</strong><span>{pageCount} pages - {(file.size / 1024 / 1024).toFixed(1)} MB</span></div><button type="button" aria-label="Remove file" onClick={clear}>x</button></div><div className="pdfmd-settings"><label className="pdfmd-select-label">Slide style<select value={mode} onChange={(event) => setMode(event.target.value as ExportMode)}><option value="editable">Editable text slides</option><option value="visual">Visual PDF pages</option></select></label><p className="pdfmd-limit">{isPro ? `Pro: up to ${PRO_PAGE_LIMIT} slides` : `Free: first ${FREE_PAGE_LIMIT} slides. Pro exports up to ${PRO_PAGE_LIMIT}.`}</p></div><button className="pdfmd-primary" type="button" onClick={() => void convert()} disabled={isProcessing}>{isProcessing ? `Creating PPTX ${progress}%` : 'Convert to PowerPoint'}</button>{!isPro && <button className="pdfmd-secondary" type="button" onClick={() => setShowUpgrade(true)}>Unlock larger PDFs</button>}</>}
     </aside>
     <section className="pdfmd-output"><header className="pdfmd-output__bar"><div><span>PowerPoint export</span><small>Choose editable text slides for revision, or visual slides for page fidelity.</small></div></header><div className="pdfmd-empty"><strong>One PDF page becomes one slide.</strong><span>Editable text mode works best with text-first PDFs. Visual mode preserves the original page as a slide image.</span></div></section>

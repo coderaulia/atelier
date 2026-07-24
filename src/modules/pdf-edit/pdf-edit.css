@@ -1,19 +1,35 @@
-.pdfedit-tool { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 600px; background: #f7f8fb; color: #172033; }
-.pdfedit-sidebar { min-height: 600px; }
+.pdfedit-tool { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 660px; background: var(--pdf-bg); color: var(--pdf-text); }
+.pdfedit-sidebar { min-height: 660px; }
 .pdfedit-sidebar .pdfmd-limit { margin-top: 18px; }
-.pdfedit-workspace { min-width: 0; padding: 22px; }
-.pdfedit-pages { display: flex; justify-content: space-between; align-items: end; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid #dce1eb; }
-.pdfedit-pages label, .pdfedit-panels label { display: grid; gap: 6px; color: #536278; font-size: 12px; font-weight: 600; }
-.pdfedit-pages select, .pdfedit-panels select, .pdfedit-panels input, .pdfedit-panels textarea { border: 1px solid #cbd4e1; background: #fff; color: #172033; font: inherit; }
-.pdfedit-pages select { width: 180px; height: 36px; padding: 0 8px; }
-.pdfedit-page-actions { display: flex; flex-wrap: wrap; gap: 7px; }
-.pdfedit-page-actions button { min-height: 34px; padding: 0 9px; border: 1px solid #cbd4e1; background: #fff; color: #31435b; cursor: pointer; font-size: 12px; font-weight: 700; }
-.pdfedit-page-actions .pdfedit-danger { border-color: #b84d4d; color: #a13d3d; }
-.pdfedit-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
-.pdfedit-panels section { padding: 18px; border: 1px solid #dce1eb; background: #fff; }
-.pdfedit-panels h3 { margin: 0 0 13px; font-size: 15px; }
-.pdfedit-panels p { margin: 0 0 14px; color: #69788d; font-size: 12px; line-height: 1.5; }
-.pdfedit-panels textarea { width: 100%; min-height: 94px; padding: 9px; resize: vertical; }
-.pdfedit-panels select, .pdfedit-panels input { min-height: 34px; padding: 0 8px; }
-.pdfedit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; margin: 12px 0; }
-@media (max-width: 860px) { .pdfedit-tool { grid-template-columns: 1fr; } .pdfedit-sidebar { min-height: 0; border-right: 0; border-bottom: 1px solid #dce1eb; } .pdfedit-panels { grid-template-columns: 1fr; } .pdfedit-pages { align-items: start; flex-direction: column; } }
+.pdfedit-workspace { min-width: 0; padding: 20px; }
+.pdfedit-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 12px; padding-bottom: 15px; border-bottom: 1px solid var(--pdf-line); }
+.pdfedit-toolbar label, .pdfedit-control label { display: grid; gap: 6px; color: var(--pdf-muted); font-size: 12px; font-weight: 700; }
+.pdfedit-toolbar select, .pdfedit-control input, .pdfedit-control textarea { border: 1px solid var(--pdf-line); background: var(--pdf-input); color: var(--pdf-text); font: inherit; }
+.pdfedit-toolbar select { width: 180px; height: 36px; padding: 0 8px; }
+.pdfedit-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: 7px; }
+.pdfedit-actions button, .pdfedit-tool-tabs button { min-height: 34px; padding: 0 9px; border: 1px solid var(--pdf-line); background: transparent; color: var(--pdf-text); cursor: pointer; font-size: 12px; font-weight: 700; }
+.pdfedit-actions .pdfedit-danger { border-color: var(--pdf-danger); color: var(--pdf-danger); }
+.pdfedit-editor { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; margin-top: 18px; }
+.pdfedit-tools { align-self: start; padding: 12px; border: 1px solid var(--pdf-line); background: var(--pdf-panel); }
+.pdfedit-tool-tabs { display: grid; gap: 6px; }
+.pdfedit-tool-tabs button { text-align: left; }
+.pdfedit-tool-tabs .is-active { border-color: var(--pdf-accent); background: color-mix(in srgb, var(--pdf-accent) 14%, var(--pdf-panel)); color: var(--pdf-accent); }
+.pdfedit-control { display: grid; gap: 11px; margin-top: 16px; }
+.pdfedit-control textarea { min-height: 78px; padding: 8px; resize: vertical; }
+.pdfedit-control input { min-height: 34px; padding: 0 8px; }
+.pdfedit-control p { margin: 0; color: var(--pdf-muted); font-size: 12px; line-height: 1.45; }
+.pdfedit-control .pdfedit-warning { color: #ff9b9b; }
+.pdfedit-layer-list { display: grid; gap: 8px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--pdf-line); font-size: 12px; }
+.pdfedit-layer-list > div { display: flex; justify-content: space-between; align-items: center; color: var(--pdf-muted); }
+.pdfedit-layer-list button { border: 0; background: transparent; color: var(--pdf-danger); cursor: pointer; font-weight: 700; }
+.pdfedit-layer-list small { color: var(--pdf-muted); }
+.pdfedit-stage-wrap { display: grid; place-items: start center; min-height: 560px; overflow: auto; padding: 18px; border: 1px solid var(--pdf-line); background: #0e141d; }
+.pdfedit-stage { position: relative; width: fit-content; max-width: 100%; line-height: 0; box-shadow: 0 10px 26px rgba(0,0,0,.35); touch-action: none; }
+.pdfedit-stage canvas { display: block; max-width: 100%; height: auto; background: #fff; }
+.pdfedit-stage-wrap.tool-text .pdfedit-stage, .pdfedit-stage-wrap.tool-cover .pdfedit-stage { cursor: crosshair; }
+.pdfedit-overlay { position: absolute; box-sizing: border-box; pointer-events: none; }
+.pdfedit-overlay--text { line-height: 1.2; max-width: 80%; white-space: pre-wrap; text-shadow: 0 1px 2px rgba(255,255,255,.75); transform: translateY(-1px); }
+.pdfedit-overlay--cover { background: #000; }
+.pdfedit-overlay--draft { opacity: .72; outline: 1px dashed #fff; }
+.pdfedit-loading { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(13,20,29,.72); color: var(--pdf-accent); font-size: 13px; line-height: 1; }
+@media (max-width: 900px) { .pdfedit-tool { grid-template-columns: 1fr; } .pdfedit-sidebar { min-height: 0; border-right: 0; border-bottom: 1px solid var(--pdf-line); } .pdfedit-editor { grid-template-columns: 1fr; } .pdfedit-toolbar { align-items: start; flex-direction: column; } .pdfedit-actions { justify-content: start; } }

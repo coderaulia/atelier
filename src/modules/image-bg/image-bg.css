@@ -7,6 +7,13 @@
   cursor: pointer;
 }
 
+.img-bg-help {
+  margin-top: 6px;
+  color: var(--shell-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .img-bg-color-picker-row {
   display: flex;
   flex-wrap: wrap;

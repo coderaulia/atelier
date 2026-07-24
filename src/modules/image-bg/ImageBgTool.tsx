@@ -237,9 +237,13 @@ export default function ImageBgTool() {
                 <input
                   type="checkbox"
                   checked={flattenToJpeg}
+                  disabled={colorKey !== null && bgColor === null}
                   onChange={(e) => setFlattenToJpeg(e.target.checked)}
                 /> Flatten to JPEG
               </label>
+              {colorKey !== null && bgColor === null && (
+                <div className="img-bg-help">Transparent backgrounds are exported as PNG.</div>
+              )}
             </div>
 
             <div className="img-section">
@@ -279,7 +283,11 @@ export default function ImageBgTool() {
                   <input
                     type="checkbox"
                     checked={colorKey !== null}
-                    onChange={(e) => setColorKey(e.target.checked ? '#ffffff' : null)}
+                    onChange={(e) => {
+                      const enabled = e.target.checked
+                      setColorKey(enabled ? '#ffffff' : null)
+                      if (enabled && bgColor === null) setFlattenToJpeg(false)
+                    }}
                   /> Remove background color
                 </label>
                 {colorKey !== null && (

@@ -18,7 +18,9 @@ export default function ImageResizeTool() {
   const [targetWidth, setTargetWidth] = useState<number>(800)
   const [targetHeight, setTargetHeight] = useState<number>(600)
   const [aspectRatioLock, setAspectRatioLock] = useState<boolean>(true)
-  const [cropMode, setCropMode] = useState<CropMode>('contain')
+  // Exact resize is the least surprising default for a resize tool. Cropping
+  // is available only when the user explicitly chooses it.
+  const [cropMode, setCropMode] = useState<CropMode>('stretch')
 
   const [jobs, setJobs] = useState<ResizeJob[]>([])
   const [showUpgrade, setShowUpgrade] = useState(false)
@@ -322,15 +324,15 @@ export default function ImageResizeTool() {
             </div>
 
             <div className="img-section">
-              <div className="img-section__label">Crop Mode</div>
+              <div className="img-section__label">Resize Method</div>
               <select
                 className="img-resize-select"
                 value={cropMode}
                 onChange={(e) => setCropMode(e.target.value as CropMode)}
               >
-                <option value="contain">Contain (Fit & Pad)</option>
-                <option value="cover">Cover (Fill & Crop)</option>
-                <option value="stretch">Stretch (Scale to Fit)</option>
+                <option value="stretch">Resize (Exact Dimensions)</option>
+                <option value="contain">Fit (No Crop, Add Padding)</option>
+                <option value="cover">Fill (Crop to Dimensions)</option>
               </select>
             </div>
 

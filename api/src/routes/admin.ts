@@ -195,7 +195,7 @@ admin.patch('/users/:id', async (c) => {
   if (!fields.length) return c.json({ error: 'No changes provided' }, 400)
 
   const before = await c.env.DB
-    .prepare('SELECT id, email, plan, pro_tier, role, status, pro_expires_at FROM users WHERE id = ?')
+    .prepare('SELECT id, plan, pro_tier, role, status, pro_expires_at FROM users WHERE id = ?')
     .bind(id)
     .first()
 
@@ -205,13 +205,24 @@ admin.patch('/users/:id', async (c) => {
 
   if (!updated) return c.json({ error: 'User not found' }, 404)
 
+  const auditAfter = {
+    id: updated.id,
+    plan: updated.plan,
+    pro_tier: updated.pro_tier,
+    pro_expires_at: updated.pro_expires_at,
+    role: updated.role,
+    status: updated.status,
+    created_at: updated.created_at,
+    last_login: updated.last_login,
+  }
+
   await c.env.DB
     .prepare('INSERT INTO admin_audit_log (admin_id, action, target_user_id, changes, ip_address) VALUES (?, ?, ?, ?, ?)')
     .bind(
       c.var.userId,
       'user.update',
       id,
-      JSON.stringify({ before, after: updated, patch: result.data }),
+      JSON.stringify({ before, after: auditAfter, patch: result.data }),
       getClientIP(c)
     )
     .run()
@@ -229,7 +240,7 @@ admin.post('/users/:id/grant-credits', async (c) => {
   const { pack_type, credits } = result.data
   if (!(pack_type in PRICING.packs)) return c.json({ error: 'Unknown pack type' }, 400)
 
-  const user = await c.env.DB.prepare('SELECT id, email FROM users WHERE id = ?').bind(id).first<{ id: string; email: string }>()
+  const user = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(id).first<{ id: string }>()
   if (!user) return c.json({ error: 'User not found' }, 404)
 
   const pack = await c.env.DB
@@ -239,7 +250,7 @@ admin.post('/users/:id/grant-credits', async (c) => {
 
   await c.env.DB
     .prepare('INSERT INTO admin_audit_log (admin_id, action, target_user_id, changes, ip_address) VALUES (?, ?, ?, ?, ?)')
-    .bind(c.var.userId, 'credits.grant', id, JSON.stringify({ pack_type, credits, email: user.email }), getClientIP(c))
+    .bind(c.var.userId, 'credits.grant', id, JSON.stringify({ pack_type, credits }), getClientIP(c))
     .run()
 
   return c.json({ pack })

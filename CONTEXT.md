@@ -1,0 +1,11 @@
+- Language/framework: TypeScript; React 19 frontend with Vite 6, React Router 7, Tailwind CSS 4; Hono 4 API.
+- Runtime: Node.js 20 in CI and for the static frontend server; Cloudflare Workers (workerd, Node compatibility) for the API.
+- Database: Cloudflare D1 (SQLite); direct prepared SQL queries and migrations; no application ORM/query builder.
+- Auth: Better Auth email/password sessions (cookie-based) with optional Google/GitHub OAuth; legacy Bearer JWT plus a D1-backed hashed-session check remains supported.
+- Caching: process-local in-memory `Map` used only to cache rate-limit counters; durable rate limits are stored in D1.
+- Queue/background jobs: no queue service found; Worker `waitUntil` is used for non-blocking geo writes and the scheduled handler runs cleanup.
+- Deployment: frontend is a static Vite build (also runnable through `server.js`); API deploys to Cloudflare Workers via Wrangler, backed by D1.
+- HTTP entry points: SPA frontend (`src/main.tsx`); Worker fetch handler (`api/src/index.ts`) mounts `/api/auth/*`, `/auth`, `/usage`, `/admin`, `/billing`, `/bug-reports`, `/content`, `/social-templates`, `/api/cv/ai`, `/anon-usage`, `/api/log-error`, and `/health`.
+- Cron: Cloudflare Worker schedule `0 0 * * *` performs account/session/token/rate-limit/usage cleanup; an admin endpoint can invoke it for testing.
+- Webhooks: `POST /billing/webhook` accepts validated Midtrans recurring-payment lifecycle events.
+- CLI: Vite dev/build/SSR/prerender/preview/start/typecheck/test-flow scripts; Wrangler dev/deploy/D1 migration commands; admin seeding, password hashing, and remote-admin creation scripts.

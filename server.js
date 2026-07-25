@@ -1,6 +1,6 @@
 import { createReadStream, existsSync, statSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { extname, join, normalize, resolve } from 'node:path'
+import { extname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -38,34 +38,46 @@ function sendNotFound(res) {
   res.end('Not found')
 }
 
-function staticFileFor(urlPath) {
-  const decodedPath = decodeURIComponent(urlPath.split('?')[0] || '/')
+export function staticFileFor(urlPath) {
+  let decodedPath
+  try {
+    decodedPath = decodeURIComponent(urlPath.split('?')[0] || '/')
+  } catch {
+    return null
+  }
   const requestPath = decodedPath === '/' ? '/index.html' : decodedPath
   const filePath = normalize(join(distDir, requestPath))
-  if (!filePath.startsWith(distDir)) return null
+  const relativePath = relative(distDir, filePath)
+  if (relativePath === '..' || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath)) return null
   if (!existsSync(filePath) || !statSync(filePath).isFile()) return null
   return filePath
 }
 
-createServer((req, res) => {
-  if (!req.url || (req.method !== 'GET' && req.method !== 'HEAD')) {
+export function startServer() {
+  return createServer((req, res) => {
+    if (!req.url || (req.method !== 'GET' && req.method !== 'HEAD')) {
+      sendNotFound(res)
+      return
+    }
+
+    const filePath = staticFileFor(req.url)
+    if (filePath) {
+      sendFile(res, filePath)
+      return
+    }
+
+    const acceptsHtml = req.headers.accept?.includes('text/html') ?? true
+    if (acceptsHtml && existsSync(indexFile)) {
+      sendFile(res, indexFile)
+      return
+    }
+
     sendNotFound(res)
-    return
-  }
+  }).listen(port, () => {
+    console.log(`Vanaila Studio frontend serving ${distDir} on port ${port}`)
+  })
+}
 
-  const filePath = staticFileFor(req.url)
-  if (filePath) {
-    sendFile(res, filePath)
-    return
-  }
-
-  const acceptsHtml = req.headers.accept?.includes('text/html') ?? true
-  if (acceptsHtml && existsSync(indexFile)) {
-    sendFile(res, indexFile)
-    return
-  }
-
-  sendNotFound(res)
-}).listen(port, () => {
-  console.log(`Vanaila Studio frontend serving ${distDir} on port ${port}`)
-})
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  startServer()
+}

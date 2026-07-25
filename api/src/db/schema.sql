@@ -64,6 +64,20 @@ CREATE TABLE IF NOT EXISTS transactions (
   created_at        INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
+-- Server-owned checkout metadata. Webhooks must resolve ownership and pricing
+-- from this table rather than trusting mutable callback fields.
+CREATE TABLE IF NOT EXISTS checkout_orders (
+  order_id       TEXT PRIMARY KEY,
+  user_id        TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  purchase_type  TEXT NOT NULL CHECK (purchase_type IN ('subscription', 'pack')),
+  product_id     TEXT NOT NULL,
+  amount         INTEGER NOT NULL CHECK (amount > 0),
+  currency       TEXT NOT NULL DEFAULT 'IDR',
+  status         TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'processed', 'failed')),
+  created_at     INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at     INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 CREATE TABLE IF NOT EXISTS error_log (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   tool_id     TEXT NOT NULL,
@@ -78,6 +92,8 @@ CREATE INDEX IF NOT EXISTS idx_sessions_last_used ON sessions(last_used);
 CREATE INDEX IF NOT EXISTS idx_usage_log_user_date ON usage_log(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_usage_log_tool_date ON usage_log(tool_id, date);
 CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_checkout_orders_user_date ON checkout_orders(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_checkout_orders_status ON checkout_orders(status, updated_at);
 CREATE INDEX IF NOT EXISTS idx_error_log_created_at ON error_log(created_at);
 CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_users_grace_until ON users(grace_until);

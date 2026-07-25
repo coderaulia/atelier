@@ -9,11 +9,10 @@
 import { randomBytes, pbkdf2Sync } from 'node:crypto'
 
 const ALGORITHM = 'pbkdf2_sha256'
-const ITERATIONS = 30_000
+const ITERATIONS = 600_000
 const KEY_LENGTH = 32
 
 const [first, second] = process.argv.slice(2)
-const email = second ? first : null
 const password = second ?? first
 
 if (!password) {
@@ -31,7 +30,4 @@ const salt = randomBytes(16)
 const hash = pbkdf2Sync(password, salt, ITERATIONS, KEY_LENGTH, 'sha256').toString('hex')
 const passwordHash = `${ALGORITHM}$${ITERATIONS}$${salt.toString('hex')}$${hash}`
 
-if (email) {
-  console.log(`email=${email}`)
-}
 console.log(`password_hash=${passwordHash}`)

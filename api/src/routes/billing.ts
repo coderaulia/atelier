@@ -15,7 +15,6 @@ const webhookSchema = z.object({
   payment_type: z.string().optional(),
   gross_amount: z.string().optional(),
   currency: z.string().optional(),
-  custom_field1: z.string().optional(), // user_id
 })
 
 function fmt(ts: number | null) {
@@ -108,17 +107,45 @@ billing.get('/transactions', authMiddleware, async (c) => {
 const TIERS = new Set<ProTier>(['starter', 'pro', 'business'])
 const PACK_IDS = new Set<PackId>(['cv-10', 'social-50'])
 
+type CheckoutOrder = {
+  order_id: string
+  user_id: string
+  purchase_type: 'subscription' | 'pack'
+  product_id: string
+  amount: number
+  currency: string
+  status: 'pending' | 'processing' | 'processed' | 'failed'
+}
+
+async function createCheckoutOrder(
+  c: { env: Bindings },
+  orderId: string,
+  userId: string,
+  purchaseType: CheckoutOrder['purchase_type'],
+  productId: string,
+  amount: number,
+) {
+  await c.env.DB.prepare(
+    `INSERT INTO checkout_orders (order_id, user_id, purchase_type, product_id, amount, currency)
+     VALUES (?, ?, ?, ?, ?, 'IDR')`
+  ).bind(orderId, userId, purchaseType, productId, amount).run()
+}
+
+async function markCheckoutFailed(c: { env: Bindings }, orderId: string) {
+  await c.env.DB.prepare(
+    "UPDATE checkout_orders SET status = 'failed', updated_at = ? WHERE order_id = ? AND status = 'pending'"
+  ).bind(Math.floor(Date.now() / 1000), orderId).run()
+}
+
 async function createSnapTransaction(
   c: { env: Bindings },
   orderId: string,
   grossAmount: number,
   customer: { first_name: string; last_name: string; email: string },
-  userId: string,
 ) {
   const payload = {
     transaction_details: { order_id: orderId, gross_amount: grossAmount },
     customer_details: customer,
-    custom_field1: userId,
   }
 
   const isSandbox = (c.env.MIDTRANS_BASE_URL || '').includes('sandbox')
@@ -132,7 +159,7 @@ async function createSnapTransaction(
   })
 
   if (!response.ok) {
-    console.error('Midtrans Snap Error:', await response.text())
+    console.error('Midtrans Snap request failed with status:', response.status)
     return null
   }
 
@@ -155,14 +182,24 @@ billing.post('/checkout', authMiddleware, async (c) => {
   const orderId = `SUB_${tier}_${Date.now()}_${Math.floor(Math.random() * 1000)}`
   const grossAmount = PRICING.pro[tier].idr.amount
 
-  const data = await createSnapTransaction(
-    c,
-    orderId,
-    grossAmount,
-    { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
-    c.var.userId,
-  )
-  if (!data) return c.json({ error: 'Failed to create checkout' }, 500)
+  await createCheckoutOrder(c, orderId, c.var.userId, 'subscription', tier, grossAmount)
+
+  let data: { token: string } | null = null
+  try {
+    data = await createSnapTransaction(
+      c,
+      orderId,
+      grossAmount,
+      { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
+    )
+  } catch {
+    await markCheckoutFailed(c, orderId)
+    return c.json({ error: 'Failed to create checkout' }, 502)
+  }
+  if (!data) {
+    await markCheckoutFailed(c, orderId)
+    return c.json({ error: 'Failed to create checkout' }, 502)
+  }
 
   return c.json({ snap_token: data.token, order_id: orderId })
 })
@@ -183,14 +220,24 @@ billing.post('/checkout-pack', authMiddleware, async (c) => {
   const orderId = `PACK_${packId}_${Date.now()}_${Math.floor(Math.random() * 1000)}`
   const grossAmount = PRICING.packs[packId].idr.amount
 
-  const data = await createSnapTransaction(
-    c,
-    orderId,
-    grossAmount,
-    { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
-    c.var.userId,
-  )
-  if (!data) return c.json({ error: 'Failed to create checkout' }, 500)
+  await createCheckoutOrder(c, orderId, c.var.userId, 'pack', packId, grossAmount)
+
+  let data: { token: string } | null = null
+  try {
+    data = await createSnapTransaction(
+      c,
+      orderId,
+      grossAmount,
+      { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
+    )
+  } catch {
+    await markCheckoutFailed(c, orderId)
+    return c.json({ error: 'Failed to create checkout' }, 502)
+  }
+  if (!data) {
+    await markCheckoutFailed(c, orderId)
+    return c.json({ error: 'Failed to create checkout' }, 502)
+  }
 
   return c.json({ snap_token: data.token, order_id: orderId })
 })
@@ -208,8 +255,6 @@ billing.post('/webhook', async (c) => {
   if (!result.success) return c.json({ error: 'Invalid webhook' }, 400)
 
   const event = result.data
-  const userId = event.custom_field1
-  if (!userId) return c.json({ error: 'Missing user id' }, 400)
   if (!event.order_id || !event.gross_amount || !c.env.MIDTRANS_SERVER_KEY) {
     return c.json({ error: 'Missing signature fields' }, 400)
   }
@@ -222,97 +267,116 @@ billing.post('/webhook', async (c) => {
 
   const now = Math.floor(Date.now() / 1000)
   const thirtyDays = 30 * 24 * 60 * 60
+  const isSuccess = event.transaction_status === 'settlement' || event.transaction_status === 'capture'
+  const isFailure = event.transaction_status === 'deny' || event.transaction_status === 'expire'
+  if (!isSuccess && !isFailure) return c.json({ ok: true })
 
-  // order_id encodes what was purchased: SUB_<tier>_<ts>_<rand> or PACK_<packId>_<ts>_<rand>
-  const orderParts = event.order_id.split('_')
-  const kind = orderParts[0]
-  const packId = orderParts[1] as PackId
-  const tier: ProTier = TIERS.has(orderParts[1] as ProTier) ? (orderParts[1] as ProTier) : 'pro'
-  const isPack = kind === 'PACK' && PACK_IDS.has(packId)
+  // Ownership and pricing are server-side facts. Callback metadata is never
+  // used to select a user or product because it is not covered by the signature.
+  const order = await c.env.DB.prepare(
+    `SELECT order_id, user_id, purchase_type, product_id, amount, currency, status
+     FROM checkout_orders WHERE order_id = ?`
+  ).bind(event.order_id).first<CheckoutOrder>()
 
-  if (event.transaction_status === 'settlement' || event.transaction_status === 'capture') {
-    const existing = await c.env.DB
-      .prepare('SELECT id FROM transactions WHERE midtrans_order_id = ?')
-      .bind(event.order_id)
-      .first<{ id: number }>()
-    if (existing) return c.json({ ok: true })
+  if (!order) return c.json({ error: 'Unknown checkout order' }, 400)
+  if (order.status === 'processed' || order.status === 'failed') return c.json({ ok: true })
 
-    if (isPack) {
+  const eventAmount = Number(event.gross_amount)
+  const eventCurrency = (event.currency ?? 'IDR').toUpperCase()
+  if (!Number.isFinite(eventAmount) || eventAmount !== order.amount || eventCurrency !== order.currency.toUpperCase()) {
+    return c.json({ error: 'Checkout details do not match' }, 400)
+  }
+
+  // Claim once; abandoned claims can be retried after five minutes.
+  const claimed = await c.env.DB.prepare(
+    `UPDATE checkout_orders SET status = 'processing', updated_at = ?
+     WHERE order_id = ? AND (status = 'pending' OR (status = 'processing' AND updated_at < ?))
+     RETURNING order_id`
+  ).bind(now, order.order_id, now - 300).first<{ order_id: string }>()
+  if (!claimed) return c.json({ ok: true })
+
+  try {
+    if (isSuccess && order.purchase_type === 'pack') {
+      const packId = order.product_id as PackId
+      if (!PACK_IDS.has(packId)) throw new Error('Invalid stored pack')
       const pack = PRICING.packs[packId]
-      await c.env.DB
-        .prepare('INSERT INTO credit_packs (user_id, pack_type, credits_total) VALUES (?, ?, ?)')
-        .bind(userId, packId, pack.credits)
-        .run()
 
-      await c.env.DB
-        .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
-        .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', `pack:${packId}`, 'success', event.order_id ?? null)
-        .run()
-
+      await c.env.DB.batch([
+        c.env.DB.prepare('INSERT INTO credit_packs (user_id, pack_type, credits_total) VALUES (?, ?, ?)')
+          .bind(order.user_id, packId, pack.credits),
+        c.env.DB.prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
+          .bind(order.user_id, order.amount, order.currency, `pack:${packId}`, 'success', order.order_id),
+        c.env.DB.prepare("UPDATE checkout_orders SET status = 'processed', updated_at = ? WHERE order_id = ? AND status = 'processing'")
+          .bind(now, order.order_id),
+      ])
       return c.json({ ok: true })
     }
 
-    const user = await c.env.DB
-      .prepare('SELECT email, pro_expires_at FROM users WHERE id = ?')
-      .bind(userId)
-      .first<{ email: string; pro_expires_at: number | null }>()
+    if (isSuccess) {
+      const tier = order.product_id as ProTier
+      if (order.purchase_type !== 'subscription' || !TIERS.has(tier)) throw new Error('Invalid stored subscription')
 
-    const base = user?.pro_expires_at && user.pro_expires_at > now ? user.pro_expires_at : now
-    const nextRenewal = base + thirtyDays
+      const user = await c.env.DB.prepare('SELECT email, pro_expires_at FROM users WHERE id = ?')
+        .bind(order.user_id)
+        .first<{ email: string; pro_expires_at: number | null }>()
+      if (!user) throw new Error('Checkout user not found')
 
-    await c.env.DB
-      .prepare('UPDATE users SET plan = ?, pro_tier = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
-      .bind('pro', tier, nextRenewal, userId)
-      .run()
+      const base = user.pro_expires_at && user.pro_expires_at > now ? user.pro_expires_at : now
+      const nextRenewal = base + thirtyDays
 
-    await c.env.DB
-      .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', tier, 'success', event.order_id ?? null)
-      .run()
+      await c.env.DB.batch([
+        c.env.DB.prepare('UPDATE users SET plan = ?, pro_tier = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
+          .bind('pro', tier, nextRenewal, order.user_id),
+        c.env.DB.prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
+          .bind(order.user_id, order.amount, order.currency, tier, 'success', order.order_id),
+        c.env.DB.prepare("UPDATE checkout_orders SET status = 'processed', updated_at = ? WHERE order_id = ? AND status = 'processing'")
+          .bind(now, order.order_id),
+      ])
 
-    if (user?.email) {
       const t = emailTemplates('en')
       sendEmail({
         to: user.email,
         subject: t.subscriptionConfirmedSubject,
-        html: t.subscriptionConfirmedBody(Number(event.gross_amount ?? 0), event.currency ?? 'IDR', fmt(nextRenewal)),
+        html: t.subscriptionConfirmedBody(order.amount, order.currency, fmt(nextRenewal)),
       }, c.env.BREVO_API_KEY).catch(() => {})
+      return c.json({ ok: true })
     }
-  }
 
-  if (event.transaction_status === 'deny' || event.transaction_status === 'expire') {
-    const dup = await c.env.DB
-      .prepare('SELECT id FROM transactions WHERE midtrans_order_id = ?')
-      .bind(event.order_id)
-      .first<{ id: number }>()
-    if (dup) return c.json({ ok: true })
+    const planType = order.purchase_type === 'pack' ? `pack:${order.product_id}` : order.product_id
+    const statements = [
+      c.env.DB.prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
+        .bind(order.user_id, order.amount, order.currency, planType, 'failed', order.order_id),
+    ]
 
-    await c.env.DB
-      .prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(userId, Number(event.gross_amount ?? 0), event.currency ?? 'IDR', isPack ? `pack:${packId}` : tier, 'failed', event.order_id ?? null)
-      .run()
+    let failureEmail: string | undefined
+    if (order.purchase_type === 'subscription') {
+      const user = await c.env.DB.prepare('SELECT email FROM users WHERE id = ?')
+        .bind(order.user_id)
+        .first<{ email: string }>()
+      failureEmail = user?.email
+      statements.push(
+        c.env.DB.prepare('UPDATE users SET grace_until = ? WHERE id = ?').bind(now + 3 * 24 * 60 * 60, order.user_id)
+      )
+    }
 
-    if (isPack) return c.json({ ok: true })
+    statements.push(
+      c.env.DB.prepare("UPDATE checkout_orders SET status = 'failed', updated_at = ? WHERE order_id = ? AND status = 'processing'")
+        .bind(now, order.order_id)
+    )
+    await c.env.DB.batch(statements)
 
-    const graceUntil = now + 3 * 24 * 60 * 60
-    const user = await c.env.DB
-      .prepare('SELECT email FROM users WHERE id = ?')
-      .bind(userId)
-      .first<{ email: string }>()
-
-    await c.env.DB
-      .prepare('UPDATE users SET grace_until = ? WHERE id = ?')
-      .bind(graceUntil, userId)
-      .run()
-
-    if (user?.email) {
+    if (failureEmail) {
       const t = emailTemplates('en')
       const retryUrl = `${getAppUrl(c.env.APP_URL)}/pricing`
-      sendEmail({ to: user.email, subject: t.paymentFailedSubject, html: t.paymentFailedBody(retryUrl) }, c.env.BREVO_API_KEY).catch(() => {})
+      sendEmail({ to: failureEmail, subject: t.paymentFailedSubject, html: t.paymentFailedBody(retryUrl) }, c.env.BREVO_API_KEY).catch(() => {})
     }
+    return c.json({ ok: true })
+  } catch {
+    await c.env.DB.prepare(
+      "UPDATE checkout_orders SET status = 'pending', updated_at = ? WHERE order_id = ? AND status = 'processing'"
+    ).bind(Math.floor(Date.now() / 1000), order.order_id).run()
+    return c.json({ error: 'Webhook processing failed' }, 500)
   }
-
-  return c.json({ ok: true })
 })
 
 billing.get('/receipt/:id', authMiddleware, async (c) => {

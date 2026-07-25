@@ -71,8 +71,7 @@ app.post('/cv/ai', async (c) => {
     })
 
     if (!res.ok) {
-      const errBody = await res.text()
-      console.error('Groq API error:', res.status, errBody)
+      console.error('Groq API request failed with status:', res.status)
       return c.json({ error: 'AI service error' }, 502)
     }
 

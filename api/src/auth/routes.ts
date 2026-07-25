@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { signToken, verifyToken } from '../lib/jwt'
-import { hashPassword, verifyPassword } from '../lib/password'
+import { hashPassword, needsPasswordRehash, verifyPassword } from '../lib/password'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { randomToken, sha256Hex } from '../lib/tokens'
 import { sendEmail, emailTemplates } from '../lib/email'
@@ -197,6 +197,11 @@ auth.post('/login', async (c) => {
 
   if (user.deleted_at) {
     return c.json({ error: 'Invalid email or password' }, 401)
+  }
+
+  if (needsPasswordRehash(user.password_hash)) {
+    const upgradedHash = await hashPassword(password)
+    await c.env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(upgradedHash, user.id).run()
   }
 
   const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)

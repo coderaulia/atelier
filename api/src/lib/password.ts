@@ -1,5 +1,7 @@
 const ALGORITHM = 'pbkdf2_sha256'
-const CURRENT_ITERATIONS = 30_000
+// OWASP's current PBKDF2-HMAC-SHA256 baseline. Existing hashes are upgraded
+// after a successful login so raising the work factor does not lock users out.
+const CURRENT_ITERATIONS = 600_000
 const LEGACY_ITERATIONS = 310_000
 const HASH_BITS = 256
 
@@ -41,6 +43,14 @@ export async function verifyPassword(plain: string, stored: string): Promise<boo
   if (!saltHex || !expectedHash) return false
   const actualHash = await pbkdf2(plain, fromHex(saltHex), LEGACY_ITERATIONS)
   return timingSafeEqual(actualHash, expectedHash)
+}
+
+export function needsPasswordRehash(stored: string): boolean {
+  const parts = stored.split('$')
+  if (parts.length !== 4) return stored.includes(':')
+  if (parts[0] !== ALGORITHM) return false
+  const iterations = Number(parts[1])
+  return Number.isSafeInteger(iterations) && iterations < CURRENT_ITERATIONS
 }
 
 function timingSafeEqual(actualHash: string, expectedHash: string): boolean {

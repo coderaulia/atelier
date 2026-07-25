@@ -25,7 +25,7 @@ if (password.length < 8) {
 
 // Match api/src/lib/password.ts: PBKDF2, SHA-256, versioned hash format.
 const ALGORITHM = 'pbkdf2_sha256'
-const ITERATIONS = 30_000
+const ITERATIONS = 600_000
 const salt = randomBytes(16)
 const hash = pbkdf2Sync(password, salt, ITERATIONS, 32, 'sha256')
   .toString('hex')
@@ -45,10 +45,7 @@ ON CONFLICT (email) DO UPDATE SET
   status = 'active';
 `.trim()
 
-console.log(`\n📧  Email:     ${email}`)
-console.log(`🔑  Password:  ${password}`)
-console.log(`👤  Role:      admin`)
-console.log(`📋  Plan:      pro\n`)
+console.log('\nCreating the requested admin account...\n')
 
 try {
   // Write SQL to temp file, execute via wrangler
@@ -60,15 +57,14 @@ try {
   const tmpFile = join(apiRoot, '_seed_tmp.sql')
   writeFileSync(tmpFile, sql)
 
-  const result = execSync(
+  execSync(
     'npx wrangler d1 execute vanaila-studio --local --file=' + tmpFile,
     { cwd: apiRoot, encoding: 'utf8' }
   )
   unlinkSync(tmpFile)
 
   console.log('✅  Admin user seeded successfully!\n')
-  console.log(result)
 } catch (err) {
-  console.error('❌  Failed to seed admin user:', err.message)
+  console.error('Failed to seed admin user.')
   process.exit(1)
 }

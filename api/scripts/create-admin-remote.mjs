@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url'
 
 const DATABASE_NAME = 'vanaila-studio'
 const ALGORITHM = 'pbkdf2_sha256'
-const ITERATIONS = 30_000
+const ITERATIONS = 600_000
 const KEY_LENGTH = 32
 
 const [email, password] = process.argv.slice(2)
@@ -66,9 +66,6 @@ ON CONFLICT (email) DO UPDATE SET
 DELETE FROM sessions
 WHERE user_id = (SELECT id FROM users WHERE email = '${safeEmail}');
 
-SELECT id, email, role, status, plan, email_verified
-FROM users
-WHERE email = '${safeEmail}';
 `.trim()
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -77,18 +74,14 @@ const tmpFile = join(apiRoot, `_create_admin_remote_${Date.now()}.sql`)
 
 try {
   writeFileSync(tmpFile, sql)
-  const output = execSync(
+  execSync(
     `npx wrangler d1 execute ${DATABASE_NAME} --remote --file "${tmpFile}"`,
     { cwd: apiRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
   )
 
-  console.log(`Admin user is ready: ${email.toLowerCase()}`)
-  console.log(output)
+  console.log('Admin user is ready.')
 } catch (err) {
   console.error('Failed to create remote admin user.')
-  if (err.stdout) console.error(err.stdout.toString())
-  if (err.stderr) console.error(err.stderr.toString())
-  console.error(err.message)
   process.exit(1)
 } finally {
   try {

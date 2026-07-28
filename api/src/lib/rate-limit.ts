@@ -6,7 +6,6 @@
  * This provides application-level protection against burst abuse.
  */
 import type { D1Database } from '@cloudflare/workers-types'
-import { checkCachedRateLimit, recordCachedRateLimit } from './rate-limit-cache'
 
 interface RateLimitResult {
   allowed: boolean
@@ -27,14 +26,6 @@ export async function checkRateLimit(
   windowSec: number,
   maxAttempts: number
 ): Promise<RateLimitResult> {
-  const cached = checkCachedRateLimit(key, windowSec, maxAttempts)
-  if (cached) {
-    if (cached.allowed) {
-      recordCachedRateLimit(key, windowSec)
-    }
-    return cached
-  }
-
   const now = Math.floor(Date.now() / 1000)
   const windowStart = now - windowSec
 
@@ -44,28 +35,27 @@ export async function checkRateLimit(
     .bind(key, windowStart)
     .run()
 
-  // Get current count in window
-  const row = await db
-    .prepare('SELECT COUNT(*) as count FROM rate_limit WHERE key = ? AND window_start > ?')
-    .bind(key, windowStart)
-    .first<{ count: number }>()
-
-  const count = row?.count ?? 0
   const resetAt = now + windowSec
 
-  if (count >= maxAttempts) {
-    return { allowed: false, remaining: 0, resetAt }
-  }
+  // This must be one statement: a SELECT followed by INSERT lets concurrent
+  // Worker isolates each observe spare capacity and all exceed the limit.
+  const admitted = await db
+    .prepare(
+      `INSERT INTO rate_limit (key, window_start)
+       SELECT ?, ?
+       WHERE (SELECT COUNT(*) FROM rate_limit WHERE key = ? AND window_start > ?) < ?
+       RETURNING id`
+    )
+    .bind(key, now, key, windowStart, maxAttempts)
+    .first<{ id: number }>()
 
-  // Record this attempt
-  await db
-    .prepare('INSERT INTO rate_limit (key, window_start) VALUES (?, ?)')
-    .bind(key, now)
-    .run()
+  if (!admitted) return { allowed: false, remaining: 0, resetAt }
 
-  recordCachedRateLimit(key, windowSec)
-
-  return { allowed: true, remaining: maxAttempts - count - 1, resetAt }
+  const row = await db
+    .prepare('SELECT COUNT(*) AS count FROM rate_limit WHERE key = ? AND window_start > ?')
+    .bind(key, windowStart)
+    .first<{ count: number }>()
+  return { allowed: true, remaining: Math.max(0, maxAttempts - (row?.count ?? maxAttempts)), resetAt }
 }
 
 /**

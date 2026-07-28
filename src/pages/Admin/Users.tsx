@@ -51,7 +51,7 @@ export default function Users() {
 
   function handleBan(user: User) {
     if (!confirm(`Ban ${user.email}?`)) return
-    patchAdminUser(user.id, { status: 'banned' })
+    patchAdminUser(user.id, { status: 'banned', version: user.version ?? 1 })
       .then(() => {
         setSuccess(`Banned ${user.email}`)
         load()

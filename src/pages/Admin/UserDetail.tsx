@@ -29,7 +29,7 @@ export default function UserDetail() {
 
   function handleBan() {
     if (!user || !confirm(`Ban ${user.email}?`)) return
-    patchAdminUser(id, { status: 'banned' })
+    patchAdminUser(id, { status: 'banned', version: user.version ?? 1 })
       .then(({ user }) => { setUser(user); setSuccess(`Banned ${user.email}`) })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed'))
   }

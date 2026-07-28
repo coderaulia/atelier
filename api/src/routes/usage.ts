@@ -241,26 +241,21 @@ usage.post('/:toolId', async (c) => {
     : null
 
   if (creditPack) {
-    // Atomic deduction: only succeed if credits remain (race-safe)
-    const deducted = await c.env.DB
-      .prepare(
-        `UPDATE credit_packs SET credits_used = credits_used + 1
-         WHERE id = ? AND credits_used < credits_total
-         RETURNING credits_total, credits_used`
-      )
-      .bind(creditPack.id)
-      .first<{ credits_total: number; credits_used: number }>()
-
-    if (deducted) {
-      // Log credit usage
+    const idempotencyKey = c.req.header('Idempotency-Key')?.trim() || crypto.randomUUID()
+    try {
+      // The credit_usage_debit trigger makes this ledger insert and the credit
+      // deduction one SQLite transaction. The unique key makes retries safe.
       await c.env.DB
         .prepare(
-          'INSERT INTO credit_usage (user_id, pack_id, tool_id, credits_spent) VALUES (?, ?, ?, 1)'
+          'INSERT INTO credit_usage (user_id, pack_id, tool_id, credits_spent, idempotency_key) VALUES (?, ?, ?, 1, ?)'
         )
-        .bind(userId, creditPack.id, toolId)
+        .bind(userId, creditPack.id, toolId, idempotencyKey)
         .run()
 
-      const remaining = deducted.credits_total - deducted.credits_used
+      const pack = await c.env.DB.prepare(
+        'SELECT credits_total, credits_used FROM credit_packs WHERE id = ?'
+      ).bind(creditPack.id).first<{ credits_total: number; credits_used: number }>()
+      const remaining = (pack?.credits_total ?? 0) - (pack?.credits_used ?? 0)
 
       return c.json({
         used: 0,
@@ -269,6 +264,22 @@ usage.post('/:toolId', async (c) => {
         has_watermark: false,
         credits_available: remaining,
       })
+    } catch {
+      const replay = await c.env.DB.prepare(
+        'SELECT pack_id FROM credit_usage WHERE user_id = ? AND idempotency_key = ?'
+      ).bind(userId, idempotencyKey).first<{ pack_id: number | null }>()
+      if (replay?.pack_id) {
+        const pack = await c.env.DB.prepare(
+          'SELECT credits_total, credits_used FROM credit_packs WHERE id = ?'
+        ).bind(replay.pack_id).first<{ credits_total: number; credits_used: number }>()
+        return c.json({
+          used: 0,
+          limit: null,
+          reset_at: resetAt(),
+          has_watermark: false,
+          credits_available: (pack?.credits_total ?? 0) - (pack?.credits_used ?? 0),
+        })
+      }
     }
     // Race: last credit consumed by concurrent request. Fall through to daily limit.
   }

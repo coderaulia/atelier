@@ -73,47 +73,36 @@ bugReports.post('/', async (c) => {
   }
 
   const id = crypto.randomUUID()
+  const idempotencyKey = c.req.header('Idempotency-Key')?.trim() || crypto.randomUUID()
   const now = Math.floor(Date.now() / 1000)
   const userAgent = c.req.header('User-Agent') ?? ''
 
-  await c.env.DB
-    .prepare(
-      `INSERT INTO bug_reports (id, user_id, email, subject, description, tool_id, screenshot_url, user_agent, source, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .bind(
-      id,
-      userId,
-      user.email,
-      result.data.subject,
-      result.data.description,
-      result.data.tool_id ?? null,
-      result.data.screenshot_url ?? null,
-      userAgent,
-      'app',
-      now,
-      now
-    )
-    .run()
-
-  // Create admin notification
-  await c.env.DB
-    .prepare(
-      `INSERT INTO admin_notifications (id, type, title, message, severity, link, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    )
-    .bind(
-      crypto.randomUUID(),
-      'bug_report',
-      'New Bug Report',
-      `${user.email} reported: ${result.data.subject}`,
-      'info',
-      `/admin/bug-reports/${id}`,
-      now
-    )
-    .run()
-
-  return c.json({ id, message: 'Bug report submitted successfully' }, 201)
+  try {
+    await c.env.DB.batch([
+      c.env.DB.prepare(
+        `INSERT INTO bug_reports (id, user_id, email, subject, description, tool_id, screenshot_url, user_agent, source, created_at, updated_at, idempotency_key)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        id, userId, user.email, result.data.subject, result.data.description,
+        result.data.tool_id ?? null, result.data.screenshot_url ?? null, userAgent,
+        'app', now, now, idempotencyKey,
+      ),
+      c.env.DB.prepare(
+        `INSERT INTO admin_notifications (id, type, title, message, severity, link, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        crypto.randomUUID(), 'bug_report', 'New Bug Report', `${user.email} reported: ${result.data.subject}`,
+        'info', `/admin/bug-reports/${id}`, now,
+      ),
+    ])
+    return c.json({ id, message: 'Bug report submitted successfully' }, 201)
+  } catch {
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM bug_reports WHERE user_id = ? AND idempotency_key = ?'
+    ).bind(userId, idempotencyKey).first<{ id: string }>()
+    if (existing) return c.json({ id: existing.id, message: 'Bug report already submitted' }, 200)
+    return c.json({ error: 'Unable to submit bug report' }, 500)
+  }
 })
 
 export default bugReports

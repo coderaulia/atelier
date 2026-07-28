@@ -35,11 +35,11 @@ export default function ManagePlanModal({ user, onClose, onSaved }: Props) {
     setError('')
     try {
       if (selection === 'free') {
-        await patchAdminUser(user.id, { plan: 'free', pro_tier: null })
+        await patchAdminUser(user.id, { plan: 'free', pro_tier: null, version: user.version ?? 1 })
         onSaved(`${user.email} set to Free`)
       } else {
         const expiresAt = expiry ? Math.floor(new Date(`${expiry}T23:59:59Z`).getTime() / 1000) : null
-        await patchAdminUser(user.id, { plan: 'pro', pro_tier: selection, pro_expires_at: expiresAt })
+        await patchAdminUser(user.id, { plan: 'pro', pro_tier: selection, pro_expires_at: expiresAt, version: user.version ?? 1 })
         onSaved(`${user.email} set to Pro · ${selection}${expiry ? ` until ${expiry}` : ''}`)
       }
       onClose()

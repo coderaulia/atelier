@@ -25,6 +25,7 @@ type SystemConfig = {
   description: string | null
   updated_at: number | null
   updated_by?: string | null
+  version: number
 }
 
 function redactConfig(config: SystemConfig): SystemConfig {
@@ -35,13 +36,15 @@ function redactConfig(config: SystemConfig): SystemConfig {
 
 systemAdmin.get('/config', async (c) => {
   const rows = await c.env.DB.prepare(
-    'SELECT key, value, type, description, updated_at FROM system_config ORDER BY key ASC'
+    'SELECT key, value, type, description, updated_at, version FROM system_config ORDER BY key ASC'
   ).all<SystemConfig>()
   return c.json({ config: (rows.results ?? []).map(redactConfig) })
 })
 
 systemAdmin.patch('/config/:key', async (c) => {
   const key = c.req.param('key')
+  const version = Number(c.req.header('If-Match'))
+  if (!Number.isInteger(version) || version < 1) return c.json({ error: 'Missing config version' }, 400)
   if (hasSensitiveConfigKey(key)) {
     return c.json({ error: 'Sensitive configuration must be stored as a Worker secret' }, 400)
   }
@@ -54,10 +57,11 @@ systemAdmin.patch('/config/:key', async (c) => {
 
   const now = Math.floor(Date.now() / 1000)
   const updated = await c.env.DB.prepare(
-    'UPDATE system_config SET value = ?, updated_at = ?, updated_by = ? WHERE key = ? RETURNING *'
+    'UPDATE system_config SET value = ?, updated_at = ?, updated_by = ?, version = version + 1 WHERE key = ? AND version = ? RETURNING *'
   )
-    .bind(result.data.value, now, c.var.userId, key)
+    .bind(result.data.value, now, c.var.userId, key, version)
     .first<SystemConfig>()
+  if (!updated) return c.json({ error: 'Config changed by another admin; refresh and retry' }, 409)
 
   await c.env.DB.prepare('INSERT INTO admin_audit_log (admin_id, action, changes, ip_address) VALUES (?, ?, ?, ?)')
     .bind(c.var.userId, 'config.update', JSON.stringify({ key, value: '[REDACTED]' }), getClientIP(c))
@@ -77,6 +81,8 @@ systemAdmin.get('/features', async (c) => {
 
 systemAdmin.patch('/features/:key', async (c) => {
   const key = c.req.param('key')
+  const version = Number(c.req.header('If-Match'))
+  if (!Number.isInteger(version) || version < 1) return c.json({ error: 'Missing feature version' }, 400)
   const body = await c.req.json().catch(() => null)
   const result = updateFeatureFlagSchema.safeParse(body)
   if (!result.success) return c.json({ error: 'Invalid update' }, 400)
@@ -84,7 +90,7 @@ systemAdmin.patch('/features/:key', async (c) => {
   const existing = await c.env.DB.prepare('SELECT key FROM feature_flags WHERE key = ?').bind(key).first()
   if (!existing) return c.json({ error: 'Feature flag not found' }, 404)
 
-  const fields: string[] = ['updated_at = ?', 'updated_by = ?']
+  const fields: string[] = ['updated_at = ?', 'updated_by = ?', 'version = version + 1']
   const values: unknown[] = [Math.floor(Date.now() / 1000), c.var.userId]
 
   if (result.data.enabled !== undefined) {
@@ -101,10 +107,11 @@ systemAdmin.patch('/features/:key', async (c) => {
   }
 
   const updated = await c.env.DB.prepare(
-    `UPDATE feature_flags SET ${fields.join(', ')} WHERE key = ? RETURNING *`
+    `UPDATE feature_flags SET ${fields.join(', ')} WHERE key = ? AND version = ? RETURNING *`
   )
-    .bind(...values, key)
+    .bind(...values, key, version)
     .first()
+  if (!updated) return c.json({ error: 'Feature changed by another admin; refresh and retry' }, 409)
 
   await c.env.DB.prepare('INSERT INTO admin_audit_log (admin_id, action, changes, ip_address) VALUES (?, ?, ?, ?)')
     .bind(c.var.userId, 'feature.update', JSON.stringify({ key, ...result.data }), getClientIP(c))

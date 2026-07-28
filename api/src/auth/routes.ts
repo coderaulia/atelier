@@ -58,6 +58,7 @@ const globalMetadataSchema = z.object({
 const profileSchema = z.object({
   name: z.string().max(120).optional().nullable(),
   global_metadata: globalMetadataSchema.optional().nullable(),
+  version: z.number().int().min(1),
 })
 
 const deleteAccountSchema = z.object({
@@ -117,35 +118,30 @@ auth.post('/register', async (c) => {
   }
 
   try {
-    const user = await c.env.DB
-      .prepare('INSERT INTO users (email, password_hash) VALUES (?, ?) RETURNING id, email, plan, role, status, created_at')
-      .bind(email, password_hash)
-      .first<{ id: string; email: string; plan: string; role: string; status: string; created_at: number }>()
-
-    if (!user) return c.json({ error: 'Registration failed' }, 500)
-
-    const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)
+    const userId = crypto.randomUUID()
+    const { token, expiresAt } = await signToken(userId, c.env.JWT_SECRET)
     const tokenHash = await sha256Hex(token)
-    await c.env.DB
-      .prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
-      .bind(tokenHash, user.id, expiresAt)
-      .run()
-
-    // Send verification email
     const verifyToken = randomToken()
     const verifyHash = await sha256Hex(verifyToken)
     const verifyExpires = Math.floor(Date.now() / 1000) + 86400 // 24h
-    await c.env.DB
-      .prepare('INSERT INTO email_verifications (user_id, token_hash, expires_at) VALUES (?, ?, ?)')
-      .bind(user.id, verifyHash, verifyExpires)
-      .run()
+
+    // The account, its usable session, and its verification token form one
+    // unit. A partial registration otherwise leaves an email that cannot retry.
+    await c.env.DB.batch([
+      c.env.DB.prepare('INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)')
+        .bind(userId, email, password_hash),
+      c.env.DB.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
+        .bind(tokenHash, userId, expiresAt),
+      c.env.DB.prepare('INSERT INTO email_verifications (user_id, token_hash, expires_at) VALUES (?, ?, ?)')
+        .bind(userId, verifyHash, verifyExpires),
+    ])
 
     const baseUrl = getAppUrl(c.env.APP_URL)
     const lang = c.req.header('Accept-Language')?.startsWith('id') ? 'id' : 'en'
     const t = emailTemplates(lang)
     sendEmail({ to: email, subject: t.verifySubject, html: t.verifyBody(verifyToken, baseUrl) }, c.env.BREVO_API_KEY).catch(() => {})
 
-    return c.json({ token, user: { id: user.id, email: user.email, plan: user.plan, role: user.role, status: user.status, email_verified: 0, global_metadata: null } }, 201)
+    return c.json({ token, user: { id: userId, email, plan: 'free', role: 'user', status: 'active', version: 1, email_verified: 0, global_metadata: null } }, 201)
   } catch (err) {
     const msg = err instanceof Error ? err.message : ''
     if (msg.includes('UNIQUE')) return c.json({ error: 'Email already registered' }, 409)
@@ -201,7 +197,11 @@ auth.post('/login', async (c) => {
 
   if (needsPasswordRehash(user.password_hash)) {
     const upgradedHash = await hashPassword(password)
-    await c.env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?').bind(upgradedHash, user.id).run()
+    // Do not restore an old password if it was changed while this login was
+    // deriving the stronger hash.
+    await c.env.DB.prepare(
+      'UPDATE users SET password_hash = ?, version = version + 1 WHERE id = ? AND password_hash = ?'
+    ).bind(upgradedHash, user.id, user.password_hash).run()
   }
 
   const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)
@@ -243,9 +243,9 @@ auth.get('/me', async (c) => {
   }
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, name, global_metadata, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, name, global_metadata, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, version, created_at FROM users WHERE id = ?')
     .bind(userId)
-    .first<{ id: string; email: string; name: string | null; global_metadata: string | null; plan: string; pro_tier: string | null; role: string; status: string; pro_expires_at: number | null; cancel_at_period_end: number; grace_until: number | null; email_verified: number; created_at: number }>()
+    .first<{ id: string; email: string; name: string | null; global_metadata: string | null; plan: string; pro_tier: string | null; role: string; status: string; pro_expires_at: number | null; cancel_at_period_end: number; grace_until: number | null; email_verified: number; version: number; created_at: number }>()
 
   if (!user) return c.json({ error: 'User not found' }, 404)
   if (user.status === 'banned') return c.json({ error: 'Account banned' }, 403)
@@ -313,7 +313,11 @@ auth.post('/reset-password', async (c) => {
   const now = Math.floor(Date.now() / 1000)
 
   const row = await c.env.DB
-    .prepare('SELECT id, user_id FROM password_resets WHERE token_hash = ? AND used = 0 AND expires_at > ?')
+    .prepare(
+      `UPDATE password_resets SET used = 1
+       WHERE token_hash = ? AND used = 0 AND expires_at > ?
+       RETURNING id, user_id`
+    )
     .bind(tokenHash, now)
     .first<{ id: number; user_id: string }>()
 
@@ -323,21 +327,11 @@ auth.post('/reset-password', async (c) => {
 
   const password_hash = await hashPassword(password)
 
-  await c.env.DB
-    .prepare('UPDATE users SET password_hash = ? WHERE id = ?')
-    .bind(password_hash, row.user_id)
-    .run()
-
-  await c.env.DB
-    .prepare('UPDATE password_resets SET used = 1 WHERE id = ?')
-    .bind(row.id)
-    .run()
-
-  // Invalidate all sessions
-  await c.env.DB
-    .prepare('DELETE FROM sessions WHERE user_id = ?')
-    .bind(row.user_id)
-    .run()
+  await c.env.DB.batch([
+    c.env.DB.prepare('UPDATE users SET password_hash = ?, version = version + 1 WHERE id = ?')
+      .bind(password_hash, row.user_id),
+    c.env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(row.user_id),
+  ])
 
   return c.json({ ok: true })
 })
@@ -496,20 +490,21 @@ auth.patch('/profile', authMiddleware, async (c) => {
     ? undefined
     : JSON.stringify(normalizeGlobalMetadata(result.data.global_metadata))
 
-  if (globalMetadata === undefined) {
-    await c.env.DB
-      .prepare('UPDATE users SET name = ? WHERE id = ?')
-      .bind(name, userId)
-      .run()
-  } else {
-    await c.env.DB
-      .prepare('UPDATE users SET name = ?, global_metadata = ? WHERE id = ?')
-      .bind(name, globalMetadata, userId)
-      .run()
+  const profileUpdated = globalMetadata === undefined
+    ? await c.env.DB
+      .prepare('UPDATE users SET name = ?, version = version + 1 WHERE id = ? AND version = ? RETURNING id')
+      .bind(name, userId, result.data.version)
+      .first<{ id: string }>()
+    : await c.env.DB
+      .prepare('UPDATE users SET name = ?, global_metadata = ?, version = version + 1 WHERE id = ? AND version = ? RETURNING id')
+      .bind(name, globalMetadata, userId, result.data.version)
+      .first<{ id: string }>()
+  if (!profileUpdated) {
+    return c.json({ error: 'Profile changed in another session; refresh and retry' }, 409)
   }
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, name, global_metadata, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, name, global_metadata, plan, pro_tier, role, status, pro_expires_at, cancel_at_period_end, grace_until, email_verified, version, created_at FROM users WHERE id = ?')
     .bind(userId)
     .first()
 
@@ -575,10 +570,11 @@ auth.post('/change-password', authMiddleware, async (c) => {
   }
 
   const password_hash = await hashPassword(newPassword)
-  await c.env.DB
-    .prepare('UPDATE users SET password_hash = ? WHERE id = ?')
-    .bind(password_hash, userId)
-    .run()
+  const updated = await c.env.DB
+    .prepare('UPDATE users SET password_hash = ?, version = version + 1 WHERE id = ? AND password_hash = ? RETURNING id')
+    .bind(password_hash, userId, user.password_hash)
+    .first<{ id: string }>()
+  if (!updated) return c.json({ error: 'Password changed in another session; retry with the new password' }, 409)
 
   return c.json({ ok: true })
 })

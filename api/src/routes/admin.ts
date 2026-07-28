@@ -42,6 +42,7 @@ const patchUserSchema = z.object({
   pro_tier: z.enum(['starter', 'pro', 'business']).nullable().optional(),
   pro_expires_at: z.number().int().nullable().optional(),
   status: z.enum(['active', 'banned']).optional(),
+  version: z.number().int().min(1),
 })
 
 const grantCreditsSchema = z.object({
@@ -130,7 +131,7 @@ admin.get('/users', async (c) => {
   const where = filters.length ? `WHERE ${filters.join(' AND ')}` : ''
 
   const rows = await c.env.DB.prepare(
-    `SELECT u.id, u.email, u.plan, u.pro_tier, u.role, u.status, u.pro_expires_at, u.created_at, u.last_login,
+    `SELECT u.id, u.email, u.plan, u.pro_tier, u.role, u.status, u.pro_expires_at, u.version, u.created_at, u.last_login,
       COALESCE(SUM(l.count), 0) AS total_tool_uses
      FROM users u
      LEFT JOIN usage_log l ON l.user_id = u.id
@@ -150,7 +151,7 @@ admin.get('/users', async (c) => {
 admin.get('/users/:id', async (c) => {
   const id = c.req.param('id')
   const user = await c.env.DB.prepare(
-    `SELECT u.id, u.email, u.plan, u.pro_tier, u.role, u.status, u.pro_expires_at, u.created_at, u.last_login,
+    `SELECT u.id, u.email, u.plan, u.pro_tier, u.role, u.status, u.pro_expires_at, u.version, u.created_at, u.last_login,
       COALESCE(SUM(l.count), 0) AS total_tool_uses
      FROM users u
      LEFT JOIN usage_log l ON l.user_id = u.id
@@ -189,6 +190,7 @@ admin.patch('/users/:id', async (c) => {
   const fields: string[] = []
   const values: unknown[] = []
   for (const [key, value] of Object.entries(result.data)) {
+    if (key === 'version') continue
     fields.push(`${key} = ?`)
     values.push(value)
   }
@@ -200,10 +202,10 @@ admin.patch('/users/:id', async (c) => {
     .first()
 
   const updated = await c.env.DB.prepare(
-    `UPDATE users SET ${fields.join(', ')} WHERE id = ? RETURNING id, email, plan, pro_tier, role, status, pro_expires_at, created_at, last_login`
-  ).bind(...values, id).first()
+    `UPDATE users SET ${fields.join(', ')}, version = version + 1 WHERE id = ? AND version = ? RETURNING id, email, plan, pro_tier, role, status, pro_expires_at, version, created_at, last_login`
+  ).bind(...values, id, result.data.version).first()
 
-  if (!updated) return c.json({ error: 'User not found' }, 404)
+  if (!updated) return c.json({ error: 'User changed by another request; refresh and retry' }, 409)
 
   const auditAfter = {
     id: updated.id,
@@ -306,8 +308,8 @@ admin.post('/cron/run', async (c) => {
 
   for (const user of expiredGrace.results ?? []) {
     await c.env.DB
-      .prepare('UPDATE users SET plan = ?, pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
-      .bind('free', user.id)
+      .prepare("UPDATE users SET plan = ?, pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0, version = version + 1 WHERE id = ? AND plan = 'pro' AND grace_until IS NOT NULL AND grace_until < ?")
+      .bind('free', user.id, now)
       .run()
   }
 

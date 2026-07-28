@@ -11,6 +11,7 @@ const updateSubscriptionSchema = z.object({
   action: z.enum(['extend', 'cancel', 'downgrade', 'reactivate']),
   days: z.number().int().min(1).max(365).optional(),
   reason: z.string().max(500).optional(),
+  version: z.number().int().min(1),
 })
 
 // List active pro subscriptions
@@ -48,7 +49,7 @@ subscriptionsAdmin.get('/', async (c) => {
 
   const [rows, total] = await Promise.all([
     c.env.DB.prepare(
-      `SELECT id, email, plan, pro_tier, pro_expires_at, cancel_at_period_end, grace_until, created_at, last_login,
+      `SELECT id, email, plan, pro_tier, pro_expires_at, cancel_at_period_end, grace_until, version, created_at, last_login,
         (SELECT COALESCE(SUM(credits_total - credits_used), 0) FROM credit_packs cp WHERE cp.user_id = users.id AND cp.pack_type = 'cv-10' AND cp.credits_used < cp.credits_total) AS cv_credits,
         (SELECT COALESCE(SUM(credits_total - credits_used), 0) FROM credit_packs cp WHERE cp.user_id = users.id AND cp.pack_type = 'social-50' AND cp.credits_used < cp.credits_total) AS social_credits
        FROM users ${where}
@@ -96,9 +97,9 @@ subscriptionsAdmin.patch('/:userId', async (c) => {
   }
 
   const user = await c.env.DB
-    .prepare('SELECT id, email, plan, pro_expires_at, cancel_at_period_end FROM users WHERE id = ?')
+    .prepare('SELECT id, email, plan, pro_expires_at, cancel_at_period_end, version FROM users WHERE id = ?')
     .bind(userId)
-    .first<{ id: string; email: string; plan: string; pro_expires_at: number | null; cancel_at_period_end: number }>()
+    .first<{ id: string; email: string; plan: string; pro_expires_at: number | null; cancel_at_period_end: number; version: number }>()
 
   if (!user) return c.json({ error: 'User not found' }, 404)
 
@@ -107,38 +108,40 @@ subscriptionsAdmin.patch('/:userId', async (c) => {
   let updated: unknown
 
   if (action === 'extend') {
-    const base = user.pro_expires_at && user.pro_expires_at > now ? user.pro_expires_at : now
-    const newExpiry = base + (days ?? 30) * 86400
     updated = await c.env.DB
-      .prepare("UPDATE users SET plan = 'pro', pro_expires_at = ?, cancel_at_period_end = 0, grace_until = NULL WHERE id = ? RETURNING id, email, plan, pro_expires_at, cancel_at_period_end")
-      .bind(newExpiry, userId)
+      .prepare("UPDATE users SET plan = 'pro', pro_expires_at = (CASE WHEN pro_expires_at > ? THEN pro_expires_at ELSE ? END) + ?, cancel_at_period_end = 0, grace_until = NULL, version = version + 1 WHERE id = ? AND version = ? RETURNING id, email, plan, pro_expires_at, cancel_at_period_end, version")
+      .bind(now, now, (days ?? 30) * 86400, userId, result.data.version)
       .first()
+    if (!updated) return c.json({ error: 'Subscription changed by another request; refresh and retry' }, 409)
 
     // Log subscription event
     await c.env.DB.prepare('INSERT INTO subscription_events (id, user_id, event_type, plan, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(crypto.randomUUID(), userId, 'extended', 'pro', JSON.stringify({ days, new_expiry: newExpiry, admin_id: c.var.userId, reason: result.data.reason }), now)
+      .bind(crypto.randomUUID(), userId, 'extended', 'pro', JSON.stringify({ days, new_expiry: (updated as { pro_expires_at: number }).pro_expires_at, admin_id: c.var.userId, reason: result.data.reason }), now)
       .run()
   } else if (action === 'cancel') {
     updated = await c.env.DB
-      .prepare('UPDATE users SET cancel_at_period_end = 1 WHERE id = ? RETURNING id, email, plan, pro_expires_at, cancel_at_period_end')
-      .bind(userId)
+      .prepare('UPDATE users SET cancel_at_period_end = 1, version = version + 1 WHERE id = ? AND version = ? RETURNING id, email, plan, pro_expires_at, cancel_at_period_end, version')
+      .bind(userId, result.data.version)
       .first()
+    if (!updated) return c.json({ error: 'Subscription changed by another request; refresh and retry' }, 409)
     await c.env.DB.prepare('INSERT INTO subscription_events (id, user_id, event_type, plan, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, 'cancelled', 'pro', JSON.stringify({ admin_id: c.var.userId, reason: result.data.reason }), now)
       .run()
   } else if (action === 'downgrade') {
     updated = await c.env.DB
-      .prepare("UPDATE users SET plan = 'free', pro_expires_at = NULL, cancel_at_period_end = 0, grace_until = NULL WHERE id = ? RETURNING id, email, plan, pro_expires_at, cancel_at_period_end")
-      .bind(userId)
+      .prepare("UPDATE users SET plan = 'free', pro_expires_at = NULL, cancel_at_period_end = 0, grace_until = NULL, version = version + 1 WHERE id = ? AND version = ? RETURNING id, email, plan, pro_expires_at, cancel_at_period_end, version")
+      .bind(userId, result.data.version)
       .first()
+    if (!updated) return c.json({ error: 'Subscription changed by another request; refresh and retry' }, 409)
     await c.env.DB.prepare('INSERT INTO subscription_events (id, user_id, event_type, plan, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, 'downgraded', 'pro', JSON.stringify({ admin_id: c.var.userId, reason: result.data.reason }), now)
       .run()
   } else if (action === 'reactivate') {
     updated = await c.env.DB
-      .prepare('UPDATE users SET cancel_at_period_end = 0 WHERE id = ? RETURNING id, email, plan, pro_expires_at, cancel_at_period_end')
-      .bind(userId)
+      .prepare('UPDATE users SET cancel_at_period_end = 0, version = version + 1 WHERE id = ? AND version = ? RETURNING id, email, plan, pro_expires_at, cancel_at_period_end, version')
+      .bind(userId, result.data.version)
       .first()
+    if (!updated) return c.json({ error: 'Subscription changed by another request; refresh and retry' }, 409)
     await c.env.DB.prepare('INSERT INTO subscription_events (id, user_id, event_type, plan, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?)')
       .bind(crypto.randomUUID(), userId, 'reactivated', 'pro', JSON.stringify({ admin_id: c.var.userId }), now)
       .run()

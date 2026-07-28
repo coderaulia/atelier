@@ -47,7 +47,7 @@ export default function Subscriptions() {
     if (!confirm(`${type} subscription for ${user.email}?`)) return
 
     try {
-      await patchAdminSubscription(user.id, { action: type, days, reason })
+      await patchAdminSubscription(user.id, { action: type, days, reason, version: user.version ?? 1 })
       setMessage(`Subscription ${type} complete for ${user.email}`)
       load()
     } catch (err) {

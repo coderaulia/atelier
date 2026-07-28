@@ -32,8 +32,8 @@ export default function SocialTemplates() {
 
   async function togglePublish(t: SocialTemplateRow) {
     try {
-      if (t.status === 'published') { await disableSocialTemplate(t.id); setSuccess(`${t.name} disabled`) }
-      else { await publishSocialTemplate(t.id); setSuccess(`${t.name} published`) }
+      if (t.status === 'published') { await disableSocialTemplate(t.id, t.version); setSuccess(`${t.name} disabled`) }
+      else { await publishSocialTemplate(t.id, t.version); setSuccess(`${t.name} published`) }
       load()
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed') }
   }

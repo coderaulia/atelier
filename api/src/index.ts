@@ -97,8 +97,8 @@ async function handleScheduled(env: Bindings) {
 
   for (const user of expiredGrace.results ?? []) {
     await env.DB
-      .prepare('UPDATE users SET plan = ?, pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
-      .bind('free', user.id)
+      .prepare("UPDATE users SET plan = ?, pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0, version = version + 1 WHERE id = ? AND plan = 'pro' AND grace_until IS NOT NULL AND grace_until < ?")
+      .bind('free', user.id, now)
       .run()
   }
 

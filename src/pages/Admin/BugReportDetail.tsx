@@ -32,11 +32,12 @@ export default function BugReportDetail() {
 
   useEffect(load, [id])
 
-  async function update(body: Parameters<typeof patchAdminBugReport>[1]) {
+  async function update(body: Omit<Parameters<typeof patchAdminBugReport>[1], 'version'>) {
     setError('')
     setSuccess('')
     try {
-      const data = await patchAdminBugReport(id, body)
+      if (!report) return
+      const data = await patchAdminBugReport(id, { ...body, version: report.version })
       setReport(data.bug_report)
       setSuccess('Bug report updated')
     } catch (err) {

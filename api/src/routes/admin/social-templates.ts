@@ -35,7 +35,7 @@ const templateSchema = z.object({
   is_pro: z.boolean().default(false),
 })
 
-const updateSchema = templateSchema.omit({ id: true }).partial()
+const updateSchema = templateSchema.omit({ id: true }).partial().extend({ version: z.number().int().min(1) })
 
 function nowSec() {
   return Math.floor(Date.now() / 1000)
@@ -124,8 +124,8 @@ socialTemplatesAdmin.put('/:id', async (c) => {
   if (!existing) return c.json({ error: 'Template not found' }, 404)
 
   const d = result.data
-  const sets: string[] = ['updated_at = ?', 'updated_by = ?', 'version = ?']
-  const vals: unknown[] = [nowSec(), c.var.userId, existing.version + 1]
+  const sets: string[] = ['updated_at = ?', 'updated_by = ?', 'version = version + 1']
+  const vals: unknown[] = [nowSec(), c.var.userId]
   let warnings: string[] = []
   let tokens: string[] = []
   let repeats: string[] = []
@@ -149,25 +149,32 @@ socialTemplatesAdmin.put('/:id', async (c) => {
     if (d.slides !== undefined) { sets.push('slides_json = ?'); vals.push(proc.slides ? JSON.stringify(proc.slides) : null) }
   }
 
-  await c.env.DB.prepare(`UPDATE social_templates SET ${sets.join(', ')} WHERE id = ?`).bind(...vals, id).run()
+  const updated = await c.env.DB.prepare(
+    `UPDATE social_templates SET ${sets.join(', ')} WHERE id = ? AND version = ? RETURNING version`
+  ).bind(...vals, id, result.data.version).first<{ version: number }>()
+  if (!updated) return c.json({ error: 'Template changed by another admin; refresh and retry' }, 409)
   await audit(c, 'social_template.update', { id, warnings })
-  return c.json({ id, tokens, repeats, warnings })
+  return c.json({ id, version: updated.version, tokens, repeats, warnings })
 })
 
 socialTemplatesAdmin.post('/:id/publish', async (c) => {
   const id = c.req.param('id')
-  const r = await c.env.DB.prepare("UPDATE social_templates SET status = 'published', updated_at = ? WHERE id = ? RETURNING id").bind(nowSec(), id).first()
+  const version = Number(c.req.header('If-Match'))
+  if (!Number.isInteger(version) || version < 1) return c.json({ error: 'Missing template version' }, 400)
+  const r = await c.env.DB.prepare("UPDATE social_templates SET status = 'published', updated_at = ?, version = version + 1 WHERE id = ? AND version = ? RETURNING id, version").bind(nowSec(), id, version).first<{ id: string; version: number }>()
   if (!r) return c.json({ error: 'Template not found' }, 404)
   await audit(c, 'social_template.publish', { id })
-  return c.json({ ok: true, status: 'published' })
+  return c.json({ ok: true, status: 'published', version: r.version })
 })
 
 socialTemplatesAdmin.post('/:id/disable', async (c) => {
   const id = c.req.param('id')
-  const r = await c.env.DB.prepare("UPDATE social_templates SET status = 'disabled', updated_at = ? WHERE id = ? RETURNING id").bind(nowSec(), id).first()
+  const version = Number(c.req.header('If-Match'))
+  if (!Number.isInteger(version) || version < 1) return c.json({ error: 'Missing template version' }, 400)
+  const r = await c.env.DB.prepare("UPDATE social_templates SET status = 'disabled', updated_at = ?, version = version + 1 WHERE id = ? AND version = ? RETURNING id, version").bind(nowSec(), id, version).first<{ id: string; version: number }>()
   if (!r) return c.json({ error: 'Template not found' }, 404)
   await audit(c, 'social_template.disable', { id })
-  return c.json({ ok: true, status: 'disabled' })
+  return c.json({ ok: true, status: 'disabled', version: r.version })
 })
 
 socialTemplatesAdmin.delete('/:id', async (c) => {

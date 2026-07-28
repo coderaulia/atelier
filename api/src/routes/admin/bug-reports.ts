@@ -13,6 +13,7 @@ const updateBugReportSchema = z.object({
   priority: z.number().int().min(0).max(10).optional(),
   assigned_to: z.string().nullable().optional(),
   resolution_notes: z.string().optional(),
+  version: z.number().int().min(1),
 })
 
 const createCommentSchema = z.object({
@@ -106,7 +107,7 @@ bugReportsAdmin.patch('/:id', async (c) => {
     return c.json({ error: 'Bug report not found' }, 404)
   }
 
-  const fields: string[] = ['updated_at = ?']
+  const fields: string[] = ['updated_at = ?', 'version = version + 1']
   const values: unknown[] = [Math.floor(Date.now() / 1000)]
 
   for (const [key, value] of Object.entries(result.data)) {
@@ -123,10 +124,11 @@ bugReportsAdmin.patch('/:id', async (c) => {
   }
 
   const updated = await c.env.DB.prepare(
-    `UPDATE bug_reports SET ${fields.join(', ')} WHERE id = ? RETURNING *`
+    `UPDATE bug_reports SET ${fields.join(', ')} WHERE id = ? AND version = ? RETURNING *`
   )
-    .bind(...values, id)
+    .bind(...values, id, result.data.version)
     .first()
+  if (!updated) return c.json({ error: 'Bug report changed by another admin; refresh and retry' }, 409)
 
   // Audit log
   await c.env.DB.prepare(
@@ -170,7 +172,7 @@ bugReportsAdmin.post('/:id/comments', async (c) => {
     .run()
 
   // Update bug report updated_at
-  await c.env.DB.prepare('UPDATE bug_reports SET updated_at = ? WHERE id = ?').bind(now, id).run()
+  await c.env.DB.prepare('UPDATE bug_reports SET updated_at = ?, version = version + 1 WHERE id = ?').bind(now, id).run()
 
   return c.json({ id: commentId, message: 'Comment added' }, 201)
 })

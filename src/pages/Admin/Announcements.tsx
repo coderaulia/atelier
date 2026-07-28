@@ -41,7 +41,7 @@ export default function Announcements() {
 
   async function toggleActive(item: Announcement) {
     try {
-      await updateAdminAnnouncement(item.id, { is_active: !item.is_active })
+      await updateAdminAnnouncement(item.id, { is_active: !item.is_active }, item.version)
       setSuccess(`${item.title} ${item.is_active ? 'deactivated' : 'activated'}`)
       load()
     } catch (err) {

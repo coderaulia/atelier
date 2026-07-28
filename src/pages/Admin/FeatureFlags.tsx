@@ -20,7 +20,7 @@ export default function FeatureFlagsPage() {
 
   async function toggle(flag: FeatureFlag) {
     try {
-      await updateFeatureFlag(flag.key, { enabled: !flag.enabled })
+      await updateFeatureFlag(flag.key, { enabled: !flag.enabled }, flag.version)
       setSuccess(`${flag.key} ${flag.enabled ? 'disabled' : 'enabled'}`)
       load()
     } catch (err) {
@@ -30,7 +30,7 @@ export default function FeatureFlagsPage() {
 
   async function updateRollout(flag: FeatureFlag, percentage: number) {
     try {
-      await updateFeatureFlag(flag.key, { rollout_percentage: percentage })
+      await updateFeatureFlag(flag.key, { rollout_percentage: percentage }, flag.version)
       setSuccess(`${flag.key} rollout set to ${percentage}%`)
       load()
     } catch (err) {

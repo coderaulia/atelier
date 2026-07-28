@@ -79,13 +79,6 @@ refundsAdmin.post('/', async (c) => {
   if (!tx) return c.json({ error: 'Transaction not found' }, 404)
   if (tx.status !== 'success') return c.json({ error: 'Can only refund successful transactions' }, 400)
 
-  // Check for existing pending refund
-  const existing = await c.env.DB
-    .prepare("SELECT id FROM refunds WHERE transaction_id = ? AND status = 'pending'")
-    .bind(transaction_id)
-    .first()
-  if (existing) return c.json({ error: 'Refund request already pending for this transaction' }, 409)
-
   // Get user's total tool usage count (check if they used 5+ times)
   const usage = await c.env.DB
     .prepare('SELECT COALESCE(SUM(count), 0) AS total FROM usage_log WHERE user_id = ?')
@@ -97,16 +90,19 @@ refundsAdmin.post('/', async (c) => {
   const id = crypto.randomUUID()
   const now = Math.floor(Date.now() / 1000)
 
-  await c.env.DB.prepare(
-    `INSERT INTO refunds (id, transaction_id, user_id, amount, currency, reason, usage_count, requested_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-  )
-    .bind(id, transaction_id, user_id, amount, tx.currency, reason, usageCount, now)
-    .run()
-
-  await c.env.DB.prepare('INSERT INTO admin_audit_log (admin_id, action, target_user_id, changes, ip_address) VALUES (?, ?, ?, ?, ?)')
-    .bind(c.var.userId, 'refund.created', user_id, JSON.stringify({ transaction_id, amount, reason, usage_count: usageCount }), getClientIP(c))
-    .run()
+  await c.env.DB.batch([
+    c.env.DB.prepare(
+      `INSERT INTO refunds (id, transaction_id, user_id, amount, currency, reason, usage_count, requested_at)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?
+       WHERE NOT EXISTS (SELECT 1 FROM refunds WHERE transaction_id = ?)`
+    ).bind(id, transaction_id, user_id, amount, tx.currency, reason, usageCount, now, transaction_id),
+    c.env.DB.prepare(
+      `INSERT INTO admin_audit_log (admin_id, action, target_user_id, changes, ip_address)
+       SELECT ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM refunds WHERE id = ?)`
+    ).bind(c.var.userId, 'refund.created', user_id, JSON.stringify({ transaction_id, amount, reason, usage_count: usageCount }), getClientIP(c), id),
+  ])
+  const created = await c.env.DB.prepare('SELECT id FROM refunds WHERE id = ?').bind(id).first()
+  if (!created) return c.json({ error: 'Refund already exists for this transaction' }, 409)
 
   return c.json({ id, usage_count: usageCount, eligible: usageCount < 5, message: 'Refund request created' }, 201)
 })
@@ -118,22 +114,15 @@ refundsAdmin.patch('/:id', async (c) => {
   const result = processRefundSchema.safeParse(body)
   if (!result.success) return c.json({ error: 'Invalid status update' }, 400)
 
-  const refund = await c.env.DB
-    .prepare('SELECT * FROM refunds WHERE id = ?')
-    .bind(id)
-    .first<{ id: string; user_id: string; status: string; usage_count: number; transaction_id: number }>()
-
-  if (!refund) return c.json({ error: 'Refund not found' }, 404)
-  if (refund.status !== 'pending') return c.json({ error: 'Refund already processed' }, 400)
-
   const now = Math.floor(Date.now() / 1000)
   const updated = await c.env.DB
-    .prepare('UPDATE refunds SET status = ?, processed_at = ?, processed_by = ?, notes = ? WHERE id = ? RETURNING *')
+    .prepare("UPDATE refunds SET status = ?, processed_at = ?, processed_by = ?, notes = ? WHERE id = ? AND status = 'pending' RETURNING *")
     .bind(result.data.status, now, c.var.userId, result.data.notes ?? null, id)
     .first()
+  if (!updated) return c.json({ error: 'Refund was already processed or does not exist' }, 409)
 
   await c.env.DB.prepare('INSERT INTO admin_audit_log (admin_id, action, target_user_id, changes, ip_address) VALUES (?, ?, ?, ?, ?)')
-    .bind(c.var.userId, `refund.${result.data.status}`, refund.user_id, JSON.stringify({ refund_id: id, status: result.data.status, notes: result.data.notes }), getClientIP(c))
+    .bind(c.var.userId, `refund.${result.data.status}`, (updated as { user_id: string }).user_id, JSON.stringify({ refund_id: id, status: result.data.status, notes: result.data.notes }), getClientIP(c))
     .run()
 
   // Create notification

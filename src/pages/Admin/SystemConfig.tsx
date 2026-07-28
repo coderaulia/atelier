@@ -26,8 +26,10 @@ export default function SystemConfigPage() {
   }
 
   async function save(key: string) {
+    const item = config.find((entry) => entry.key === key)
+    if (!item) return
     try {
-      await updateSystemConfig(key, editValue)
+      await updateSystemConfig(key, editValue, item.version)
       setSuccess(`Updated ${key}`)
       setEditing(null)
       load()

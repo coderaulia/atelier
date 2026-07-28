@@ -116,7 +116,7 @@ function ProfileTab({ user, onUpdate }: { user: User; onUpdate: (u: User) => voi
     setSaving(true)
     setMessage('')
     try {
-      const { user: updated } = await updateProfile(name || null, metadata)
+      const { user: updated } = await updateProfile(name || null, metadata, user.version ?? 1)
       onUpdate(updated)
       setStoredUser(updated as unknown as Record<string, unknown>)
       setMetadata(normalizeGlobalMetadata(updated.global_metadata))

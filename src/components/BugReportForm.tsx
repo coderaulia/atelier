@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { submitBugReport } from '../lib/api'
 import { TOOLS } from '../lib/tools'
 
@@ -16,6 +16,7 @@ export default function BugReportForm({ onSuccess, onCancel, defaultToolId }: Bu
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const submissionKey = useRef(crypto.randomUUID())
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -27,7 +28,7 @@ export default function BugReportForm({ onSuccess, onCancel, defaultToolId }: Bu
         subject,
         description,
         tool_id: toolId || undefined,
-      })
+      }, submissionKey.current)
       setSuccess(true)
       setTimeout(() => {
         onSuccess?.()

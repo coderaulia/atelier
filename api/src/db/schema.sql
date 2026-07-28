@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   midtrans_token_id TEXT,
   deleted_at     INTEGER,
   last_login     INTEGER,
+  version        INTEGER NOT NULL DEFAULT 1,
   created_at     INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
@@ -74,6 +75,9 @@ CREATE TABLE IF NOT EXISTS checkout_orders (
   amount         INTEGER NOT NULL CHECK (amount > 0),
   currency       TEXT NOT NULL DEFAULT 'IDR',
   status         TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'processed', 'failed')),
+  idempotency_key TEXT,
+  snap_token     TEXT,
+  processing_token TEXT,
   created_at     INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at     INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -94,6 +98,10 @@ CREATE INDEX IF NOT EXISTS idx_usage_log_tool_date ON usage_log(tool_id, date);
 CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_checkout_orders_user_date ON checkout_orders(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_checkout_orders_status ON checkout_orders(status, updated_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_checkout_orders_user_idempotency ON checkout_orders(user_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_checkout_orders_active_purchase ON checkout_orders(user_id, purchase_type, product_id) WHERE status IN ('pending', 'processing');
+CREATE UNIQUE INDEX IF NOT EXISTS idx_checkout_orders_active_subscription ON checkout_orders(user_id) WHERE purchase_type = 'subscription' AND status IN ('pending', 'processing');
+CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_midtrans_order_unique ON transactions(midtrans_order_id) WHERE midtrans_order_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_error_log_created_at ON error_log(created_at);
 CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_users_grace_until ON users(grace_until);
@@ -151,13 +159,16 @@ CREATE TABLE IF NOT EXISTS bug_reports (
   updated_at INTEGER NOT NULL,
   resolved_at INTEGER,
   resolved_by TEXT REFERENCES users(id),
-  resolution_notes TEXT
+  resolution_notes TEXT,
+  version INTEGER NOT NULL DEFAULT 1,
+  idempotency_key TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_bug_reports_status ON bug_reports(status);
 CREATE INDEX IF NOT EXISTS idx_bug_reports_severity ON bug_reports(severity);
 CREATE INDEX IF NOT EXISTS idx_bug_reports_user_id ON bug_reports(user_id);
 CREATE INDEX IF NOT EXISTS idx_bug_reports_created_at ON bug_reports(created_at);
 CREATE INDEX IF NOT EXISTS idx_bug_reports_assigned_to ON bug_reports(assigned_to);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bug_reports_user_idempotency ON bug_reports(user_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS bug_report_comments (
   id TEXT PRIMARY KEY,

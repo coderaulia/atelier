@@ -115,6 +115,13 @@ type CheckoutOrder = {
   amount: number
   currency: string
   status: 'pending' | 'processing' | 'processed' | 'failed'
+  processing_token: string | null
+}
+
+type CheckoutCreation = {
+  order_id: string
+  snap_token: string | null
+  created: boolean
 }
 
 async function createCheckoutOrder(
@@ -124,17 +131,41 @@ async function createCheckoutOrder(
   purchaseType: CheckoutOrder['purchase_type'],
   productId: string,
   amount: number,
-) {
-  await c.env.DB.prepare(
-    `INSERT INTO checkout_orders (order_id, user_id, purchase_type, product_id, amount, currency)
-     VALUES (?, ?, ?, ?, ?, 'IDR')`
-  ).bind(orderId, userId, purchaseType, productId, amount).run()
+  idempotencyKey: string | null,
+): Promise<CheckoutCreation> {
+  try {
+    const created = await c.env.DB.prepare(
+    `INSERT INTO checkout_orders (order_id, user_id, purchase_type, product_id, amount, currency, idempotency_key)
+     VALUES (?, ?, ?, ?, ?, 'IDR', ?)
+     RETURNING order_id, snap_token`
+    ).bind(orderId, userId, purchaseType, productId, amount, idempotencyKey).first<{ order_id: string; snap_token: string | null }>()
+    if (!created) throw new Error('Checkout order was not created')
+    return { ...created, created: true }
+  } catch {
+    // A second click may use a different key, so the active-purchase unique
+    // index is deliberately the fallback deduplication boundary.
+    const existing = await c.env.DB.prepare(
+      `SELECT order_id, snap_token FROM checkout_orders
+       WHERE user_id = ? AND purchase_type = ?
+         AND (purchase_type = 'subscription' OR product_id = ?)
+         AND status IN ('pending', 'processing')
+       ORDER BY created_at DESC LIMIT 1`
+    ).bind(userId, purchaseType, productId).first<{ order_id: string; snap_token: string | null }>()
+    if (!existing) throw new Error('Checkout order creation failed')
+    return { ...existing, created: false }
+  }
 }
 
 async function markCheckoutFailed(c: { env: Bindings }, orderId: string) {
   await c.env.DB.prepare(
     "UPDATE checkout_orders SET status = 'failed', updated_at = ? WHERE order_id = ? AND status = 'pending'"
   ).bind(Math.floor(Date.now() / 1000), orderId).run()
+}
+
+async function saveSnapToken(c: { env: Bindings }, orderId: string, token: string) {
+  await c.env.DB.prepare(
+    "UPDATE checkout_orders SET snap_token = ?, updated_at = ? WHERE order_id = ? AND status = 'pending'"
+  ).bind(token, Math.floor(Date.now() / 1000), orderId).run()
 }
 
 async function createSnapTransaction(
@@ -182,26 +213,31 @@ billing.post('/checkout', authMiddleware, async (c) => {
   const orderId = `SUB_${tier}_${Date.now()}_${Math.floor(Math.random() * 1000)}`
   const grossAmount = PRICING.pro[tier].idr.amount
 
-  await createCheckoutOrder(c, orderId, c.var.userId, 'subscription', tier, grossAmount)
+  const checkout = await createCheckoutOrder(c, orderId, c.var.userId, 'subscription', tier, grossAmount, c.req.header('Idempotency-Key') ?? null)
+  if (!checkout.created) {
+    if (!checkout.snap_token) return c.json({ error: 'Checkout is being initialized; retry shortly' }, 409)
+    return c.json({ snap_token: checkout.snap_token, order_id: checkout.order_id })
+  }
 
   let data: { token: string } | null = null
   try {
     data = await createSnapTransaction(
       c,
-      orderId,
+      checkout.order_id,
       grossAmount,
       { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
     )
   } catch {
-    await markCheckoutFailed(c, orderId)
+    await markCheckoutFailed(c, checkout.order_id)
     return c.json({ error: 'Failed to create checkout' }, 502)
   }
   if (!data) {
-    await markCheckoutFailed(c, orderId)
+    await markCheckoutFailed(c, checkout.order_id)
     return c.json({ error: 'Failed to create checkout' }, 502)
   }
 
-  return c.json({ snap_token: data.token, order_id: orderId })
+  await saveSnapToken(c, checkout.order_id, data.token)
+  return c.json({ snap_token: data.token, order_id: checkout.order_id })
 })
 
 // One-time credit pack checkout — adds credits, doesn't touch plan/tier.
@@ -220,26 +256,31 @@ billing.post('/checkout-pack', authMiddleware, async (c) => {
   const orderId = `PACK_${packId}_${Date.now()}_${Math.floor(Math.random() * 1000)}`
   const grossAmount = PRICING.packs[packId].idr.amount
 
-  await createCheckoutOrder(c, orderId, c.var.userId, 'pack', packId, grossAmount)
+  const checkout = await createCheckoutOrder(c, orderId, c.var.userId, 'pack', packId, grossAmount, c.req.header('Idempotency-Key') ?? null)
+  if (!checkout.created) {
+    if (!checkout.snap_token) return c.json({ error: 'Checkout is being initialized; retry shortly' }, 409)
+    return c.json({ snap_token: checkout.snap_token, order_id: checkout.order_id })
+  }
 
   let data: { token: string } | null = null
   try {
     data = await createSnapTransaction(
       c,
-      orderId,
+      checkout.order_id,
       grossAmount,
       { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
     )
   } catch {
-    await markCheckoutFailed(c, orderId)
+    await markCheckoutFailed(c, checkout.order_id)
     return c.json({ error: 'Failed to create checkout' }, 502)
   }
   if (!data) {
-    await markCheckoutFailed(c, orderId)
+    await markCheckoutFailed(c, checkout.order_id)
     return c.json({ error: 'Failed to create checkout' }, 502)
   }
 
-  return c.json({ snap_token: data.token, order_id: orderId })
+  await saveSnapToken(c, checkout.order_id, data.token)
+  return c.json({ snap_token: data.token, order_id: checkout.order_id })
 })
 
 // Midtrans recurring lifecycle webhook.
@@ -288,11 +329,12 @@ billing.post('/webhook', async (c) => {
   }
 
   // Claim once; abandoned claims can be retried after five minutes.
+  const processingToken = crypto.randomUUID()
   const claimed = await c.env.DB.prepare(
-    `UPDATE checkout_orders SET status = 'processing', updated_at = ?
+    `UPDATE checkout_orders SET status = 'processing', processing_token = ?, updated_at = ?
      WHERE order_id = ? AND (status = 'pending' OR (status = 'processing' AND updated_at < ?))
      RETURNING order_id`
-  ).bind(now, order.order_id, now - 300).first<{ order_id: string }>()
+  ).bind(processingToken, now, order.order_id, now - 300).first<{ order_id: string }>()
   if (!claimed) return c.json({ ok: true })
 
   try {
@@ -302,12 +344,18 @@ billing.post('/webhook', async (c) => {
       const pack = PRICING.packs[packId]
 
       await c.env.DB.batch([
-        c.env.DB.prepare('INSERT INTO credit_packs (user_id, pack_type, credits_total) VALUES (?, ?, ?)')
-          .bind(order.user_id, packId, pack.credits),
-        c.env.DB.prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
-          .bind(order.user_id, order.amount, order.currency, `pack:${packId}`, 'success', order.order_id),
-        c.env.DB.prepare("UPDATE checkout_orders SET status = 'processed', updated_at = ? WHERE order_id = ? AND status = 'processing'")
-          .bind(now, order.order_id),
+        c.env.DB.prepare(
+          `INSERT INTO credit_packs (user_id, pack_type, credits_total)
+           SELECT user_id, ?, ? FROM checkout_orders
+           WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
+        ).bind(packId, pack.credits, order.order_id, processingToken),
+        c.env.DB.prepare(
+          `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
+           SELECT user_id, amount, currency, ?, 'success', order_id FROM checkout_orders
+           WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
+        ).bind(`pack:${packId}`, order.order_id, processingToken),
+        c.env.DB.prepare("UPDATE checkout_orders SET status = 'processed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
+          .bind(now, order.order_id, processingToken),
       ])
       return c.json({ ok: true })
     }
@@ -325,12 +373,19 @@ billing.post('/webhook', async (c) => {
       const nextRenewal = base + thirtyDays
 
       await c.env.DB.batch([
-        c.env.DB.prepare('UPDATE users SET plan = ?, pro_tier = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0 WHERE id = ?')
-          .bind('pro', tier, nextRenewal, order.user_id),
-        c.env.DB.prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
-          .bind(order.user_id, order.amount, order.currency, tier, 'success', order.order_id),
-        c.env.DB.prepare("UPDATE checkout_orders SET status = 'processed', updated_at = ? WHERE order_id = ? AND status = 'processing'")
-          .bind(now, order.order_id),
+        c.env.DB.prepare(
+          `UPDATE users SET plan = ?, pro_tier = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0, version = version + 1
+           WHERE id = ? AND EXISTS (
+             SELECT 1 FROM checkout_orders WHERE order_id = ? AND status = 'processing' AND processing_token = ?
+           )`
+        ).bind('pro', tier, nextRenewal, order.user_id, order.order_id, processingToken),
+        c.env.DB.prepare(
+          `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
+           SELECT user_id, amount, currency, ?, 'success', order_id FROM checkout_orders
+           WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
+        ).bind(tier, order.order_id, processingToken),
+        c.env.DB.prepare("UPDATE checkout_orders SET status = 'processed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
+          .bind(now, order.order_id, processingToken),
       ])
 
       const t = emailTemplates('en')
@@ -344,8 +399,11 @@ billing.post('/webhook', async (c) => {
 
     const planType = order.purchase_type === 'pack' ? `pack:${order.product_id}` : order.product_id
     const statements = [
-      c.env.DB.prepare('INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id) VALUES (?, ?, ?, ?, ?, ?)')
-        .bind(order.user_id, order.amount, order.currency, planType, 'failed', order.order_id),
+      c.env.DB.prepare(
+        `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
+         SELECT user_id, amount, currency, ?, 'failed', order_id FROM checkout_orders
+         WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
+      ).bind(planType, order.order_id, processingToken),
     ]
 
     let failureEmail: string | undefined
@@ -355,13 +413,17 @@ billing.post('/webhook', async (c) => {
         .first<{ email: string }>()
       failureEmail = user?.email
       statements.push(
-        c.env.DB.prepare('UPDATE users SET grace_until = ? WHERE id = ?').bind(now + 3 * 24 * 60 * 60, order.user_id)
+        c.env.DB.prepare(
+          `UPDATE users SET grace_until = ?, version = version + 1 WHERE id = ? AND EXISTS (
+            SELECT 1 FROM checkout_orders WHERE order_id = ? AND status = 'processing' AND processing_token = ?
+          )`
+        ).bind(now + 3 * 24 * 60 * 60, order.user_id, order.order_id, processingToken)
       )
     }
 
     statements.push(
-      c.env.DB.prepare("UPDATE checkout_orders SET status = 'failed', updated_at = ? WHERE order_id = ? AND status = 'processing'")
-        .bind(now, order.order_id)
+      c.env.DB.prepare("UPDATE checkout_orders SET status = 'failed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
+        .bind(now, order.order_id, processingToken)
     )
     await c.env.DB.batch(statements)
 
@@ -373,8 +435,8 @@ billing.post('/webhook', async (c) => {
     return c.json({ ok: true })
   } catch {
     await c.env.DB.prepare(
-      "UPDATE checkout_orders SET status = 'pending', updated_at = ? WHERE order_id = ? AND status = 'processing'"
-    ).bind(Math.floor(Date.now() / 1000), order.order_id).run()
+      "UPDATE checkout_orders SET status = 'pending', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?"
+    ).bind(Math.floor(Date.now() / 1000), order.order_id, processingToken).run()
     return c.json({ error: 'Webhook processing failed' }, 500)
   }
 })

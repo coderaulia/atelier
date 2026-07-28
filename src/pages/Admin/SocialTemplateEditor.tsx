@@ -102,6 +102,7 @@ export default function SocialTemplateEditor() {
   const [css, setCss] = useState(isNew ? STARTERS.headline.css : '')
   const [fieldsText, setFieldsText] = useState(isNew ? JSON.stringify(STARTERS.headline.fields, null, 2) : '[]')
   const [status, setStatus] = useState('draft')
+  const [version, setVersion] = useState(1)
   // Carousel authoring: extra slides beyond the first. Slide 1 is always `html`.
   const [extraSlides, setExtraSlides] = useState<string[]>([])
   const [slideIdx, setSlideIdx] = useState(0)
@@ -119,6 +120,7 @@ export default function SocialTemplateEditor() {
       .then(({ template: t }) => {
         setId(t.id); setName(t.name); setKind(t.kind)
         setWidth(t.width); setHeight(t.height); setIsPro(!!t.is_pro); setStatus(t.status ?? 'draft')
+        setVersion(t.version)
         // prefer source (author input) for round-trip editing; fall back to stored clean
         setHtml(t.html_source ?? t.html)
         setCss(t.css_source ?? t.css)
@@ -223,7 +225,8 @@ export default function SocialTemplateEditor() {
     }
     setSaving(true)
     try {
-      const res = isNew ? await createSocialTemplate(payload) : await updateSocialTemplate(id, payload)
+      const res = isNew ? await createSocialTemplate(payload) : await updateSocialTemplate(id, payload, version)
+      if (!isNew && 'version' in res && typeof res.version === 'number') setVersion(res.version)
       setWarnings(res.warnings || [])
       setSuccess(isNew ? 'Template created (draft)' : 'Saved')
       if (isNew) { navigate(`/admin/content/social-templates/${id}`, { replace: true }); }
@@ -240,7 +243,8 @@ export default function SocialTemplateEditor() {
     const ok = isNew ? await handleSave() : true
     if (!ok) return
     try {
-      await publishSocialTemplate(id)
+      const result = await publishSocialTemplate(id, version)
+      setVersion((result as { version?: number }).version ?? version + 1)
       setStatus('published'); setSuccess('Published — now live in the social generator')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Publish failed')
@@ -249,7 +253,8 @@ export default function SocialTemplateEditor() {
 
   async function handleDisable() {
     try {
-      await disableSocialTemplate(id)
+      const result = await disableSocialTemplate(id, version)
+      setVersion((result as { version?: number }).version ?? version + 1)
       setStatus('disabled'); setSuccess('Disabled — removed from the social generator')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Disable failed')

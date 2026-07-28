@@ -75,6 +75,8 @@ contentAdmin.post('/announcements', async (c) => {
 
 contentAdmin.patch('/announcements/:id', async (c) => {
   const id = c.req.param('id')
+  const version = Number(c.req.header('If-Match'))
+  if (!Number.isInteger(version) || version < 1) return c.json({ error: 'Missing announcement version' }, 400)
   const body = await c.req.json().catch(() => null)
   const result = announcementSchema.partial().safeParse(body)
   if (!result.success) return c.json({ error: 'Invalid announcement update' }, 400)
@@ -87,13 +89,14 @@ contentAdmin.patch('/announcements/:id', async (c) => {
     data.message = sanitizeHtml(data.message)
   }
   
-  const fields: string[] = ['updated_at = ?']
+  const fields: string[] = ['updated_at = ?', 'version = version + 1']
   const values: unknown[] = [Math.floor(Date.now() / 1000)]
   for (const [key, value] of Object.entries(data)) {
     fields.push(`${key} = ?`)
     values.push(typeof value === 'boolean' ? (value ? 1 : 0) : value)
   }
-  const updated = await c.env.DB.prepare(`UPDATE announcements SET ${fields.join(', ')} WHERE id = ? RETURNING *`).bind(...values, id).first()
+  const updated = await c.env.DB.prepare(`UPDATE announcements SET ${fields.join(', ')} WHERE id = ? AND version = ? RETURNING *`).bind(...values, id, version).first()
+  if (!updated) return c.json({ error: 'Announcement changed by another admin; refresh and retry' }, 409)
   await c.env.DB.prepare('INSERT INTO admin_audit_log (admin_id, action, changes, ip_address) VALUES (?, ?, ?, ?)')
     .bind(c.var.userId, 'announcement.update', JSON.stringify({ id, ...data }), getClientIP(c)).run()
   return c.json({ announcement: updated })

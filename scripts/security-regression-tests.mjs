@@ -83,7 +83,7 @@ test('payment webhook uses stored order ownership and rejects amount changes', {
     `INSERT OR REPLACE INTO users (id,email,password_hash,plan,role,status,email_verified) VALUES ('${ownerId}','security-owner@example.invalid','test','free','user','active',1);
      INSERT OR REPLACE INTO users (id,email,password_hash,plan,role,status,email_verified) VALUES ('${victimId}','security-victim@example.invalid','test','free','user','active',1);
      INSERT OR REPLACE INTO checkout_orders (order_id,user_id,purchase_type,product_id,amount,currency,status,updated_at) VALUES ('${orderId}','${ownerId}','subscription','pro',99000,'IDR','pending',unixepoch());
-     INSERT OR REPLACE INTO checkout_orders (order_id,user_id,purchase_type,product_id,amount,currency,status,updated_at) VALUES ('${mismatchOrderId}','${ownerId}','subscription','pro',99000,'IDR','pending',unixepoch());`,
+     INSERT OR REPLACE INTO checkout_orders (order_id,user_id,purchase_type,product_id,amount,currency,status,updated_at) VALUES ('${mismatchOrderId}','${ownerId}','pack','cv-10',99000,'IDR','pending',unixepoch());`,
   ])
 
   const worker = spawn(process.execPath, [

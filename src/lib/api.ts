@@ -18,6 +18,7 @@ export interface User {
   email_verified?: number
   created_at?: number
   last_login?: number | null
+  version?: number
   deleted_at?: number | null
   total_tool_uses?: number
 }
@@ -125,10 +126,10 @@ export function getUsage(toolId: string, token: string) {
   })
 }
 
-export async function incrementUsage(toolId: string, token: string): Promise<UsageStatus> {
+export async function incrementUsage(toolId: string, token: string, idempotencyKey = crypto.randomUUID()): Promise<UsageStatus> {
   const res = await fetch(`${API_URL}/usage/${toolId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Protection': '1', 'Idempotency-Key': idempotencyKey, ...authHeaders(token) },
   })
   const data = await res.json() as UsageStatus & { error?: string }
   if (res.status === 429) throw new UsageLimitError(data.used, data.limit, data.reset_at)
@@ -149,11 +150,11 @@ export async function incrementAnonUsage(toolId: string): Promise<UsageStatus> {
 }
 
 // ── Account management ──────────────────────────────────────────
-export function updateProfile(name: string | null, global_metadata?: Partial<GlobalMetadata>) {
+export function updateProfile(name: string | null, global_metadata: Partial<GlobalMetadata> | undefined, version: number) {
   return request<{ user: User }>('/auth/profile', {
     method: 'PATCH',
     headers: authHeaders(),
-    body: JSON.stringify({ name, global_metadata }),
+    body: JSON.stringify({ name, global_metadata, version }),
   })
 }
 
@@ -207,18 +208,18 @@ export function getReceipt(txId: number) {
   return request<{ transaction: Transaction }>(`/billing/receipt/${txId}`, { headers: authHeaders() })
 }
 
-export function createCheckout(tier: 'starter' | 'pro' | 'business') {
+export function createCheckout(tier: 'starter' | 'pro' | 'business', idempotencyKey = crypto.randomUUID()) {
   return request<{ snap_token: string; order_id: string }>('/billing/checkout', {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify({ tier }),
   })
 }
 
-export function createPackCheckout(packId: 'cv-10' | 'social-50') {
+export function createPackCheckout(packId: 'cv-10' | 'social-50', idempotencyKey = crypto.randomUUID()) {
   return request<{ snap_token: string; order_id: string }>('/billing/checkout-pack', {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify({ pack_id: packId }),
   })
 }
@@ -291,7 +292,7 @@ export function getAdminUser(id: string) {
   }>(`/admin/users/${id}`, { headers: authHeaders() })
 }
 
-export function patchAdminUser(id: string, body: Partial<Pick<User, 'plan' | 'pro_tier' | 'status' | 'pro_expires_at'>>) {
+export function patchAdminUser(id: string, body: Partial<Pick<User, 'plan' | 'pro_tier' | 'status' | 'pro_expires_at'>> & { version: number }) {
   return request<{ user: User }>(`/admin/users/${id}`, {
     method: 'PATCH',
     headers: authHeaders(),
@@ -389,6 +390,7 @@ export interface BugReport {
   resolved_at?: number | null
   resolved_by?: string | null
   resolution_notes?: string | null
+  version: number
 }
 
 export interface BugReportComment {
@@ -406,10 +408,10 @@ export function submitBugReport(payload: {
   description: string
   tool_id?: string
   screenshot_url?: string
-}) {
+}, idempotencyKey = crypto.randomUUID()) {
   return request<{ id: string; message: string }>('/bug-reports', {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(payload),
   })
 }
@@ -447,6 +449,7 @@ export function patchAdminBugReport(
     priority?: number
     assigned_to?: string | null
     resolution_notes?: string
+    version: number
   }
 ) {
   return request<{ bug_report: BugReport }>(`/admin/bug-reports/${id}`, {
@@ -539,7 +542,7 @@ export function getAdminSubscriptionSummary() {
 
 export function patchAdminSubscription(
   userId: string,
-  body: { action: 'extend' | 'cancel' | 'downgrade' | 'reactivate'; days?: number; reason?: string }
+  body: { action: 'extend' | 'cancel' | 'downgrade' | 'reactivate'; days?: number; reason?: string; version: number }
 ) {
   return request<{ user: User }>(`/admin/subscriptions/${userId}`, {
     method: 'PATCH',
@@ -641,6 +644,7 @@ export interface SystemConfig {
   type: 'string' | 'number' | 'boolean' | 'json'
   description?: string | null
   updated_at?: number | null
+  version: number
 }
 
 export interface FeatureFlag {
@@ -651,6 +655,7 @@ export interface FeatureFlag {
   user_whitelist?: string | null
   created_at: number
   updated_at: number
+  version: number
 }
 
 export interface HealthStatus {
@@ -669,10 +674,10 @@ export function getSystemConfig() {
   return request<{ config: SystemConfig[] }>('/admin/system/config', { headers: authHeaders() })
 }
 
-export function updateSystemConfig(key: string, value: string) {
+export function updateSystemConfig(key: string, value: string, version: number) {
   return request<{ config: SystemConfig }>(`/admin/system/config/${key}`, {
     method: 'PATCH',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'If-Match': String(version) },
     body: JSON.stringify({ value }),
   })
 }
@@ -683,11 +688,11 @@ export function getFeatureFlags() {
 
 export function updateFeatureFlag(
   key: string,
-  body: { enabled?: boolean; rollout_percentage?: number; user_whitelist?: string[] }
+  body: { enabled?: boolean; rollout_percentage?: number; user_whitelist?: string[] }, version: number
 ) {
   return request<{ feature: FeatureFlag }>(`/admin/system/features/${key}`, {
     method: 'PATCH',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'If-Match': String(version) },
     body: JSON.stringify(body),
   })
 }
@@ -709,6 +714,7 @@ export interface Announcement {
   end_at?: number | null
   created_at: number
   updated_at: number
+  version: number
 }
 
 export interface EmailTemplate {
@@ -730,10 +736,10 @@ export function createAdminAnnouncement(payload: Partial<Announcement>) {
   })
 }
 
-export function updateAdminAnnouncement(id: string, payload: Omit<Partial<Announcement>, 'is_active'> & { is_active?: boolean | number }) {
+export function updateAdminAnnouncement(id: string, payload: Omit<Partial<Announcement>, 'is_active'> & { is_active?: boolean | number }, version: number) {
   return request<{ announcement: Announcement }>(`/admin/content/announcements/${id}`, {
     method: 'PATCH',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'If-Match': String(version) },
     body: JSON.stringify(payload),
   })
 }
@@ -828,6 +834,7 @@ export interface SocialTemplateRow {
 
 export interface SocialTemplateWriteResult {
   id: string
+  version?: number
   tokens: string[]
   repeats: string[]
   warnings: string[]
@@ -868,25 +875,25 @@ export function createSocialTemplate(payload: SocialTemplatePayload) {
   })
 }
 
-export function updateSocialTemplate(id: string, payload: Partial<SocialTemplatePayload>) {
+export function updateSocialTemplate(id: string, payload: Partial<SocialTemplatePayload>, version: number) {
   return request<SocialTemplateWriteResult>(`/admin/social-templates/${id}`, {
     method: 'PUT',
     headers: authHeaders(),
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, version }),
   })
 }
 
-export function publishSocialTemplate(id: string) {
+export function publishSocialTemplate(id: string, version: number) {
   return request<{ ok: boolean; status: string }>(`/admin/social-templates/${id}/publish`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'If-Match': String(version) },
   })
 }
 
-export function disableSocialTemplate(id: string) {
+export function disableSocialTemplate(id: string, version: number) {
   return request<{ ok: boolean; status: string }>(`/admin/social-templates/${id}/disable`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { ...authHeaders(), 'If-Match': String(version) },
   })
 }
 

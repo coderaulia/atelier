@@ -90,32 +90,17 @@ async function handleScheduled(env: Bindings) {
   const now = Math.floor(Date.now() / 1000)
   const thirtyDaysAgo = now - 30 * 24 * 60 * 60
 
-  const expiredGrace = await env.DB
-    .prepare('SELECT id, email FROM users WHERE plan = ? AND grace_until IS NOT NULL AND grace_until < ?')
-    .bind('pro', now)
-    .all<{ id: string; email: string }>()
-
-  for (const user of expiredGrace.results ?? []) {
-    await env.DB
-      .prepare("UPDATE users SET plan = ?, pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0, version = version + 1 WHERE id = ? AND plan = 'pro' AND grace_until IS NOT NULL AND grace_until < ?")
-      .bind('free', user.id, now)
-      .run()
-  }
-
-  const deleted = await env.DB
-    .prepare('SELECT id FROM users WHERE deleted_at IS NOT NULL AND deleted_at < ?')
-    .bind(thirtyDaysAgo)
-    .all<{ id: string }>()
-
-  for (const user of deleted.results ?? []) {
-    await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(user.id).run()
-  }
-
-  await env.DB.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used = 1').bind(now).run()
-  await env.DB.prepare('DELETE FROM email_verifications WHERE expires_at < ? OR used = 1').bind(now).run()
-  await env.DB.prepare('DELETE FROM rate_limit WHERE window_start < ?').bind(now - 3600).run()
-  await env.DB.prepare('DELETE FROM failed_logins WHERE attempted_at < ?').bind(now - 24 * 60 * 60).run()
-  await env.DB.prepare('DELETE FROM anonymous_usage WHERE created_at < ?').bind(now - 7 * 24 * 60 * 60).run()
+  await env.DB.batch([
+    env.DB.prepare("UPDATE users SET plan = 'free', pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0, version = version + 1 WHERE plan = 'pro' AND grace_until IS NOT NULL AND grace_until < ?").bind(now),
+    env.DB.prepare('DELETE FROM users WHERE deleted_at IS NOT NULL AND deleted_at < ?').bind(thirtyDaysAgo),
+  ])
+  await Promise.all([
+    env.DB.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used = 1').bind(now).run(),
+    env.DB.prepare('DELETE FROM email_verifications WHERE expires_at < ? OR used = 1').bind(now).run(),
+    env.DB.prepare('DELETE FROM rate_limit WHERE window_start < ?').bind(now - 3600).run(),
+    env.DB.prepare('DELETE FROM failed_logins WHERE attempted_at < ?').bind(now - 24 * 60 * 60).run(),
+    env.DB.prepare('DELETE FROM anonymous_usage WHERE created_at < ?').bind(now - 7 * 24 * 60 * 60).run(),
+  ])
 }
 
 export default {

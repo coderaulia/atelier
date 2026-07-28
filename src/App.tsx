@@ -5,22 +5,22 @@ import ToolSkeleton from './components/ToolSkeleton'
 import { TOOLS } from './lib/tools'
 import AppShell from './wrappers/AppShell'
 import MarketingWrapper from './wrappers/MarketingWrapper'
-import Landing from './pages/Landing'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import VerifyEmailNotice from './pages/VerifyEmailNotice'
-import PrivacyPolicy from './pages/legal/PrivacyPolicy'
-import TermsOfService from './pages/legal/TermsOfService'
-import RefundPolicy from './pages/legal/RefundPolicy'
-import Contact from './pages/legal/Contact'
-import FAQ from './pages/legal/FAQ'
-import Dashboard from './pages/app/Dashboard'
-import Pricing from './pages/Pricing'
 
-import Account from './pages/Account'
-import Manual from './pages/Manual'
+const Landing = lazy(() => import('./pages/Landing'))
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const VerifyEmailNotice = lazy(() => import('./pages/VerifyEmailNotice'))
+const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'))
+const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'))
+const RefundPolicy = lazy(() => import('./pages/legal/RefundPolicy'))
+const Contact = lazy(() => import('./pages/legal/Contact'))
+const FAQ = lazy(() => import('./pages/legal/FAQ'))
+const Dashboard = lazy(() => import('./pages/app/Dashboard'))
+const Pricing = lazy(() => import('./pages/Pricing'))
+const Account = lazy(() => import('./pages/Account'))
+const Manual = lazy(() => import('./pages/Manual'))
 
 // Admin pages (per-page AdminLayout, no shared shell)
 const AdminOverview = lazy(() => import('./pages/Admin/Overview'))
@@ -46,7 +46,8 @@ const Receipt = lazy(() => import('./pages/Receipt'))
 
 export default function App() {
   return (
-    <Routes>
+    <Suspense fallback={null}>
+      <Routes>
       {/* ── Public marketing ─────────────────────── */}
       <Route path="/" element={<Landing />} />
       <Route path="/pricing" element={<Pricing />} />
@@ -293,6 +294,7 @@ export default function App() {
           </main>
         }
       />
-    </Routes>
+      </Routes>
+    </Suspense>
   )
 }

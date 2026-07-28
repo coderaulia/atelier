@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test:security": "node --test scripts/security-regression-tests.mjs",
     "test:concurrency": "node --test scripts/concurrency-regression-tests.mjs",
+    "test:performance": "node --test scripts/performance-regression-tests.mjs",
     "test:flows": "node scripts/test-flows.mjs"
   },
   "dependencies": {

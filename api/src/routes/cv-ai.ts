@@ -61,14 +61,24 @@ app.post('/cv/ai', async (c) => {
       max_tokens: 500,
     }
 
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 20_000)
+    let res: Response
+    try {
+      res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      })
+    } catch {
+      return c.json({ error: 'AI service timed out' }, 504)
+    } finally {
+      clearTimeout(timeout)
+    }
 
     if (!res.ok) {
       console.error('Groq API request failed with status:', res.status)

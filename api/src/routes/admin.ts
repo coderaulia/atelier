@@ -10,6 +10,7 @@ import { contentAdmin } from './admin/content'
 import { socialTemplatesAdmin } from './admin/social-templates'
 import auditAdmin from './admin/audit'
 import { checkRateLimit, getClientIP } from '../lib/rate-limit'
+import { getCachedAnalytics } from '../lib/analytics-cache'
 import { PRICING } from '../lib/pricing'
 import type { Bindings } from '../types'
 
@@ -21,10 +22,6 @@ admin.use('*', async (c, next) => {
   if (!limit.allowed) return c.json({ error: 'Too many admin requests', reset_at: limit.resetAt }, 429)
   await next()
 })
-
-function todayUTC(): string {
-  return new Date().toISOString().slice(0, 10)
-}
 
 function monthStartUnix(): number {
   const d = new Date()
@@ -52,12 +49,12 @@ const grantCreditsSchema = z.object({
 
 admin.get('/stats', async (c) => {
   try {
-    const today = todayUTC()
     const monthStart = monthStartUnix()
     const since7 = dayOffset(6)
     const since30Unix = Math.floor(Date.now() / 1000) - 30 * 86400
-
-    const [totals, usersToday, revenue, topTools, limitHits, dailyTools, dailySignups] = await Promise.all([
+    const todayStart = Math.floor(Date.now() / 86400000) * 86400
+    const stats = await getCachedAnalytics(c.env.DB, 'admin:stats', async () => {
+      const [totals, usersToday, revenue, topTools, limitHits, dailyTools, dailySignups] = await Promise.all([
       c.env.DB.prepare(
         `SELECT
           COUNT(*) AS total_users,
@@ -65,8 +62,8 @@ admin.get('/stats', async (c) => {
           SUM(CASE WHEN plan = 'free' THEN 1 ELSE 0 END) AS free_users
          FROM users`
       ).first<{ total_users: number; pro_users: number; free_users: number }>(),
-      c.env.DB.prepare(`SELECT COUNT(*) AS count FROM users WHERE date(created_at, 'unixepoch') = ?`)
-        .bind(today)
+      c.env.DB.prepare('SELECT COUNT(*) AS count FROM users WHERE created_at >= ? AND created_at < ?')
+        .bind(todayStart, todayStart + 86400)
         .first<{ count: number }>(),
       c.env.DB.prepare('SELECT COALESCE(SUM(amount), 0) AS revenue FROM transactions WHERE status = ? AND created_at >= ?')
         .bind('success', monthStart)
@@ -74,7 +71,7 @@ admin.get('/stats', async (c) => {
       c.env.DB.prepare('SELECT tool_id, SUM(count) AS count FROM usage_log GROUP BY tool_id ORDER BY count DESC LIMIT 5')
         .all<{ tool_id: string; count: number }>(),
       c.env.DB.prepare('SELECT tool_id, SUM(limit_hits) AS count FROM usage_log WHERE date = ? GROUP BY tool_id ORDER BY count DESC')
-        .bind(today)
+        .bind(new Date(todayStart * 1000).toISOString().slice(0, 10))
         .all<{ tool_id: string; count: number }>(),
       c.env.DB.prepare("SELECT date, tool_id, SUM(count) AS count FROM usage_log WHERE date >= ? GROUP BY date, tool_id ORDER BY date ASC")
         .bind(since7)
@@ -82,19 +79,20 @@ admin.get('/stats', async (c) => {
       c.env.DB.prepare("SELECT date(created_at, 'unixepoch') AS date, COUNT(*) AS count FROM users WHERE created_at >= ? GROUP BY date ORDER BY date ASC")
         .bind(since30Unix)
         .all<{ date: string; count: number }>(),
-    ])
-
-    return c.json({
-      total_users: totals?.total_users ?? 0,
-      users_today: usersToday?.count ?? 0,
-      pro_users: totals?.pro_users ?? 0,
-      free_users: totals?.free_users ?? 0,
-      revenue_this_month: revenue?.revenue ?? 0,
-      top_tools: topTools.results ?? [],
-      limit_hits_today: limitHits.results ?? [],
-      daily_tool_usage: dailyTools.results ?? [],
-      daily_signups: dailySignups.results ?? [],
+      ])
+      return {
+        total_users: totals?.total_users ?? 0,
+        users_today: usersToday?.count ?? 0,
+        pro_users: totals?.pro_users ?? 0,
+        free_users: totals?.free_users ?? 0,
+        revenue_this_month: revenue?.revenue ?? 0,
+        top_tools: topTools.results ?? [],
+        limit_hits_today: limitHits.results ?? [],
+        daily_tool_usage: dailyTools.results ?? [],
+        daily_signups: dailySignups.results ?? [],
+      }
     })
+    return c.json(stats)
   } catch (err) {
     console.error('admin stats error:', err)
     return c.json({
@@ -170,10 +168,10 @@ admin.get('/users/:id', async (c) => {
 
   const since = dayOffset(29)
   const [transactions, usage] = await Promise.all([
-    c.env.DB.prepare('SELECT id, amount, currency, plan_type, status, midtrans_order_id, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC')
+    c.env.DB.prepare('SELECT id, amount, currency, plan_type, status, midtrans_order_id, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 100')
       .bind(id)
       .all(),
-    c.env.DB.prepare('SELECT date, tool_id, count, limit_hits FROM usage_log WHERE user_id = ? AND date >= ? ORDER BY date DESC, tool_id ASC')
+    c.env.DB.prepare('SELECT date, tool_id, count, limit_hits FROM usage_log WHERE user_id = ? AND date >= ? ORDER BY date DESC, tool_id ASC LIMIT 1000')
       .bind(id, since)
       .all(),
   ])
@@ -291,9 +289,10 @@ admin.get('/transactions', async (c) => {
 
 admin.get('/errors', async (c) => {
   const rows = await c.env.DB.prepare('SELECT id, tool_id, error_type, user_agent, plan, created_at FROM error_log ORDER BY created_at DESC LIMIT 100').all()
+  const since = Math.floor(Date.now() / 1000) - 90 * 86400
   const groups = await c.env.DB.prepare(
-    'SELECT tool_id, error_type, COUNT(*) AS count FROM error_log GROUP BY tool_id, error_type ORDER BY count DESC'
-  ).all()
+    'SELECT tool_id, error_type, COUNT(*) AS count FROM error_log WHERE created_at >= ? GROUP BY tool_id, error_type ORDER BY count DESC LIMIT 100'
+  ).bind(since).all()
   return c.json({ errors: rows.results ?? [], groups: groups.results ?? [] })
 })
 
@@ -301,34 +300,19 @@ admin.post('/cron/run', async (c) => {
   const now = Math.floor(Date.now() / 1000)
   const thirtyDaysAgo = now - 30 * 24 * 60 * 60
 
-  const expiredGrace = await c.env.DB
-    .prepare('SELECT id FROM users WHERE plan = ? AND grace_until IS NOT NULL AND grace_until < ?')
-    .bind('pro', now)
-    .all<{ id: string }>()
+  const [downgraded, deleted] = await c.env.DB.batch([
+    c.env.DB.prepare("UPDATE users SET plan = 'free', pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0, version = version + 1 WHERE plan = 'pro' AND grace_until IS NOT NULL AND grace_until < ?").bind(now),
+    c.env.DB.prepare('DELETE FROM users WHERE deleted_at IS NOT NULL AND deleted_at < ?').bind(thirtyDaysAgo),
+  ])
+  await Promise.all([
+    c.env.DB.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used = 1').bind(now).run(),
+    c.env.DB.prepare('DELETE FROM email_verifications WHERE expires_at < ? OR used = 1').bind(now).run(),
+    c.env.DB.prepare('DELETE FROM rate_limit WHERE window_start < ?').bind(now - 3600).run(),
+    c.env.DB.prepare('DELETE FROM failed_logins WHERE attempted_at < ?').bind(now - 24 * 60 * 60).run(),
+    c.env.DB.prepare('DELETE FROM anonymous_usage WHERE created_at < ?').bind(now - 7 * 24 * 60 * 60).run(),
+  ])
 
-  for (const user of expiredGrace.results ?? []) {
-    await c.env.DB
-      .prepare("UPDATE users SET plan = ?, pro_expires_at = NULL, grace_until = NULL, cancel_at_period_end = 0, version = version + 1 WHERE id = ? AND plan = 'pro' AND grace_until IS NOT NULL AND grace_until < ?")
-      .bind('free', user.id, now)
-      .run()
-  }
-
-  const deleted = await c.env.DB
-    .prepare('SELECT id FROM users WHERE deleted_at IS NOT NULL AND deleted_at < ?')
-    .bind(thirtyDaysAgo)
-    .all<{ id: string }>()
-
-  for (const user of deleted.results ?? []) {
-    await c.env.DB.prepare('DELETE FROM users WHERE id = ?').bind(user.id).run()
-  }
-
-  await c.env.DB.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used = 1').bind(now).run()
-  await c.env.DB.prepare('DELETE FROM email_verifications WHERE expires_at < ? OR used = 1').bind(now).run()
-  await c.env.DB.prepare('DELETE FROM rate_limit WHERE window_start < ?').bind(now - 3600).run()
-  await c.env.DB.prepare('DELETE FROM failed_logins WHERE attempted_at < ?').bind(now - 24 * 60 * 60).run()
-  await c.env.DB.prepare('DELETE FROM anonymous_usage WHERE created_at < ?').bind(now - 7 * 24 * 60 * 60).run()
-
-  return c.json({ ok: true, downgraded: expiredGrace.results?.length ?? 0, deleted: deleted.results?.length ?? 0 })
+  return c.json({ ok: true, downgraded: downgraded.meta.changes ?? 0, deleted: deleted.meta.changes ?? 0 })
 })
 
 admin.route('/bug-reports', bugReportsAdmin)

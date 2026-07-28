@@ -88,20 +88,23 @@ billing.post('/reactivate', authMiddleware, async (c) => {
   return c.json({ ok: true })
 })
 
-billing.post('/transactions', authMiddleware, async (c) => {
+async function listTransactions(c: { env: Bindings; var: AuthVariables; req: { query: (key: string) => string | undefined } }) {
+  const page = Math.max(1, Number(c.req.query('page') ?? 1))
+  const limit = Math.min(100, Math.max(1, Number(c.req.query('limit') ?? 50)))
+  const offset = (page - 1) * limit
   const rows = await c.env.DB
-    .prepare('SELECT id, amount, currency, plan_type, status, midtrans_order_id, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC')
-    .bind(c.var.userId)
+    .prepare('SELECT id, amount, currency, plan_type, status, midtrans_order_id, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?')
+    .bind(c.var.userId, limit, offset)
     .all()
-  return c.json({ transactions: rows.results ?? [] })
+  return { page, limit, transactions: rows.results ?? [] }
+}
+
+billing.post('/transactions', authMiddleware, async (c) => {
+  return c.json(await listTransactions(c))
 })
 
 billing.get('/transactions', authMiddleware, async (c) => {
-  const rows = await c.env.DB
-    .prepare('SELECT id, amount, currency, plan_type, status, midtrans_order_id, created_at FROM transactions WHERE user_id = ? ORDER BY created_at DESC')
-    .bind(c.var.userId)
-    .all()
-  return c.json({ transactions: rows.results ?? [] })
+  return c.json(await listTransactions(c))
 })
 
 const TIERS = new Set<ProTier>(['starter', 'pro', 'business'])
@@ -182,12 +185,22 @@ async function createSnapTransaction(
   const isSandbox = (c.env.MIDTRANS_BASE_URL || '').includes('sandbox')
   const snapUrl = isSandbox ? 'https://app.sandbox.midtrans.com/snap/v1/transactions' : 'https://app.midtrans.com/snap/v1/transactions'
   const authString = btoa(`${c.env.MIDTRANS_SERVER_KEY}:`)
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15_000)
 
-  const response = await fetch(snapUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Basic ${authString}` },
-    body: JSON.stringify(payload),
-  })
+  let response: Response
+  try {
+    response = await fetch(snapUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Basic ${authString}` },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    })
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timeout)
+  }
 
   if (!response.ok) {
     console.error('Midtrans Snap request failed with status:', response.status)

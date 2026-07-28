@@ -224,11 +224,30 @@ function ProfileTab({ user, onUpdate }: { user: User; onUpdate: (u: User) => voi
 function SubscriptionTab({ user, onUpdate }: { user: User; onUpdate: (u: User) => void }) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    getTransactions().then((data) => setTransactions(data.transactions)).catch(() => {}).finally(() => setLoading(false))
+    getTransactions().then((data) => {
+      setTransactions(data.transactions)
+      setHasMore(data.transactions.length === data.limit)
+    }).catch(() => {}).finally(() => setLoading(false))
   }, [])
+
+  async function loadMoreTransactions() {
+    const nextPage = page + 1
+    setLoadingMore(true)
+    try {
+      const data = await getTransactions(nextPage)
+      setTransactions((current) => [...current, ...data.transactions])
+      setPage(nextPage)
+      setHasMore(data.transactions.length === data.limit)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   async function handleCancel() {
     if (!confirm(`You'll keep Pro access until ${user.pro_expires_at ? new Date(user.pro_expires_at * 1000).toLocaleDateString() : 'expiration'}. After that you'll move to the free plan.`)) return
@@ -292,6 +311,11 @@ function SubscriptionTab({ user, onUpdate }: { user: User; onUpdate: (u: User) =
             ))}
           </tbody>
         </table>
+      )}
+      {!loading && hasMore && (
+        <button className="btn" onClick={loadMoreTransactions} disabled={loadingMore} style={{ marginTop: 16 }}>
+          {loadingMore ? 'Loading…' : 'Load more'}
+        </button>
       )}
     </div>
   )

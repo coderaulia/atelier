@@ -115,7 +115,8 @@ usage.get('/me', async (c) => {
         CASE WHEN ? = 'pro' THEN ? ELSE ? END AS limit_val
        FROM usage_log
        WHERE user_id = ? AND date >= ?
-       ORDER BY date DESC, tool_id ASC`
+       ORDER BY date DESC, tool_id ASC
+       LIMIT 1000`
     )
     .bind(plan, proDailyLimit(proTier), FREE_DAILY_LIMIT, userId, sinceStr)
     .all()

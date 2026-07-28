@@ -93,9 +93,12 @@ CREATE TABLE IF NOT EXISTS error_log (
 
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_last_used ON sessions(last_used);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_last_used ON sessions(user_id, last_used DESC);
 CREATE INDEX IF NOT EXISTS idx_usage_log_user_date ON usage_log(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_usage_log_tool_date ON usage_log(tool_id, date);
+CREATE INDEX IF NOT EXISTS idx_usage_log_date_tool ON usage_log(date, tool_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_transactions_status_created ON transactions(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_checkout_orders_user_date ON checkout_orders(user_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_checkout_orders_status ON checkout_orders(status, updated_at);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_checkout_orders_user_idempotency ON checkout_orders(user_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
@@ -105,6 +108,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_midtrans_order_unique ON tran
 CREATE INDEX IF NOT EXISTS idx_error_log_created_at ON error_log(created_at);
 CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_users_grace_until ON users(grace_until);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
+CREATE INDEX IF NOT EXISTS idx_users_plan_created ON users(plan, created_at);
+CREATE INDEX IF NOT EXISTS idx_users_plan_expiry ON users(plan, pro_expires_at);
+CREATE INDEX IF NOT EXISTS idx_users_subscription_listing ON users(plan, cancel_at_period_end, deleted_at, pro_expires_at);
 CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash);
 CREATE INDEX IF NOT EXISTS idx_password_resets_expires ON password_resets(expires_at);
 CREATE INDEX IF NOT EXISTS idx_email_verifications_token ON email_verifications(token_hash);
@@ -117,6 +124,7 @@ CREATE TABLE IF NOT EXISTS rate_limit (
   created_at    INTEGER NOT NULL DEFAULT (unixepoch())
 );
 CREATE INDEX IF NOT EXISTS idx_rate_limit_key_window ON rate_limit(key, window_start);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_window ON rate_limit(window_start);
 
 CREATE TABLE IF NOT EXISTS failed_logins (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -126,6 +134,7 @@ CREATE TABLE IF NOT EXISTS failed_logins (
 );
 CREATE INDEX IF NOT EXISTS idx_failed_logins_email_time ON failed_logins(email, attempted_at);
 CREATE INDEX IF NOT EXISTS idx_failed_logins_ip_time ON failed_logins(ip_address, attempted_at);
+CREATE INDEX IF NOT EXISTS idx_failed_logins_attempted ON failed_logins(attempted_at);
 
 CREATE TABLE IF NOT EXISTS admin_audit_log (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -168,6 +177,10 @@ CREATE INDEX IF NOT EXISTS idx_bug_reports_severity ON bug_reports(severity);
 CREATE INDEX IF NOT EXISTS idx_bug_reports_user_id ON bug_reports(user_id);
 CREATE INDEX IF NOT EXISTS idx_bug_reports_created_at ON bug_reports(created_at);
 CREATE INDEX IF NOT EXISTS idx_bug_reports_assigned_to ON bug_reports(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_tool ON bug_reports(tool_id);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_status_priority_created ON bug_reports(status, priority DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_severity_priority_created ON bug_reports(severity, priority DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bug_reports_tool_priority_created ON bug_reports(tool_id, priority DESC, created_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bug_reports_user_idempotency ON bug_reports(user_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS bug_report_comments (
@@ -180,6 +193,7 @@ CREATE TABLE IF NOT EXISTS bug_report_comments (
 );
 CREATE INDEX IF NOT EXISTS idx_bug_comments_report ON bug_report_comments(bug_report_id);
 CREATE INDEX IF NOT EXISTS idx_bug_comments_created ON bug_report_comments(created_at);
+CREATE INDEX IF NOT EXISTS idx_bug_comments_report_created ON bug_report_comments(bug_report_id, created_at);
 
 CREATE TABLE IF NOT EXISTS admin_notifications (
   id TEXT PRIMARY KEY,
@@ -207,3 +221,4 @@ CREATE TABLE IF NOT EXISTS anonymous_usage (
 );
 CREATE INDEX IF NOT EXISTS idx_anon_usage_ip_date ON anonymous_usage(ip_address, date);
 CREATE INDEX IF NOT EXISTS idx_anon_usage_cleanup ON anonymous_usage(date);
+CREATE INDEX IF NOT EXISTS idx_anonymous_usage_created ON anonymous_usage(created_at);

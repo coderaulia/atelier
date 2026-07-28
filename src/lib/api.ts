@@ -200,8 +200,8 @@ export function reactivateSubscription() {
   })
 }
 
-export function getTransactions() {
-  return request<{ transactions: Transaction[] }>('/billing/transactions', { headers: authHeaders() })
+export function getTransactions(page = 1, limit = 50) {
+  return request<{ page: number; limit: number; transactions: Transaction[] }>(`/billing/transactions?page=${page}&limit=${limit}`, { headers: authHeaders() })
 }
 
 export function getReceipt(txId: number) {

@@ -431,10 +431,19 @@ auth.delete('/account', authMiddleware, async (c) => {
       const baseUrl = c.env.MIDTRANS_BASE_URL ?? 'https://api.midtrans.com'
       // Stop recurring via Midtrans Core API
       if (user.midtrans_token_id) {
-        await fetch(`${baseUrl}/v1/payments/${user.midtrans_token_id}/deny`, {
-          method: 'POST',
-          headers: { Authorization: `Basic ${authStr}`, 'Content-Type': 'application/json' },
-        }).catch(() => {})
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 10_000)
+        try {
+          await fetch(`${baseUrl}/v1/payments/${user.midtrans_token_id}/deny`, {
+            method: 'POST',
+            headers: { Authorization: `Basic ${authStr}`, 'Content-Type': 'application/json' },
+            signal: controller.signal,
+          })
+        } catch {
+          // Account deletion continues if the upstream cancellation is unavailable.
+        } finally {
+          clearTimeout(timeout)
+        }
       }
     } catch {
       // Non-critical, continue
@@ -520,7 +529,7 @@ auth.get('/sessions', authMiddleware, async (c) => {
   const currentHash = token ? await sha256Hex(token) : ''
 
   const rows = await c.env.DB
-    .prepare('SELECT token, expires_at, last_used, user_agent FROM sessions WHERE user_id = ? ORDER BY last_used DESC')
+    .prepare('SELECT token, expires_at, last_used, user_agent FROM sessions WHERE user_id = ? ORDER BY last_used DESC LIMIT 100')
     .bind(c.var.userId)
     .all<{ token: string; expires_at: number; last_used: number | null; user_agent: string | null }>()
 

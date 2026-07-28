@@ -84,7 +84,8 @@ bugReportsAdmin.get('/:id', async (c) => {
      FROM bug_report_comments c
      LEFT JOIN users u ON u.id = c.user_id
      WHERE c.bug_report_id = ?
-     ORDER BY c.created_at ASC`
+     ORDER BY c.created_at ASC
+     LIMIT 200`
   )
     .bind(id)
     .all()

@@ -179,7 +179,17 @@ auth.post('/login', async (c) => {
     .bind(email)
     .first<{ id: string; email: string; name: string | null; global_metadata: string | null; plan: string; role: string; status: string; password_hash: string; email_verified: number; deleted_at: number | null }>()
 
-  if (!user || !(await verifyPassword(password, user.password_hash))) {
+  let passwordOk = false
+  if (user) {
+    try {
+      passwordOk = await verifyPassword(password, user.password_hash)
+    } catch (err) {
+      console.error('Password verification failed during login', err)
+      return c.json({ error: 'Login failed' }, 500)
+    }
+  }
+
+  if (!user || !passwordOk) {
     await c.env.DB
       .prepare('INSERT INTO failed_logins (email, ip_address, attempted_at) VALUES (?, ?, ?)')
       .bind(email.toLowerCase(), ip, now)
@@ -196,24 +206,48 @@ auth.post('/login', async (c) => {
   }
 
   if (needsPasswordRehash(user.password_hash)) {
-    const upgradedHash = await hashPassword(password)
-    // Do not restore an old password if it was changed while this login was
-    // deriving the stronger hash.
-    await c.env.DB.prepare(
-      'UPDATE users SET password_hash = ?, version = version + 1 WHERE id = ? AND password_hash = ?'
-    ).bind(upgradedHash, user.id, user.password_hash).run()
+    const currentHash = user.password_hash
+    const userId = user.id
+    // Rehashing is a background upgrade, never a reason to fail a valid login.
+    const upgrade = (async () => {
+      const upgradedHash = await hashPassword(password)
+      // Do not restore an old password if it was changed while this login was
+      // deriving the stronger hash.
+      await c.env.DB.prepare(
+        'UPDATE users SET password_hash = ?, version = version + 1 WHERE id = ? AND password_hash = ?'
+      ).bind(upgradedHash, userId, currentHash).run()
+    })().catch((err) => {
+      console.error('Password rehash failed during login', err)
+    })
+    try {
+      c.executionCtx.waitUntil(upgrade)
+    } catch {
+      // No execution context (e.g. tests) — the upgrade already runs detached.
+    }
   }
 
-  const { token, expiresAt } = await signToken(user.id, c.env.JWT_SECRET)
-  const tokenHash = await sha256Hex(token)
-  await c.env.DB
-    .prepare('INSERT OR REPLACE INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
-    .bind(tokenHash, user.id, expiresAt)
-    .run()
-  await c.env.DB.prepare('DELETE FROM failed_logins WHERE email = ?').bind(email.toLowerCase()).run()
-  await c.env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?')
-    .bind(Math.floor(Date.now() / 1000), user.id)
-    .run()
+  let token: string
+  try {
+    const signed = await signToken(user.id, c.env.JWT_SECRET)
+    token = signed.token
+    const tokenHash = await sha256Hex(token)
+    await c.env.DB
+      .prepare('INSERT OR REPLACE INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
+      .bind(tokenHash, user.id, signed.expiresAt)
+      .run()
+  } catch (err) {
+    console.error('Session creation failed during login', err)
+    return c.json({ error: 'Login failed' }, 500)
+  }
+
+  // Bookkeeping only: a failure here must not invalidate the issued session.
+  await c.env.DB.batch([
+    c.env.DB.prepare('DELETE FROM failed_logins WHERE email = ?').bind(email.toLowerCase()),
+    c.env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?')
+      .bind(Math.floor(Date.now() / 1000), user.id),
+  ]).catch((err) => {
+    console.error('Post-login bookkeeping failed', err)
+  })
 
   return c.json({ token, user: withParsedGlobalMetadata({ id: user.id, email: user.email, name: user.name, global_metadata: user.global_metadata, plan: user.plan, role: user.role, status: user.status, email_verified: user.email_verified }) })
 })

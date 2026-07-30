@@ -1,7 +1,9 @@
 const ALGORITHM = 'pbkdf2_sha256'
-// OWASP's current PBKDF2-HMAC-SHA256 baseline. Existing hashes are upgraded
-// after a successful login so raising the work factor does not lock users out.
-const CURRENT_ITERATIONS = 600_000
+// Highest PBKDF2-HMAC-SHA256 work factor that fits inside a Workers request's
+// CPU budget. OWASP's 600k baseline blows the limit and makes every hash throw.
+// Existing hashes are upgraded after a successful login so raising this later
+// does not lock users out.
+const CURRENT_ITERATIONS = 100_000
 const LEGACY_ITERATIONS = 310_000
 const HASH_BITS = 256
 

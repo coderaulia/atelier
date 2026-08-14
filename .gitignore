@@ -1,35 +1,60 @@
-# deps
+# Dependencies
 node_modules/
 api/node_modules/
-.rtk/
-.claude
+.pnp
+.pnp.js
 
-
-# build output
+# Build & Bundler Output
 dist/
+dist-ssr/
 api/dist/
+*.tsbuildinfo
 
-# Vite
+# Logs & Diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment Variables & Secrets
 *.local
 .env
 .env.*
 !.env.example
+.dev.vars
+api/.dev.vars
 
-# Wrangler
+# Testing & Coverage
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+blob-report/
+
+# Cloudflare & Wrangler
 .wrangler/
 api/.wrangler/
 
-# OS
+# Agent & CLI Tool Caches
+.rtk/
+.claude/
+.caveman/
+
+# OS & Filesystem
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Editor
-.vscode/
+# Editor & IDEs
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
-
-# RTK cache
-.rtk/
-.dev.vars
-api/.dev.vars
+*~

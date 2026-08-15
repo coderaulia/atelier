@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 api/node_modules/
+.pnpm-store
 .pnp
 .pnp.js
 
@@ -8,7 +9,13 @@ api/node_modules/
 dist/
 dist-ssr/
 api/dist/
+.next/
+out/
 *.tsbuildinfo
+
+# Lockfiles
+!pnpm-lock.yaml
+
 
 # Logs & Diagnostics
 *.log

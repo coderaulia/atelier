@@ -10,7 +10,7 @@ Built by **[Vanaila Digital](https://vanaila.com)**.
 
 ## What it does
 
-Atelier provides 8 professional-grade tools that run entirely in your browser:
+Atelier provides 16 professional-grade tools that run entirely in your browser:
 
 ### Documents & Content
 - **Document Generator** — Agreements, invoices, proposals, PRDs, retainers, receipts, onboarding sheets, and handover documents with 3 style variants each (Classic, Modern, Editorial)
@@ -21,9 +21,19 @@ Atelier provides 8 professional-grade tools that run entirely in your browser:
 - **PDF to Image** — Convert PDF pages to PNG or JPG
 - **PDF Merge** — Combine multiple PDFs into one file
 - **PDF Compress** — Reduce PDF file size with adjustable compression levels
+- **PDF Organize** — Reorder, rotate, remove, and extract pages
+- **PDF Split** — Split PDF into separate pages or ranges
+- **PDF Watermark** — Add text or image watermark to PDF
+- **PDF to Markdown** — Extract PDF text into editable Markdown
+- **PDF to Word** — Convert PDF text into an editable DOCX file
+- **PDF to PowerPoint** — Convert PDF pages into a PowerPoint presentation
+- **Edit PDF** — Reorder pages and add text or cover overlays
 
 ### Image & Text
 - **Image Converter** — Convert between PNG, JPG, WebP, and AVIF formats
+- **Image Compress** — Reduce image file size
+- **Image Resize & Crop** — Resize, crop, and scale images
+- **Image Background & Metadata** — Remove background or view and strip metadata
 - **OCR** — Extract text from images and PDFs using Tesseract.js
 
 All file processing happens **client-side** — your files never leave your browser.
@@ -56,7 +66,7 @@ All file processing happens **client-side** — your files never leave your brow
 - IDR 99,000/month or USD $9/month via Midtrans
 
 ### Technical Highlights
-- **Client-side processing** — pdf.js, Tesseract.js, Canvas API, JSZip
+- **Client-side processing** — pdf.js, Tesseract.js, Canvas API, JSZip, pdf-lib, @jsquash/webp, @jsquash/avif
 - **Dual routing** — Public marketing pages + authenticated app shell
 - **Responsive design** — Mobile-friendly across all tools
 - **i18n support** — English and Indonesian (Bahasa Indonesia)
@@ -69,9 +79,10 @@ All file processing happens **client-side** — your files never leave your brow
 ### Frontend
 - **Framework:** Vite + React 19 + React Router v7
 - **Styling:** Tailwind CSS 4
-- **Processing:** pdf.js, Tesseract.js, html-to-image, JSZip, pdf-lib
+- **Package Manager:** pnpm
+- **Processing:** pdf.js, Tesseract.js, html-to-image, JSZip, pdf-lib, @jsquash
 - **DOCX generation:** docx library (structured Word documents)
-- **Deployment:** Cloudflare Pages
+- **Deployment:** Cloudflare Pages / Hostinger
 
 ### Backend
 - **Runtime:** Cloudflare Workers
@@ -86,9 +97,9 @@ All file processing happens **client-side** — your files never leave your brow
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ and npm
+- Node.js 18+ and pnpm (`npm install -g pnpm` or `corepack enable`)
 - Cloudflare account (for deployment)
-- Wrangler CLI (`npm install -g wrangler`)
+- Wrangler CLI (`pnpm add -g wrangler` or `npm install -g wrangler`)
 
 ### Local Development
 
@@ -98,14 +109,14 @@ git clone https://github.com/vanaila-digital/atelier.git
 cd atelier
 
 # Install frontend dependencies
-npm install
+pnpm install
 
 # Install backend dependencies
 cd api
-npm install
+pnpm install
 
 # Set up local database
-npm run db:apply
+pnpm run db:apply
 
 # Configure environment variables
 # Create api/.dev.vars with:
@@ -115,10 +126,11 @@ npm run db:apply
 # MIDTRANS_CLIENT_KEY=your-midtrans-client-key
 
 # Start backend (in api/ directory)
-npm run dev
+pnpm run dev
 
 # Start frontend (in root directory)
-npm run dev
+cd ..
+pnpm run dev
 ```
 
 Frontend runs on `http://localhost:5173`  
@@ -129,13 +141,13 @@ Backend runs on `http://localhost:8787`
 ```bash
 # Apply schema locally
 cd api
-npm run db:apply
+pnpm run db:apply
 
 # Apply schema to production
-npm run db:apply:remote
+pnpm run db:apply:remote
 
 # Seed admin user
-npm run seed:admin
+pnpm run seed:admin
 ```
 
 ### Deployment
@@ -147,11 +159,11 @@ wrangler deploy
 
 # Frontend on Hostinger (static Git deployment)
 cd ..
-npm run build   # outputs to dist/
+pnpm run build   # outputs to dist/
 
 # Hostinger Deployments settings:
 #   Framework preset : Vite
-#   Build command    : npm run build
+#   Build command    : pnpm run build
 #   Output directory : dist
 #   (no start command — dist/ is served statically by LiteSpeed/Apache)
 #
@@ -333,19 +345,24 @@ VITE_API_URL=http://localhost:8787
 
 ```bash
 # Frontend
-npm run dev              # Start dev server
-npm run build            # Build for production
-npm run preview          # Preview production build
-npm run typecheck        # TypeScript check
+pnpm run dev              # Start dev server
+pnpm run build            # Build for production
+pnpm run build:ssr        # Build client + SSR bundles
+pnpm run prerender        # Build SSR and prerender static HTML routes
+pnpm run preview          # Preview production build
+pnpm run typecheck        # TypeScript check
+pnpm run test:security    # Run security regression tests
+pnpm run test:concurrency # Run concurrency regression tests
+pnpm run test:performance # Run performance regression tests
 
 # Backend
 cd api
-npm run dev              # Start Wrangler dev server
-npm run deploy           # Deploy to Cloudflare Workers
-npm run typecheck        # TypeScript check
-npm run db:apply         # Apply schema locally
-npm run db:apply:remote  # Apply schema to production
-npm run seed:admin       # Seed admin user
+pnpm run dev              # Start Wrangler dev server
+pnpm run deploy           # Deploy to Cloudflare Workers
+pnpm run typecheck        # TypeScript check
+pnpm run db:apply         # Apply schema locally
+pnpm run db:apply:remote  # Apply schema to production
+pnpm run seed:admin       # Seed admin user
 
 # Database migrations
 wrangler d1 execute vanaila-studio --local --file=api/src/db/migrations/001_admin_dashboard.sql

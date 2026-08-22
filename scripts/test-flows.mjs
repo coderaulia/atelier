@@ -15,6 +15,9 @@
  */
 
 import { createHash } from 'node:crypto'
+import { spawn } from 'node:child_process'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const BASE_URL = process.env.API_BASE_URL || 'http://localhost:8787'
 const stamp = Date.now()
@@ -24,6 +27,10 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 const ANON_TEST_IP = process.env.ANON_TEST_IP || `10.${stamp % 250}.${Math.floor(Math.random() * 250)}.${process.pid % 250}`
 const hasMidtransKey = Boolean(process.env.MIDTRANS_SERVER_KEY)
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const apiRoot = join(repoRoot, 'api')
+const wranglerCli = join(apiRoot, 'node_modules', 'wrangler', 'bin', 'wrangler.js')
 
 function webhookSignature(body) {
   return sha512(`${body.order_id}${body.transaction_status}${body.gross_amount}${process.env.MIDTRANS_SERVER_KEY}`)
@@ -50,6 +57,47 @@ function logStep(name, ok, detail = '') {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
+}
+
+async function waitForWorker(url, attempts = 60) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const response = await fetch(`${url}/health`)
+      if (response.ok) return false
+    } catch {}
+    await new Promise((resolveWait) => setTimeout(resolveWait, 250))
+  }
+  throw new Error('API did not become ready')
+}
+
+async function ensureWorker() {
+  try {
+    const response = await fetch(`${BASE_URL}/health`)
+    if (response.ok) return null
+  } catch {}
+
+  if (!process.env.AUTO_START_LOCAL_WORKER && !BASE_URL.includes('localhost') && !BASE_URL.includes('127.0.0.1')) {
+    throw new Error(`API at ${BASE_URL} is unreachable; start it or set API_BASE_URL to a local address`)
+  }
+
+  const port = new URL(BASE_URL).port || (new URL(BASE_URL).protocol === 'https:' ? '443' : '80')
+  const host = BASE_URL.includes('127.0.0.1') ? '127.0.0.1' : 'localhost'
+  const vars = [
+    `MIDTRANS_SERVER_KEY:${process.env.MIDTRANS_SERVER_KEY || 'flow-test-midtrans-key'}`,
+    'JWT_SECRET:flow-test-jwt-secret',
+    'BREVO_API_KEY:flow-test-brevo-key',
+    'ENVIRONMENT:development',
+    'APP_URL:http://localhost:5173',
+    'ALLOWED_ORIGINS:http://localhost:5173',
+  ].flatMap((value) => ['--var', value])
+
+  const worker = spawn(process.execPath, [wranglerCli, 'dev', '--local', '--port', port, ...vars], {
+    cwd: apiRoot,
+    windowsHide: true,
+    stdio: 'inherit',
+  })
+  await waitForWorker(`${'http'}://${host}:${port}`)
+  return worker
 }
 
 async function request(path, options = {}) {
@@ -121,7 +169,7 @@ async function authFlow() {
   const profile = await request('/auth/profile', {
     method: 'PATCH',
     token: state.token,
-    body: { name: 'Flow Test User' },
+    body: { name: 'Flow Test User', version: state.user?.version || 1 },
   })
   assert(profile.response.status === 200, `profile expected 200, got ${profile.response.status}`)
   assert(profile.payload?.user?.name === 'Flow Test User', 'profile name not updated')
@@ -340,22 +388,27 @@ async function main() {
   console.log(`Atelier flow tests target: ${BASE_URL}`)
   console.log('Test account: configured')
 
-  await test('health endpoint', healthFlow)
-  await test('anonymous usage limit flow', anonymousUsageFlow)
-  await test('auth register/login/profile/session flow', authFlow)
-  await test('email verification endpoint flow', emailVerificationFlow)
-  await test('negative auth checks', authNegativeFlow)
-  await test('usage limits and history flow', usageFlow)
-  await test('free user AI gate flow', cvAiFreeGateFlow)
-  await test('bug report flow', bugReportFlow)
-  await test('billing status and transaction flow', billingFlow)
-  await test('billing webhook signature flow', billingWebhookSignatureFlow)
-  await test('pro plan and AI flow', proPlanAndAiFlow)
-  await test('subscription cancel/grace flow', subscriptionLifecycleFlow)
-  await test('error logging flow', errorLogFlow)
-  await test('admin dashboard flow', adminFlow)
-  await test('cron downgrade trigger flow', cronDowngradeFlow)
-  await test('logout/session invalidation flow', cleanupFlow)
+  const worker = await ensureWorker()
+  try {
+    await test('health endpoint', healthFlow)
+    await test('anonymous usage limit flow', anonymousUsageFlow)
+    await test('auth register/login/profile/session flow', authFlow)
+    await test('email verification endpoint flow', emailVerificationFlow)
+    await test('negative auth checks', authNegativeFlow)
+    await test('usage limits and history flow', usageFlow)
+    await test('free user AI gate flow', cvAiFreeGateFlow)
+    await test('bug report flow', bugReportFlow)
+    await test('billing status and transaction flow', billingFlow)
+    await test('billing webhook signature flow', billingWebhookSignatureFlow)
+    await test('pro plan and AI flow', proPlanAndAiFlow)
+    await test('subscription cancel/grace flow', subscriptionLifecycleFlow)
+    await test('error logging flow', errorLogFlow)
+    await test('admin dashboard flow', adminFlow)
+    await test('cron downgrade trigger flow', cronDowngradeFlow)
+    await test('logout/session invalidation flow', cleanupFlow)
+  } finally {
+    worker?.kill()
+  }
 
   const failed = results.filter((r) => !r.ok)
   console.log('\nResult:')

@@ -12,19 +12,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 24
+          cache: pnpm
 
       - name: Install frontend deps
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Frontend typecheck
-        run: npx tsc --noEmit
+        run: pnpm run typecheck
 
       - name: Frontend build
-        run: npm run build
+        run: pnpm run build
 
       - name: Install backend deps
         working-directory: api
@@ -33,3 +37,4 @@ jobs:
       - name: Backend typecheck
         working-directory: api
         run: npx tsc --noEmit
+

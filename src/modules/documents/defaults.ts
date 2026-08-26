@@ -165,9 +165,21 @@ export const DEFAULT_SOCIAL: Record<string, any> = {
   threads: { kicker: "From the Feed", body: "the hardest part of freelancing isn't the work. it's deciding the work is finished and sending the invoice.", italicLine: "yes, this is a personal attack.", time: "2h", replies: "184", reposts: "62", likes: "1.2k" },
   tutorial: { kicker: "Tutorial", duration: "60 sec", what: "rebrand a", whatItalic: "small studio", steps: "Audit existing brand touchpoints.\nMap the customer journey.\nWrite the headline first.\nDesign in low-fi.\nShip and iterate.", ctaText: "Watch full" },
   portfolio: { kicker: "Case Study", refNo: "No. 014", role: "Brand · Identity · Web", year: "2026", client: "Atlas & Bell", titleItalic: "a new brand for a B2B platform.", image: "" },
-  casestudy: { client: "Atlas & Bell", year: "2026", stat: "+312%", statLabel: "increase in qualified leads in the first 90 days post-launch.", tag1: "Brand", tag2: "Web", tag3: "8 weeks", image: "" },
-  pov: { scene: "It's Friday at 4pm. The invoice clears. You ", action: "close the laptop", tail: " and start the weekend.", endTag: "— the dream" },
-  schedule: { kicker: "Weekly Schedule", title: "How I run a", titleItalic: "calm week.", items: "MON — Client calls + check-ins\nTUE — Deep work block 1\nWED — Deep work block 2\nTHU — Reviews + revisions\nFRI — Ship + invoice\nSAT — Read + walk\nSUN — Plan the week" },
+  /* New CTA Defaults */
+  waitlist: { kicker: "Early Access", spotsLeft: "4 spots left", headline: "The new way to build freelance proposals", subtext: "Join 350+ designers & founders in private beta testing. Instant access upon invitation.", ctaText: "Join the waitlist →" },
+  leadmagnet: { category: "Free Resource", deliverableType: "PDF + Notion Sheet", title: "The 2026 Freelance Rate & Pricing Guide", benefits: "Real pricing benchmarks for 2026\nClient outreach & follow-up scripts\nScope negotiation checklist\nContract clause cheatsheet", ctaText: "Download free copy →" },
+  dmkeyword: { kicker: "Free Drop", headline: "Want my Notion Client Onboarding Portal?", keyword: "ONBOARD", resourceName: "the Notion template link" },
+
+  /* New Social Proof Defaults */
+  metricproof: { kicker: "Client Results", metric: "+240%", metricLabel: "Increase in closed deal size in 60 days", summary: "Complete repositioning and brand identity overhaul for an enterprise B2B consultancy.", clientName: "Sarah Jenkins", clientRole: "Managing Director · Apex" },
+  tweetreview: { kicker: "Client Feedback", review: "Vanaila Studio completely transformed our documents. Our conversion rate on proposals jumped from 22% to 68% in two weeks.", clientName: "Alex Rivera", handle: "@alexrivera_", clientTitle: "Founder" },
+  casestudy: { kicker: "Case Study", client: "Luminary Media", industry: "Design & Tech · 2026", problem: "Low proposal response rate & inconsistent brand assets", solution: "Custom document template system & editorial style guide", outcome: "3.5x higher contract close rate & $95k in new client revenue" },
+
+  /* New Single Defaults */
+  checklist: { kicker: "Audit Checklist", title: "5 Things to check before sending an invoice", items: "PO or written approval attached\nPayment due date and bank details clear\nItemized deliverables breakdown\nLate fee terms clearly stated\nDirect contact for accounts payable", note: "Save this post for your next project" },
+  opinion: { kicker: "Reality Check", mythTitle: "Myth", myth: "Work 80 hours a week, lower your rates to compete, and take every client you can find.", truthTitle: "Reality", truth: "Pick one high-value niche, price on business outcomes, and say no to 80% of inquiries." },
+  pillars: { kicker: "Core Principles", headline: "The 3 Pillars of High-Earning Freelancers", pillar1Title: "Positioning", pillar1Body: "Specialist over generalist. Solve an expensive problem.", pillar2Title: "Packaging", pillar2Body: "Fixed deliverables, clear scopes, zero hourly billing.", pillar3Title: "Pipeline", pillar3Body: "Always cultivate relationships before you need work." },
+
   pricing: { packageName: "Brand Starter", price: 1500, currency: "USD", features: "Logo + brand mark\nColor palette & type system\nBrand guidelines (12 pages)\n2 revision rounds\nSource files included", ctaText: "DM to get started →", bg: "" },
   testimonial: { quote: "Working with this studio changed how I think about proposals entirely. We closed our next deal the same week.", clientName: "Priya Bell", clientTitle: "Co-Founder · Atlas & Bell", clientPhoto: "" },
   casestudycarousel: { projectName: "Brand Identity", clientName: "Atlas & Bell", problem: "Their existing mark read as a 2019 SaaS startup — not the 2026 platform they'd become.", image1: "", solution: "A full identity system: logo, type, colour, and a 32-page guidelines document the team can extend without us.", image2: "", result: "Closed their Series B within 90 days of launch. The new brand was cited in three investor decks.", image3: "" },

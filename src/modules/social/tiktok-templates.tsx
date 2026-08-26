@@ -2,7 +2,7 @@
 import {
   Paperclip, Chevron, ArrowOut, Asterisk, XMark,
   HandCircle, Underscribble, PhotoSlot, CrescentMark,
-  VLabel, VFooter, Wordmark,
+  VLabel, VFooter, Wordmark, getDynamicFontSize,
 } from './social-templates';
 
 
@@ -17,35 +17,39 @@ const ImgOrSlot = ({ src, label = "Drop image · 4:5 recommended", style, object
 /* ============================================== */
 /* 1. HOT TAKE — big italic statement              */
 /* ============================================== */
-const V_HotTake = ({ data, brand }) => (
-  <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <VLabel text={data.kicker || "Hot Take"} />
-      <Paperclip />
-    </div>
-    <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-      <div>
-        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 48, color: "var(--vc-red)", marginBottom: 24 }}>
-          {data.lead || "You don't need another tool."}
+const V_HotTake = ({ data, brand }) => {
+  const fullText = `${data.body || "You need to "} ${data.italic || "finish one"} ${data.tail || " of the seven tabs already open."}`;
+  const bodySize = getDynamicFontSize(fullText, 160, 40, 76);
+  return (
+    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <VLabel text={data.kicker || "Hot Take"} />
+        <Paperclip />
+      </div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+        <div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 48, color: "var(--vc-red)", marginBottom: 24 }}>
+            {data.lead || "You don't need another tool."}
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: bodySize, lineHeight: 0.96, color: "var(--vc-ink)", letterSpacing: "-0.02em" }}>
+            {data.body || "You need to "}
+            <em style={{ color: "var(--vc-red)" }}>{data.italic || "finish one"}</em>
+            {data.tail || " of the seven tabs already open."}
+          </div>
         </div>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: 160, lineHeight: 0.96, color: "var(--vc-ink)", letterSpacing: "-0.02em" }}>
-          {data.body || "You need to "}
-          <em style={{ color: "var(--vc-red)" }}>{data.italic || "finish one"}</em>
-          {data.tail || " of the seven tabs already open."}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <Asterisk size={88} />
+        <div style={{ textAlign: "right" }}>
+          <Wordmark brand={brand} />
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--vc-mute)", marginTop: 6 }}>
+            {brand.handle || "@studio"}
+          </div>
         </div>
       </div>
     </div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-      <Asterisk size={88} />
-      <div style={{ textAlign: "right" }}>
-        <Wordmark brand={brand} />
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--vc-mute)", marginTop: 6 }}>
-          {brand.handle || "@studio"}
-        </div>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 2. TOP 5 LIST — numbered vertical               */
@@ -86,38 +90,44 @@ const V_TopList = ({ data, brand }) => {
 /* ============================================== */
 /* 3. BIG QUESTION                                  */
 /* ============================================== */
-const V_Question = ({ data, brand }) => (
-  <div {...VFRAME} style={{ background: "var(--vc-blue)", color: "#fff", padding: 96, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <VLabel text={data.kicker || "Question of the Week"} color="#fff" style={{ opacity: 0.85 }} />
-      <CrescentMark color="#fff" size={72} />
-    </div>
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 400, fontSize: 156, lineHeight: 1, letterSpacing: "-0.025em" }}>
-        {data.question || "Are you a freelancer"}
+const V_Question = ({ data, brand }) => {
+  const qText = data.question || "Are you a freelancer";
+  const accText = data.questionAccent || "or a hobbyist?";
+  const qSize = getDynamicFontSize(qText, 156, 22, 76);
+  const accSize = getDynamicFontSize(accText, 168, 18, 80);
+  return (
+    <div {...VFRAME} style={{ background: "var(--vc-blue)", color: "#fff", padding: 96, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <VLabel text={data.kicker || "Question of the Week"} color="#fff" style={{ opacity: 0.85 }} />
+        <CrescentMark color="#fff" size={72} />
       </div>
-      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 168, lineHeight: 0.98, letterSpacing: "-0.025em", marginTop: 4 }}>
-        {data.questionAccent || "or a hobbyist?"}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 400, fontSize: qSize, lineHeight: 1, letterSpacing: "-0.025em" }}>
+          {qText}
+        </div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: accSize, lineHeight: 0.98, letterSpacing: "-0.025em", marginTop: 4 }}>
+          {accText}
+        </div>
+        <div style={{ marginTop: 56, fontFamily: "var(--font-helvetica)", fontSize: 36, lineHeight: 1.4, maxWidth: 820, opacity: 0.85 }}>
+          {data.answer || "The difference is not how good you are. It's whether someone is paying you to be that good before next Tuesday."}
+        </div>
       </div>
-      <div style={{ marginTop: 56, fontFamily: "var(--font-helvetica)", fontSize: 36, lineHeight: 1.4, maxWidth: 820, opacity: 0.85 }}>
-        {data.answer || "The difference is not how good you are. It's whether someone is paying you to be that good before next Tuesday."}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <Asterisk size={84} color="#fff" />
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.85 }}>
+          Reply your answer →
+        </span>
       </div>
     </div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-      <Asterisk size={84} color="#fff" />
-      <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.85 }}>
-        Reply your answer →
-      </span>
-    </div>
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 4. STAT HERO VERTICAL                            */
 /* ============================================== */
 const V_StatVertical = ({ data, brand }) => {
   const stat = String(data.stat || "73%");
-  const statSize = stat.length <= 3 ? 520 : stat.length <= 5 ? 430 : 340;
+  const statSize = getDynamicFontSize(stat, 520, 3, 240);
   return (
     <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -205,6 +215,12 @@ const V_ThreadsPost = ({ data, brand }) => {
 /* ============================================== */
 const V_Tutorial = ({ data, brand }) => {
   const steps = (data.steps || "Audit existing brand touchpoints.\nMap the customer journey.\nWrite the headline first.\nDesign in low-fi.\nShip and iterate.").split("\n").filter(Boolean).slice(0, 5);
+  const whatText = data.what || "rebrand a";
+  const whatItalic = data.whatItalic || "small studio";
+  const headlineFull = `${whatText} ${whatItalic}`;
+  const whatSize = getDynamicFontSize(headlineFull, 132, 18, 68);
+  const cta = data.ctaText || "Watch full";
+  const ctaBtnSize = getDynamicFontSize(cta, 20, 16, 13);
   return (
     <div {...VFRAME} style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -218,10 +234,10 @@ const V_Tutorial = ({ data, brand }) => {
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 26, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>
           How to
         </div>
-        <div style={{ marginTop: 8, fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 132, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
-          {data.what || "rebrand a"}
+        <div style={{ marginTop: 8, fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: whatSize, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
+          {whatText}
           <br />
-          <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-lime)" }}>{data.whatItalic || "small studio"}</em>
+          <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-lime)" }}>{whatItalic}</em>
         </div>
         <div style={{ marginTop: 64, display: "flex", flexDirection: "column", gap: 18 }}>
           {steps.map((s, i) => (
@@ -237,8 +253,8 @@ const V_Tutorial = ({ data, brand }) => {
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "var(--vc-lime)", color: "var(--vc-ink)", padding: "20px 32px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.12em", textTransform: "uppercase" }}>
-          {data.ctaText || "Watch full"} <span>→</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "var(--vc-lime)", color: "var(--vc-ink)", padding: "20px 32px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          {cta} <span>→</span>
         </span>
         <Wordmark brand={brand} color="var(--vc-cream)" />
       </div>

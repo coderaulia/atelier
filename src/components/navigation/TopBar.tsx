@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAppContext } from '@/context/AppContext'
 import { useAuth } from '@/hooks/useAuth'
@@ -14,6 +14,30 @@ export default function TopBar() {
   const location = useLocation()
   const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!dropdownOpen) return
+
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [dropdownOpen])
 
   const activeTool = getToolByAppPath(location.pathname)
   const breadcrumb = buildBreadcrumb(location.pathname, activeTool)
@@ -45,28 +69,31 @@ export default function TopBar() {
           </button>
         )}
 
-        <div className="app-topbar__avatar-wrap" onMouseLeave={() => setDropdownOpen(false)}>
+        <div className="app-topbar__avatar-wrap" ref={dropdownRef}>
           <button
             className="app-topbar__avatar"
             type="button"
             aria-label="User menu"
+            aria-expanded={dropdownOpen}
+            aria-haspopup="true"
             onClick={() => setDropdownOpen((prev) => !prev)}
           >
             {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
           </button>
 
           {dropdownOpen && (
-            <div className="app-topbar__dropdown">
+            <div className="app-topbar__dropdown" role="menu">
               <div className="app-topbar__dropdown-header">
                 <span>{user?.name || user?.email}</span>
               </div>
-              <Link to="/app/account" className="app-topbar__dropdown-item" onClick={() => setDropdownOpen(false)}>
+              <Link to="/app/account" className="app-topbar__dropdown-item" role="menuitem" onClick={() => setDropdownOpen(false)}>
                 My Account
               </Link>
               <div className="app-topbar__dropdown-divider" />
               <button
                 type="button"
                 className="app-topbar__dropdown-item app-topbar__dropdown-item--danger"
+                role="menuitem"
                 onClick={() => { setDropdownOpen(false); logout() }}
               >
                 Sign out

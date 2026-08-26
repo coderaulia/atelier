@@ -63,17 +63,8 @@ export default function Account() {
   if (!user) return null
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--ink)' }}>
-      <nav className="nav">
-        <div className="container nav__inner">
-          <a href="/" className="nav__brand">
-            <span className="nav__mark" />
-            <span>Vanaila Studio</span>
-          </a>
-        </div>
-      </nav>
-
-      <div className="container" style={{ paddingTop: 40, paddingBottom: 80 }}>
+    <div style={{ minHeight: '100%', background: 'var(--bg)', color: 'var(--ink)' }}>
+      <div className="container" style={{ paddingTop: 24, paddingBottom: 80 }}>
         <div style={{ marginBottom: 32 }}>
           <div className="eyebrow eyebrow--accent">Account</div>
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(34px, 5vw, 56px)', lineHeight: 1, letterSpacing: 0, margin: '6px 0', color: 'var(--ink)' }}>

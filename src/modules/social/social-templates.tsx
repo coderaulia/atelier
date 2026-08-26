@@ -116,84 +116,112 @@ const VFooter = ({ brand, color = "var(--vc-ink)", borderColor, useLightLogo }) 
   );
 };
 
+/* Dynamic font size scaler for preventing text clipping */
+export function getDynamicFontSize(
+  text: string | undefined | null,
+  baseSize: number,
+  maxCharsAtBase: number = 5,
+  minSize: number = Math.round(baseSize * 0.35)
+): number {
+  const str = String(text ?? "").trim();
+  const len = str.length;
+  if (len <= maxCharsAtBase || maxCharsAtBase <= 0) return baseSize;
+  const scale = maxCharsAtBase / len;
+  return Math.max(minSize, Math.round(baseSize * Math.pow(scale, 0.85)));
+}
+
 /* ============================================== */
 /* 1. PULL QUOTE (single)                          */
 /* ============================================== */
-const T_Quote = ({ data, brand }) => (
-  <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-      <Paperclip />
-      <VLabel text={data.label || "A Better Future"} style={{ textAlign: "right", lineHeight: 1.4 }} />
-    </div>
-    <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-      <div style={{ fontFamily: "var(--font-display)", fontSize: 116, lineHeight: 1.02, color: "var(--vc-ink)", letterSpacing: "-0.01em" }}>
-        <span style={{ color: "var(--vc-red)" }}>"</span>{data.quote || "The secret to social media success? Authenticity & consistency"}<span style={{ color: "var(--vc-red)" }}>"</span>
+const T_Quote = ({ data, brand }) => {
+  const quoteText = data.quote || "The secret to social media success? Authenticity & consistency";
+  const quoteSize = getDynamicFontSize(quoteText, 116, 50, 60);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <Paperclip />
+        <VLabel text={data.label || "A Better Future"} style={{ textAlign: "right", lineHeight: 1.4 }} />
+      </div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: quoteSize, lineHeight: 1.02, color: "var(--vc-ink)", letterSpacing: "-0.01em" }}>
+          <span style={{ color: "var(--vc-red)" }}>"</span>{quoteText}<span style={{ color: "var(--vc-red)" }}>"</span>
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <ArrowOut size={56} color="var(--vc-ink)" />
+          <span style={{ display: "inline-flex", alignItems: "center", padding: "10px 22px", border: "1.5px solid var(--vc-ink)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            {data.role || "Director"}
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", padding: "12px 26px", background: "var(--vc-ink)", color: "var(--vc-cream)", borderRadius: 999, fontFamily: "var(--font-helvetica)", fontSize: 22, letterSpacing: "-0.005em" }}>
+            {data.attribution || "Francis Donovan"}
+          </span>
+        </div>
+        <Asterisk size={74} />
       </div>
     </div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-        <ArrowOut size={56} color="var(--vc-ink)" />
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "10px 22px", border: "1.5px solid var(--vc-ink)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          {data.role || "Director"}
-        </span>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "12px 26px", background: "var(--vc-ink)", color: "var(--vc-cream)", borderRadius: 999, fontFamily: "var(--font-helvetica)", fontSize: 22, letterSpacing: "-0.005em" }}>
-          {data.attribution || "Francis Donovan"}
-        </span>
-      </div>
-      <Asterisk size={74} />
-    </div>
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 2. STAT HERO (single)                           */
 /* ============================================== */
-const T_Stat = ({ data, brand }) => (
-  <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "grid", gridTemplateRows: "auto 1fr auto" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-      <VLabel text={data.kicker || "By the numbers"} />
-      <ArrowOut size={56} color="var(--vc-ink)" />
+const T_Stat = ({ data, brand }) => {
+  const statText = data.stat || "91%";
+  const statSize = getDynamicFontSize(statText, 380, 4, 130);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "grid", gridTemplateRows: "auto 1fr auto" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <VLabel text={data.kicker || "By the numbers"} />
+        <ArrowOut size={56} color="var(--vc-ink)" />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 56, color: "var(--vc-ink)", marginBottom: 10 }}>
+          {data.italicLead || "Why do most posts fail?"}
+        </div>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: statSize, lineHeight: 0.86, color: "var(--vc-red)", letterSpacing: "-0.04em", wordBreak: "break-word" }}>
+          {statText}
+        </div>
+        <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 38, color: "var(--vc-mute)", maxWidth: 720 }}>
+          {data.statLabel || "of posts get zero meaningful engagement."}
+        </div>
+      </div>
+      <VFooter brand={brand} borderColor="rgba(14,14,14,0.15)" />
     </div>
-    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 56, color: "var(--vc-ink)", marginBottom: 10 }}>
-        {data.italicLead || "Why do most posts fail?"}
-      </div>
-      <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 380, lineHeight: 0.86, color: "var(--vc-red)", letterSpacing: "-0.04em" }}>
-        {data.stat || "91%"}
-      </div>
-      <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 38, color: "var(--vc-mute)", maxWidth: 720 }}>
-        {data.statLabel || "of posts get zero meaningful engagement."}
-      </div>
-    </div>
-    <VFooter brand={brand} borderColor="rgba(14,14,14,0.15)" />
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 3. ANNOUNCEMENT (single) — red big card         */
 /* ============================================== */
-const T_Announce = ({ data, brand }) => (
-  <div className="social-frame" style={{ background: "var(--vc-red)", color: "#fff", padding: 80, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-      <Paperclip color="#fff" />
-      <Chevron color="#fff" />
-    </div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
-      <XMark size={96} color="#fff" />
-      <VLabel text={data.label || "A Better Future"} color="#fff" style={{ textAlign: "right", lineHeight: 1.4, opacity: 0.85 }} />
-    </div>
-    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 24px" }}>
-      <div style={{ fontFamily: "var(--font-display)", fontSize: 124, lineHeight: 1.02, letterSpacing: "-0.015em" }}>
-        {data.headlineA || "The Startup Formula"}{" "}
-        <em>{data.headlineB || "Strategy, Execution, Growth."}</em>
+const T_Announce = ({ data, brand }) => {
+  const headA = data.headlineA || "The Startup Formula";
+  const headB = data.headlineB || "Strategy, Execution, Growth.";
+  const fullText = `${headA} ${headB}`;
+  const headSize = getDynamicFontSize(fullText, 124, 30, 68);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-red)", color: "#fff", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <Paperclip color="#fff" />
+        <Chevron color="#fff" />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
+        <XMark size={96} color="#fff" />
+        <VLabel text={data.label || "A Better Future"} color="#fff" style={{ textAlign: "right", lineHeight: 1.4, opacity: 0.85 }} />
+      </div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 24px" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: headSize, lineHeight: 1.02, letterSpacing: "-0.015em" }}>
+          {headA}{" "}
+          <em>{headB}</em>
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <VLabel num={null} text={brand.studioName || "Studio"} color="#fff" style={{ opacity: 0.9 }} />
+        <Asterisk size={90} color="#fff" />
       </div>
     </div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-      <VLabel num={null} text={brand.studioName || "Studio"} color="#fff" style={{ opacity: 0.9 }} />
-      <Asterisk size={90} color="#fff" />
-    </div>
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 4. STEP-BY-STEP (single) — circled word         */
@@ -500,132 +528,153 @@ const Wordmark = ({ brand, color }) => {
 /* ============================================== */
 /* 10. NOW BOOKING (CTA)                           */
 /* ============================================== */
-const T_Booking = ({ data, brand }) => (
-  <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <VLabel text={data.label || "Now Booking"} />
-      <Paperclip />
-    </div>
-    <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-      <div>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 152, lineHeight: 0.96, color: "var(--vc-ink)", letterSpacing: "-0.025em" }}>
-          {data.lead || "Two spots open for"} <HandCircle color="var(--vc-red)">{data.window || "Q3"}</HandCircle>{" "}
-          <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-red)" }}>projects.</em>
-        </div>
-        <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: "var(--vc-mute)", maxWidth: 740, lineHeight: 1.35 }}>
-          {data.subtext || "Brand and product work. Four-to-six-week engagements. Friendly intake, written deliverables, no agency overhead."}
+const T_Booking = ({ data, brand }) => {
+  const cta = data.ctaText || "Inquire via DM";
+  const ctaBtnSize = getDynamicFontSize(cta, 22, 16, 14);
+  const leadFull = `${data.lead || "Two spots open for"} ${data.window || "Q3"} projects.`;
+  const leadSize = getDynamicFontSize(leadFull, 152, 28, 80);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <VLabel text={data.label || "Now Booking"} />
+        <Paperclip />
+      </div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+        <div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: leadSize, lineHeight: 0.96, color: "var(--vc-ink)", letterSpacing: "-0.025em" }}>
+            {data.lead || "Two spots open for"} <HandCircle color="var(--vc-red)">{data.window || "Q3"}</HandCircle>{" "}
+            <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-red)" }}>projects.</em>
+          </div>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: "var(--vc-mute)", maxWidth: 740, lineHeight: 1.35 }}>
+            {data.subtext || "Brand and product work. Four-to-six-week engagements. Friendly intake, written deliverables, no agency overhead."}
+          </div>
         </div>
       </div>
-    </div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-red)", color: "#fff", padding: "26px 36px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 22, letterSpacing: "0.12em", textTransform: "uppercase" }}>
-        <span>{data.ctaText || "Inquire via DM"}</span>
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 17 L17 5 M9 5 L17 5 L17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-red)", color: "#fff", padding: "24px 36px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          <span>{cta}</span>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 17 L17 5 M9 5 L17 5 L17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+        </div>
+        <Asterisk size={68} />
       </div>
-      <Asterisk size={68} />
     </div>
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 11. LINK-IN-BIO (CTA)                           */
 /* ============================================== */
-const T_LinkBio = ({ data, brand }) => (
-  <div className="social-frame" style={{ padding: 0, display: "grid", gridTemplateRows: "auto 1fr auto", background: "var(--vc-cream)" }}>
-    <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "44px 80px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <VLabel text={data.label || "New Essay"} color="var(--vc-cream)" />
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.85 }}>
-        Read now →
-      </span>
-    </div>
-    <div style={{ padding: 80, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-      <VLabel num={null} text={data.kicker || "On documents"} />
-      <div>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 124, lineHeight: 0.98, color: "var(--vc-ink)", letterSpacing: "-0.025em" }}>
-          {data.headlineA || "Why your proposal is"}
+const T_LinkBio = ({ data, brand }) => {
+  const headASize = getDynamicFontSize(data.headlineA || "Why your proposal is", 124, 22, 68);
+  const headBSize = getDynamicFontSize(data.headlineB || "your portfolio.", 136, 18, 72);
+  const urlSize = getDynamicFontSize(data.url || "northquill.studio/essays", 22, 28, 14);
+  return (
+    <div className="social-frame" style={{ padding: 0, display: "grid", gridTemplateRows: "auto 1fr auto", background: "var(--vc-cream)" }}>
+      <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "44px 80px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.label || "New Essay"} color="var(--vc-cream)" />
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.85 }}>
+          Read now →
+        </span>
+      </div>
+      <div style={{ padding: 80, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <VLabel num={null} text={data.kicker || "On documents"} />
+        <div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: headASize, lineHeight: 0.98, color: "var(--vc-ink)", letterSpacing: "-0.025em" }}>
+            {data.headlineA || "Why your proposal is"}
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headBSize, lineHeight: 0.98, color: "var(--vc-red)", letterSpacing: "-0.025em", marginTop: 4 }}>
+            {data.headlineB || "your portfolio."}
+          </div>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", maxWidth: 800, lineHeight: 1.4 }}>
+            {data.subtext || "A short piece on the small things that build trust before the work has even started."}
+          </div>
         </div>
-        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 136, lineHeight: 0.98, color: "var(--vc-red)", letterSpacing: "-0.025em", marginTop: 4 }}>
-          {data.headlineB || "your portfolio."}
-        </div>
-        <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", maxWidth: 800, lineHeight: 1.4 }}>
-          {data.subtext || "A short piece on the small things that build trust before the work has even started."}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1.5px solid var(--vc-ink)", paddingTop: 24 }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: urlSize, color: "var(--vc-ink)", letterSpacing: "0.05em" }}>↗ {data.url || "northquill.studio/essays"}</span>
+          <Asterisk size={56} />
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1.5px solid var(--vc-ink)", paddingTop: 24 }}>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 22, color: "var(--vc-ink)", letterSpacing: "0.05em" }}>↗ {data.url || "northquill.studio/essays"}</span>
-        <Asterisk size={56} />
+      <div style={{ padding: "26px 80px", background: "var(--vc-blue)", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32 }}>{brand.studioName || "Studio"}</span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.85 }}>Link in bio</span>
       </div>
     </div>
-    <div style={{ padding: "26px 80px", background: "var(--vc-blue)", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32 }}>{brand.studioName || "Studio"}</span>
-      <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.85 }}>Link in bio</span>
-    </div>
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 12. LAUNCH (CTA)                                */
 /* ============================================== */
-const T_Launch = ({ data, brand }) => (
-  <div className="social-frame" style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <VLabel text={data.kicker || "Launching"} />
-      <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase" }}>{data.date || "May · 2026"}</span>
+const T_Launch = ({ data, brand }) => {
+  const prodName = data.productName || "Atelier";
+  const nameSize = getDynamicFontSize(prodName, 380, 5, 110);
+  const cta = data.ctaText || "Get early access";
+  const ctaBtnSize = getDynamicFontSize(cta, 22, 18, 14);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <VLabel text={data.kicker || "Launching"} />
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase" }}>{data.date || "May · 2026"}</span>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 22, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--vc-ink)" }}>
+          {data.category || "A new product"}
+        </div>
+        <div style={{ marginTop: 12, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: nameSize, lineHeight: 0.88, color: "var(--vc-ink)", letterSpacing: "-0.03em", wordBreak: "break-word" }}>
+          {prodName}.
+        </div>
+        <div style={{ marginTop: 36, fontFamily: "var(--font-helvetica)", fontWeight: 500, fontSize: 44, lineHeight: 1.15, maxWidth: 880 }}>
+          {data.tagline || "A document generator built for working freelancers."}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "24px 38px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          <span>{cta}</span>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 17 L17 5 M9 5 L17 5 L17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+        </div>
+        <Asterisk size={88} />
+      </div>
     </div>
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <div style={{ fontFamily: "var(--font-mono)", fontSize: 22, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--vc-ink)" }}>
-        {data.category || "A new product"}
-      </div>
-      <div style={{ marginTop: 12, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 380, lineHeight: 0.88, color: "var(--vc-ink)", letterSpacing: "-0.03em" }}>
-        {data.productName || "Atelier"}.
-      </div>
-      <div style={{ marginTop: 36, fontFamily: "var(--font-helvetica)", fontWeight: 500, fontSize: 44, lineHeight: 1.15, maxWidth: 880 }}>
-        {data.tagline || "A document generator built for working freelancers."}
-      </div>
-    </div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "26px 40px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 22, letterSpacing: "0.12em", textTransform: "uppercase" }}>
-        <span>{data.ctaText || "Get early access"}</span>
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 17 L17 5 M9 5 L17 5 L17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-      </div>
-      <Asterisk size={88} />
-    </div>
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* CAROUSEL CLOSING / CTA SLIDE                    */
 /* ============================================== */
-const CarouselCTA = ({ brand, data }) => (
-  <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-      <VLabel text="Follow for more" color="var(--vc-cream)" style={{ opacity: 0.5 }} />
-      <Asterisk size={56} color="var(--vc-blue)" />
-    </div>
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-      {brand.logo && brand.logoEnabled !== false
-        ? <img src={brand.logoLight || brand.logo} alt="" style={{ height: 80, width: "auto", maxWidth: 220, objectFit: "contain", marginBottom: 36 }} />
-        : null
-      }
-      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 136, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
-        {brand.studioName || "Studio"}
+const CarouselCTA = ({ brand, data }) => {
+  const studioNameSize = getDynamicFontSize(brand.studioName || "Studio", 136, 8, 64);
+  const ctaTextSize = getDynamicFontSize(data.ctaText || "", 40, 24, 22);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <VLabel text="Follow for more" color="var(--vc-cream)" style={{ opacity: 0.5 }} />
+        <Asterisk size={56} color="var(--vc-blue)" />
       </div>
-      <div style={{ marginTop: 16, fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.5 }}>
-        {brand.handle || "@studio"}
-      </div>
-      {data.ctaText && (
-        <div style={{ marginTop: 52, fontFamily: "var(--font-helvetica)", fontWeight: 500, fontSize: 40, lineHeight: 1.35, maxWidth: 720, opacity: 0.85 }}>
-          {data.ctaText}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+        {brand.logo && brand.logoEnabled !== false
+          ? <img src={brand.logoLight || brand.logo} alt="" style={{ height: 80, width: "auto", maxWidth: 220, objectFit: "contain", marginBottom: 36 }} />
+          : null
+        }
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: studioNameSize, lineHeight: 0.96, letterSpacing: "-0.025em", wordBreak: "break-word" }}>
+          {brand.studioName || "Studio"}
         </div>
-      )}
+        <div style={{ marginTop: 16, fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.5 }}>
+          {brand.handle || "@studio"}
+        </div>
+        {data.ctaText && (
+          <div style={{ marginTop: 52, fontFamily: "var(--font-helvetica)", fontWeight: 500, fontSize: ctaTextSize, lineHeight: 1.35, maxWidth: 720, opacity: 0.85 }}>
+            {data.ctaText}
+          </div>
+        )}
+      </div>
+      <div style={{ paddingTop: 22, borderTop: "1.5px solid rgba(236,230,214,0.15)", display: "flex", justifyContent: "center" }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.4 }}>
+          {brand.handle || "@studio"}
+        </span>
+      </div>
     </div>
-    <div style={{ paddingTop: 22, borderTop: "1.5px solid rgba(236,230,214,0.15)", display: "flex", justifyContent: "center" }}>
-      <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.4 }}>
-        {brand.handle || "@studio"}
-      </span>
-    </div>
-  </div>
-);
+  );
+};
 
 /* ============================================== */
 /* 13. MISTAKES MADE (Carousel)                    */
@@ -671,6 +720,8 @@ const T_Mistakes = ({ data, brand }) => {
     const lesson = dash > -1 ? item.slice(dash + 1).trim() : "";
     const bg = bgPalette[i % bgPalette.length];
     const fg = fgPalette[i % fgPalette.length];
+    const titleSize = getDynamicFontSize(title, 96, 24, 56);
+    const lessonSize = getDynamicFontSize(lesson, 48, 65, 30);
     return (
       <div className="social-frame" key={i} style={{ background: bg, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -678,11 +729,11 @@ const T_Mistakes = ({ data, brand }) => {
           <XMark size={48} color="var(--vc-red)" />
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 96, lineHeight: 1.02, letterSpacing: "-0.02em" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: titleSize, lineHeight: 1.02, letterSpacing: "-0.02em" }}>
             {title}.
           </div>
           {lesson && (
-            <div style={{ marginTop: 32, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 48, lineHeight: 1.35, opacity: 0.6 }}>
+            <div style={{ marginTop: 32, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: lessonSize, lineHeight: 1.35, opacity: 0.6 }}>
               {lesson}
             </div>
           )}
@@ -910,6 +961,9 @@ const T_PricingCard = ({ data, brand }) => {
   const muted = useAccent ? "rgba(0,0,0,0.52)" : "var(--vc-mute)";
   const rule = useAccent ? "rgba(0,0,0,0.18)" : "rgba(14,14,14,0.15)";
   const price = fmt.money(Number(data.price) || 0, data.currency || "USD");
+  const priceSize = getDynamicFontSize(price, 152, 7, 72);
+  const ctaText = data.ctaText || "DM to get started →";
+  const ctaSize = getDynamicFontSize(ctaText, 18, 22, 13);
   return (
     <div className="social-frame" style={{ background: bg, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -920,8 +974,8 @@ const T_PricingCard = ({ data, brand }) => {
         }
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 152, lineHeight: 0.9, letterSpacing: "-0.04em" }}>
-          {fmt.money(Number(data.price) || 0, data.currency || "USD")}
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: priceSize, lineHeight: 0.9, letterSpacing: "-0.04em" }}>
+          {price}
         </div>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, marginTop: 12 }}>
           per month
@@ -936,8 +990,8 @@ const T_PricingCard = ({ data, brand }) => {
         </div>
       </div>
       <div style={{ borderTop: `1.5px solid ${rule}`, paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase" }}>
-          {data.ctaText || "DM to get started →"}
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: ctaSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          {ctaText}
         </span>
         <Asterisk size={52} color={fg} />
       </div>
@@ -991,14 +1045,19 @@ const T_PricingEditorial = ({ data, brand }) => {
   const muted = useAccent ? "rgba(0,0,0,0.52)" : "var(--vc-mute)";
   const rule = useAccent ? "rgba(0,0,0,0.18)" : "rgba(14,14,14,0.15)";
   const price = fmt.money(Number(data.price) || 0, data.currency || "USD");
+  const priceSize = getDynamicFontSize(price, 88, 7, 50);
+  const packageName = data.packageName || "Brand Starter";
+  const packageSize = getDynamicFontSize(packageName, 84, 14, 52);
+  const ctaText = data.ctaText || "DM to get started ->";
+  const ctaSize = getDynamicFontSize(ctaText, 17, 24, 13);
   return (
     <div className="social-frame" style={{ background: bg, color: fg, padding: 72, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 34, position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", right: -72, top: 210, width: 320, height: 320, border: `1.5px solid ${rule}`, borderRadius: "50%" }} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "start", gap: 28 }}>
         <div>
           <VLabel text="Proposal No. 01" color={fg} />
-          <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 84, lineHeight: 0.95, letterSpacing: "-0.015em" }}>
-            {data.packageName || "Brand Starter"}
+          <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: packageSize, lineHeight: 0.95, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
+            {packageName}
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
@@ -1030,7 +1089,7 @@ const T_PricingEditorial = ({ data, brand }) => {
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.16em", textTransform: "uppercase", color: muted, marginBottom: 20 }}>
               Starting at
             </div>
-            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 800, fontSize: price.length > 10 ? 72 : 88, lineHeight: 0.9, letterSpacing: "-0.05em" }}>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 800, fontSize: priceSize, lineHeight: 0.9, letterSpacing: "-0.05em" }}>
               {price}
             </div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.14em", textTransform: "uppercase", color: muted, marginTop: 14 }}>
@@ -1041,8 +1100,8 @@ const T_PricingEditorial = ({ data, brand }) => {
         </div>
       </div>
       <div style={{ borderTop: `1.5px solid ${rule}`, paddingTop: 26, display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 24 }}>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 17, letterSpacing: "0.13em", textTransform: "uppercase" }}>
-          {data.ctaText || "DM to get started ->"}
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: ctaSize, letterSpacing: "0.13em", textTransform: "uppercase" }}>
+          {ctaText}
         </span>
         <ArrowOut size={60} color={fg} />
       </div>
@@ -1099,11 +1158,358 @@ const T_TestimonialEditorial = ({ data, brand }) => {
   );
 };
 
+/* ============================================== */
+/* 22. WAITLIST / EARLY ACCESS (CTA)              */
+/* ============================================== */
+const T_Waitlist = ({ data, brand }) => {
+  const headline = data.headline || "The new way to build freelance proposals";
+  const headSize = getDynamicFontSize(headline, 108, 32, 54);
+  const cta = data.ctaText || "Join the waitlist →";
+  const ctaBtnSize = getDynamicFontSize(cta, 22, 18, 14);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Early Access"} color="var(--vc-cream)" style={{ opacity: 0.8 }} />
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "10px 22px", background: "var(--vc-red)", color: "#fff", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff", display: "inline-block" }} />
+          {data.spotsLeft || "4 spots left"}
+        </span>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: headSize, lineHeight: 0.98, letterSpacing: "-0.02em" }}>
+          {headline}
+        </div>
+        <div style={{ marginTop: 32, fontFamily: "var(--font-helvetica)", fontSize: 32, lineHeight: 1.4, opacity: 0.65, maxWidth: 780 }}>
+          {data.subtext || "Join 350+ designers & founders in private beta testing. Instant access upon invitation."}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 28, borderTop: "1.5px solid rgba(236,230,214,0.18)" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-lime)", color: "var(--vc-ink)", padding: "24px 38px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
+          <span>{cta}</span>
+        </div>
+        <Wordmark brand={brand} color="var(--vc-cream)" />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 23. FREE RESOURCE / GUIDE (CTA)                */
+/* ============================================== */
+const T_LeadMagnet = ({ data, brand }) => {
+  const benefits = (data.benefits || "Real pricing benchmarks for 2026\nClient outreach & follow-up scripts\nScope negotiation checklist\nContract clause cheatsheet").split("\n").filter(Boolean).slice(0, 4);
+  const title = data.title || "The 2026 Freelance Rate & Pricing Guide";
+  const titleSize = getDynamicFontSize(title, 84, 30, 48);
+  const cta = data.ctaText || "Download free copy →";
+  const ctaBtnSize = getDynamicFontSize(cta, 20, 20, 13);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: 76, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 32 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.category || "Free Resource"} />
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "8px 20px", border: "1.5px solid var(--vc-ink)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          {data.deliverableType || "PDF + Notion Sheet"}
+        </span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: titleSize, lineHeight: 1, letterSpacing: "-0.015em" }}>
+          {title}
+        </div>
+        <div style={{ marginTop: 36, display: "grid", gap: 16 }}>
+          {benefits.map((b, i) => (
+            <div key={i} style={{ display: "flex", gap: 16, alignItems: "center" }}>
+              <span style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 14, flexShrink: 0 }}>✓</span>
+              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, lineHeight: 1.25, fontWeight: 500 }}>{b}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 24, borderTop: "1.5px solid rgba(14,14,14,0.15)" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-red)", color: "#fff", padding: "22px 34px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          <span>{cta}</span>
+        </div>
+        <Asterisk size={56} />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 24. DM KEYWORD / AUTOMATION (CTA)              */
+/* ============================================== */
+const T_DMKeyword = ({ data, brand }) => {
+  const headline = data.headline || "Want my Notion Client Onboarding Portal?";
+  const headSize = getDynamicFontSize(headline, 100, 34, 52);
+  const keyword = data.keyword || "ONBOARD";
+  const kwSize = getDynamicFontSize(keyword, 140, 7, 72);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Free Drop"} />
+        <ArrowOut size={56} color="var(--vc-ink)" />
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: headSize, lineHeight: 1.02, letterSpacing: "-0.02em", maxWidth: 860 }}>
+          {headline}
+        </div>
+        <div style={{ marginTop: 40, background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "36px 48px", borderRadius: 28, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>
+            Drop this word in comments:
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: kwSize, color: "var(--vc-lime)", letterSpacing: "0.08em", lineHeight: 0.95 }}>
+            "{keyword}"
+          </div>
+        </div>
+        <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32, opacity: 0.75 }}>
+          ...and I'll automatically DM you {data.resourceName || "the Notion template link"}.
+        </div>
+      </div>
+      <VFooter brand={brand} borderColor="rgba(14,14,14,0.18)" />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 25. CLIENT METRIC IMPACT (Social Proof)        */
+/* ============================================== */
+const T_MetricProof = ({ data, brand }) => {
+  const metric = data.metric || "+240%";
+  const metricSize = getDynamicFontSize(metric, 280, 5, 110);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 28 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Client Results"} color="var(--vc-cream)" style={{ opacity: 0.8 }} />
+        <Asterisk size={56} color="var(--vc-lime)" />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 800, fontSize: metricSize, lineHeight: 0.88, color: "var(--vc-lime)", letterSpacing: "-0.04em" }}>
+          {metric}
+        </div>
+        <div style={{ marginTop: 20, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 44, lineHeight: 1.15, maxWidth: 800 }}>
+          {data.metricLabel || "Increase in closed deal size in 60 days"}
+        </div>
+        <div style={{ marginTop: 24, fontFamily: "var(--font-helvetica)", fontSize: 26, lineHeight: 1.4, opacity: 0.65, maxWidth: 760 }}>
+          {data.summary || "Complete repositioning and brand identity overhaul for an enterprise B2B consultancy."}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 24, borderTop: "1.5px solid rgba(236,230,214,0.18)" }}>
+        <div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 26 }}>
+            {data.clientName || "Sarah Jenkins"}
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.6, marginTop: 4 }}>
+            {data.clientRole || "Managing Director · Apex"}
+          </div>
+        </div>
+        <Wordmark brand={brand} color="var(--vc-cream)" />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 26. SOCIAL REVIEW CARD (Social Proof)          */
+/* ============================================== */
+const T_TweetReview = ({ data, brand }) => {
+  const review = data.review || "Vanaila Studio completely transformed our documents. Our conversion rate on proposals jumped from 22% to 68% in two weeks.";
+  const reviewSize = getDynamicFontSize(review, 68, 80, 40);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Client Feedback"} />
+        <div style={{ display: "flex", gap: 6 }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <span key={i} style={{ color: "var(--vc-red)", fontSize: 28 }}>★</span>
+          ))}
+        </div>
+      </div>
+      <div style={{ padding: "48px 0" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: reviewSize, lineHeight: 1.15, letterSpacing: "-0.01em" }}>
+          "{review}"
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 28, borderTop: "1.5px solid rgba(14,14,14,0.15)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <div style={{ width: 68, height: 68, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 26 }}>
+            {((data.clientName || "A")[0] || "A").toUpperCase()}
+          </div>
+          <div>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 26, display: "flex", alignItems: "center", gap: 8 }}>
+              {data.clientName || "Alex Rivera"}
+              <span style={{ fontSize: 18, color: "var(--vc-blue)" }}>✓</span>
+            </div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, color: "var(--vc-mute)", marginTop: 4 }}>
+              {data.handle || "@alexrivera_"} · {data.clientTitle || "Founder"}
+            </div>
+          </div>
+        </div>
+        <Paperclip />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 27. CASE STUDY SNAPSHOT (Social Proof)         */
+/* ============================================== */
+const T_CaseStudy = ({ data, brand }) => {
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-blue)", color: "#fff", padding: 76, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 28 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Case Study"} color="#fff" style={{ opacity: 0.85 }} />
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.75 }}>
+          {data.industry || "Design & Tech · 2026"}
+        </span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 24 }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 68, lineHeight: 1 }}>
+          {data.client || "Luminary Media"}
+        </div>
+        <div style={{ display: "grid", gap: 16 }}>
+          <div style={{ background: "rgba(255,255,255,0.08)", padding: "20px 28px", borderRadius: 16, borderLeft: "4px solid var(--vc-red)" }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>The Problem</div>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 24, fontWeight: 500, marginTop: 4 }}>{data.problem || "Low proposal response rate & inconsistent brand assets"}</div>
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.08)", padding: "20px 28px", borderRadius: 16, borderLeft: "4px solid var(--vc-lime)" }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>The Solution</div>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 24, fontWeight: 500, marginTop: 4 }}>{data.solution || "Custom document template system & editorial style guide"}</div>
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.08)", padding: "20px 28px", borderRadius: 16, borderLeft: "4px solid #fff" }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>The Result</div>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 24, fontWeight: 700, color: "var(--vc-lime)", marginTop: 4 }}>{data.outcome || "3.5x higher contract close rate & $95k in new client revenue"}</div>
+          </div>
+        </div>
+      </div>
+      <VFooter brand={brand} color="#fff" borderColor="rgba(255,255,255,0.2)" />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 28. QUICK AUDIT / CHECKLIST (Single)           */
+/* ============================================== */
+const T_Checklist = ({ data, brand }) => {
+  const items = (data.items || "PO or written approval attached\nPayment due date and bank details clear\nItemized deliverables breakdown\nLate fee terms clearly stated\nDirect contact for accounts payable").split("\n").filter(Boolean).slice(0, 5);
+  const title = data.title || "5 Things to check before sending an invoice";
+  const titleSize = getDynamicFontSize(title, 76, 32, 46);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: 76, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 28 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Audit Checklist"} />
+        <Asterisk size={56} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: titleSize, lineHeight: 1.05, letterSpacing: "-0.02em" }}>
+          {title}
+        </div>
+        <div style={{ marginTop: 36, display: "grid", gap: 16 }}>
+          {items.map((it, i) => (
+            <div key={i} style={{ display: "flex", gap: 18, alignItems: "center", paddingBottom: 12, borderBottom: "1px solid rgba(14,14,14,0.1)" }}>
+              <span style={{ width: 32, height: 32, borderRadius: 8, background: "var(--vc-ink)", color: "var(--vc-lime)", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, flexShrink: 0 }}>✓</span>
+              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, fontWeight: 500, lineHeight: 1.2 }}>{it}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 20, borderTop: "1.5px solid rgba(14,14,14,0.15)" }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--vc-mute)" }}>
+          {data.note || "Save this post for your next project"}
+        </span>
+        <Wordmark brand={brand} />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 29. MYTH VS. REALITY (Single)                  */
+/* ============================================== */
+const T_Opinion = ({ data, brand }) => {
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 76, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 32 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Reality Check"} color="var(--vc-cream)" style={{ opacity: 0.8 }} />
+        <Paperclip color="var(--vc-cream)" />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "center" }}>
+        <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 24, padding: "36px 32px", border: "1px solid rgba(255,255,255,0.12)", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ display: "inline-flex", padding: "6px 16px", background: "rgba(239,68,68,0.2)", color: "var(--vc-red)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
+              {data.mythTitle || "Myth"}
+            </div>
+            <div style={{ marginTop: 24, fontFamily: "var(--font-helvetica)", fontSize: 32, lineHeight: 1.3, opacity: 0.75, textDecoration: "line-through" }}>
+              {data.myth || "Work 80 hours a week, lower your rates to compete, and take every client you can find."}
+            </div>
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, opacity: 0.4, marginTop: 20 }}>Conventional advice</div>
+        </div>
+        <div style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", borderRadius: 24, padding: "36px 32px", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: "0 16px 40px rgba(0,0,0,0.3)" }}>
+          <div>
+            <div style={{ display: "inline-flex", padding: "6px 16px", background: "var(--vc-ink)", color: "var(--vc-lime)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
+              {data.truthTitle || "Reality"}
+            </div>
+            <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, lineHeight: 1.25 }}>
+              {data.truth || "Pick one high-value niche, price on business outcomes, and say no to 80% of inquiries."}
+            </div>
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: "var(--vc-red)", fontWeight: 700, marginTop: 20 }}>What actually works</div>
+        </div>
+      </div>
+      <VFooter brand={brand} color="var(--vc-cream)" borderColor="rgba(236,230,214,0.18)" />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 30. 3 PILLARS / CORE PRINCIPLES (Single)       */
+/* ============================================== */
+const T_Pillars = ({ data, brand }) => {
+  const headline = data.headline || "The 3 Pillars of High-Earning Freelancers";
+  const headSize = getDynamicFontSize(headline, 72, 34, 46);
+  return (
+    <div className="social-frame" style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: 76, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Core Principles"} />
+        <ArrowOut size={56} color="var(--vc-ink)" />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headSize, lineHeight: 1, letterSpacing: "-0.015em", marginBottom: 28 }}>
+          {headline}
+        </div>
+        <div style={{ display: "grid", gap: 14 }}>
+          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "22px 30px", borderRadius: 18, display: "grid", gridTemplateColumns: "48px 1fr", gap: 16, alignItems: "center" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 24, color: "var(--vc-lime)", fontWeight: 700 }}>01</span>
+            <div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24 }}>{data.pillar1Title || "Positioning"}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 20, opacity: 0.7, marginTop: 2 }}>{data.pillar1Body || "Specialist over generalist. Solve an expensive problem."}</div>
+            </div>
+          </div>
+          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "22px 30px", borderRadius: 18, display: "grid", gridTemplateColumns: "48px 1fr", gap: 16, alignItems: "center" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 24, color: "var(--vc-lime)", fontWeight: 700 }}>02</span>
+            <div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24 }}>{data.pillar2Title || "Packaging"}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 20, opacity: 0.7, marginTop: 2 }}>{data.pillar2Body || "Fixed deliverables, clear scopes, zero hourly billing."}</div>
+            </div>
+          </div>
+          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "22px 30px", borderRadius: 18, display: "grid", gridTemplateColumns: "48px 1fr", gap: 16, alignItems: "center" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 24, color: "var(--vc-lime)", fontWeight: 700 }}>03</span>
+            <div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24 }}>{data.pillar3Title || "Pipeline"}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 20, opacity: 0.7, marginTop: 2 }}>{data.pillar3Body || "Always cultivate relationships before you need work."}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <VFooter brand={brand} borderColor="rgba(14,14,14,0.15)" />
+    </div>
+  );
+};
+
 /* ============ Template registry ============ */
 const f = (key, label, opts = {}) => ({ key, label, type: opts.type || "text", placeholder: opts.placeholder, hint: opts.hint });
 const fA = (key, label, opts = {}) => f(key, label, { type: "textarea", ...opts });
 
 const SocialTemplates = [
+  /* --- Single (Instagram 1:1) --- */
   { id: "quote",        name: "Pull Quote",        kind: "Single",
     slides: (p) => [<T_Quote {...p} />],
     fields: [
@@ -1153,6 +1559,37 @@ const SocialTemplates = [
       f("italic", "Italic word/phrase", { placeholder: "just works." }),
       fA("tail", "Trailing sentence (muted)"),
     ] },
+  { id: "checklist",    name: "Quick Audit",       kind: "Single",
+    slides: (p) => [<T_Checklist {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Audit Checklist" }),
+      f("title", "Checklist title", { placeholder: "5 Things to check before sending an invoice" }),
+      fA("items", "Items (one per line, up to 5)", { hint: "Add 3–5 items." }),
+      f("note", "Bottom note", { placeholder: "Save this post for your next project" }),
+    ] },
+  { id: "opinion",      name: "Myth vs Reality",   kind: "Single",
+    slides: (p) => [<T_Opinion {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Reality Check" }),
+      f("mythTitle", "Myth label", { placeholder: "Myth" }),
+      fA("myth", "Myth statement"),
+      f("truthTitle", "Reality label", { placeholder: "Reality" }),
+      fA("truth", "Reality statement"),
+    ] },
+  { id: "pillars",      name: "Core Pillars",      kind: "Single",
+    slides: (p) => [<T_Pillars {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Core Principles" }),
+      f("headline", "Headline", { placeholder: "The 3 Pillars of High-Earning Freelancers" }),
+      f("pillar1Title", "Pillar 01 Title", { placeholder: "Positioning" }),
+      f("pillar1Body", "Pillar 01 Description"),
+      f("pillar2Title", "Pillar 02 Title", { placeholder: "Packaging" }),
+      f("pillar2Body", "Pillar 02 Description"),
+      f("pillar3Title", "Pillar 03 Title", { placeholder: "Pipeline" }),
+      f("pillar3Body", "Pillar 03 Description"),
+    ] },
+
+  /* --- Carousel --- */
   { id: "framework",    name: "Framework",         kind: "Carousel",
     slides: (p) => T_Framework(p),
     fields: [
@@ -1179,6 +1616,25 @@ const SocialTemplates = [
       f("ruleLabel", "Slide label word", { placeholder: "Rule", hint: "Appears as 'Rule 1 of N'. Change to Tip, Lesson, Step…" }),
       f("ctaText", "Closing slide CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
     ] },
+  { id: "mistakes",    name: "Mistakes Made",      kind: "Carousel",
+    slides: (p) => T_Mistakes(p),
+    fields: [
+      f("kicker", "Kicker", { placeholder: "Hard Lessons" }),
+      fA("subtitle", "Cover subtitle"),
+      fA("mistakes", "Mistakes — 'Title — Lesson', one per line", { hint: "No limit. Title is bold; lesson appears as italic note." }),
+      f("ctaText", "Closing CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
+    ] },
+  { id: "miniguide",   name: "Mini Guide",          kind: "Carousel",
+    slides: (p) => T_MiniGuide(p),
+    fields: [
+      f("kicker", "Kicker", { placeholder: "Mini Guide" }),
+      f("topic", "Topic / title", { placeholder: "Ship Faster" }),
+      f("intro", "Cover intro line", { hint: "Leave empty to auto-generate from step count." }),
+      fA("steps", "Steps — 'Name — detail', one per line", { hint: "Detail is optional. No slide limit." }),
+      f("ctaText", "Closing CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
+    ] },
+
+  /* --- CTA --- */
   { id: "booking",      name: "Now Booking",       kind: "CTA",
     slides: (p) => [<T_Booking {...p} />],
     fields: [
@@ -1208,24 +1664,70 @@ const SocialTemplates = [
       f("date", "Launch date"),
       f("ctaText", "CTA text"),
     ] },
-
-  /* --- Carousel (new) --- */
-  { id: "mistakes",    name: "Mistakes Made",      kind: "Carousel",
-    slides: (p) => T_Mistakes(p),
+  { id: "waitlist",     name: "Waitlist",          kind: "CTA",
+    slides: (p) => [<T_Waitlist {...p} />],
     fields: [
-      f("kicker", "Kicker", { placeholder: "Hard Lessons" }),
-      fA("subtitle", "Cover subtitle"),
-      fA("mistakes", "Mistakes — 'Title — Lesson', one per line", { hint: "No limit. Title is bold; lesson appears as italic note." }),
-      f("ctaText", "Closing CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
+      f("kicker", "Kicker", { placeholder: "Early Access" }),
+      f("spotsLeft", "Spots badge", { placeholder: "4 spots left" }),
+      fA("headline", "Main headline", { placeholder: "The new way to build freelance proposals" }),
+      fA("subtext", "Subtext"),
+      f("ctaText", "CTA button text", { placeholder: "Join the waitlist →" }),
     ] },
-  { id: "miniguide",   name: "Mini Guide",          kind: "Carousel",
-    slides: (p) => T_MiniGuide(p),
+  { id: "leadmagnet",   name: "Free Resource",     kind: "CTA",
+    slides: (p) => [<T_LeadMagnet {...p} />],
     fields: [
-      f("kicker", "Kicker", { placeholder: "Mini Guide" }),
-      f("topic", "Topic / title", { placeholder: "Ship Faster" }),
-      f("intro", "Cover intro line", { hint: "Leave empty to auto-generate from step count." }),
-      fA("steps", "Steps — 'Name — detail', one per line", { hint: "Detail is optional. No slide limit." }),
-      f("ctaText", "Closing CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
+      f("category", "Top label", { placeholder: "Free Resource" }),
+      f("deliverableType", "Format pill", { placeholder: "PDF + Notion Sheet" }),
+      fA("title", "Resource title", { placeholder: "The 2026 Freelance Rate & Pricing Guide" }),
+      fA("benefits", "Included benefits (one per line, up to 4)"),
+      f("ctaText", "CTA button text", { placeholder: "Download free copy →" }),
+    ] },
+  { id: "dmkeyword",    name: "DM Keyword",        kind: "CTA",
+    slides: (p) => [<T_DMKeyword {...p} />],
+    fields: [
+      f("kicker", "Top-left kicker", { placeholder: "Free Drop" }),
+      fA("headline", "Question / hook", { placeholder: "Want my Notion Client Onboarding Portal?" }),
+      f("keyword", "Comment keyword", { placeholder: "ONBOARD" }),
+      f("resourceName", "Resource name in footnote", { placeholder: "the Notion template link" }),
+    ] },
+
+  /* --- Social Proof --- */
+  { id: "testimonial", name: "Testimonial Card",    kind: "Social Proof",
+    slides: (p) => [<T_TestimonialEditorial {...p} />],
+    fields: [
+      fA("quote", "Quote"),
+      f("clientName", "Client name"),
+      f("clientTitle", "Client title / company", { placeholder: "Founder · Atlas & Bell" }),
+      { key: "clientPhoto", label: "Client photo (optional)", type: "image" },
+    ] },
+  { id: "metricproof", name: "Metric Impact",       kind: "Social Proof",
+    slides: (p) => [<T_MetricProof {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Client Results" }),
+      f("metric", "Big metric number", { placeholder: "+240%" }),
+      fA("metricLabel", "Metric description / timeframe", { placeholder: "Increase in closed deal size in 60 days" }),
+      fA("summary", "Context / engagement summary"),
+      f("clientName", "Client name", { placeholder: "Sarah Jenkins" }),
+      f("clientRole", "Client role & company", { placeholder: "Managing Director · Apex" }),
+    ] },
+  { id: "tweetreview", name: "Social Review",       kind: "Social Proof",
+    slides: (p) => [<T_TweetReview {...p} />],
+    fields: [
+      f("kicker", "Kicker", { placeholder: "Client Feedback" }),
+      fA("review", "Review quote"),
+      f("clientName", "Client name", { placeholder: "Alex Rivera" }),
+      f("handle", "Social handle", { placeholder: "@alexrivera_" }),
+      f("clientTitle", "Role or company", { placeholder: "Founder" }),
+    ] },
+  { id: "casestudy",   name: "Case Study Snapshot", kind: "Social Proof",
+    slides: (p) => [<T_CaseStudy {...p} />],
+    fields: [
+      f("kicker", "Kicker", { placeholder: "Case Study" }),
+      f("client", "Client name / project", { placeholder: "Luminary Media" }),
+      f("industry", "Industry & year", { placeholder: "Design & Tech · 2026" }),
+      fA("problem", "The Problem"),
+      fA("solution", "The Solution"),
+      fA("outcome", "The Result"),
     ] },
 
   /* --- News --- */
@@ -1265,7 +1767,7 @@ const SocialTemplates = [
       fA("tagline", "Project tagline"),
     ] },
 
-  /* --- Pricing & Social Proof --- */
+  /* --- Pricing --- */
   { id: "pricing",     name: "Pricing Card",        kind: "Pricing",
     slides: (p) => [<T_PricingEditorial {...p} />],
     fields: [
@@ -1276,16 +1778,7 @@ const SocialTemplates = [
       f("ctaText", "CTA text", { placeholder: "DM to get started →" }),
       { key: "bg", label: "Background", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "accent", label: "Accent color" }] },
     ] },
-  { id: "testimonial", name: "Testimonial Card",    kind: "Social Proof",
-    slides: (p) => [<T_TestimonialEditorial {...p} />],
-    fields: [
-      fA("quote", "Quote"),
-      f("clientName", "Client name"),
-      f("clientTitle", "Client title / company", { placeholder: "Founder · Atlas & Bell" }),
-      { key: "clientPhoto", label: "Client photo (optional)", type: "image" },
-    ] },
 ];
-
 
 export {
   SocialTemplates,

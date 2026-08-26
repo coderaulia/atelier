@@ -967,6 +967,8 @@ const T_Team1 = ({ data, brand }) => {
   const nameSize = getDynamicFontSize(name, 84, 15, 52);
   const position = data.position || "Lead Brand Designer";
   const posSize = getDynamicFontSize(position, 22, 24, 15);
+  const badge = data.badge !== undefined ? data.badge : "New Joiner";
+  const badgeSize = getDynamicFontSize(badge, 13, 14, 10);
 
   return (
     <div className="social-frame" style={{ background: bg, color: fg, padding: "72px 80px", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 32 }}>
@@ -992,10 +994,18 @@ const T_Team1 = ({ data, brand }) => {
               : <PhotoSlot label="Drop portrait" style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
             }
           </div>
-          {/* Badge at bottom of circle */}
-          <div style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)", background: ringBorder, color: isBlue ? "var(--vc-ink)" : "#fff", padding: "6px 18px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap" }}>
-            New Joiner
-          </div>
+          {/* Dynamic Badge at bottom of circle */}
+          {badge && badge.trim() && (
+            <div style={{
+              position: "absolute", bottom: -10, left: "50%", transform: "translateX(-50%)",
+              background: ringBorder, color: isBlue ? "var(--vc-ink)" : "#fff",
+              padding: "6px 20px", borderRadius: 999, fontFamily: "var(--font-mono)",
+              fontSize: badgeSize, letterSpacing: "0.14em", textTransform: "uppercase",
+              fontWeight: 700, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(0,0,0,0.18)"
+            }}>
+              {badge}
+            </div>
+          )}
         </div>
 
         {/* Member Name */}
@@ -2082,6 +2092,7 @@ const SocialTemplates = [
     fields: [
       f("kicker", "Kicker label", { placeholder: "Welcome to the Team" }),
       { key: "image", label: "Member Photo", type: "image" },
+      f("badge", "Pill Badge (e.g. New Joiner, Top Performer, Best Achiever)", { placeholder: "New Joiner" }),
       f("name", "Member Name", { placeholder: "Elena Rostova" }),
       f("position", "Position / Role", { placeholder: "Lead Brand Designer" }),
       f("department", "Department / Location (optional)", { placeholder: "Brand Studio · London" }),

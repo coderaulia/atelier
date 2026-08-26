@@ -3,6 +3,7 @@ import {
   Paperclip, Chevron, ArrowOut, Asterisk, XMark,
   HandCircle, Underscribble, PhotoSlot, CrescentMark,
   VLabel, VFooter, Wordmark, getDynamicFontSize,
+  THEME_OPTIONS, getThemeColors,
 } from './social-templates';
 
 
@@ -496,6 +497,204 @@ const V_CaseStudyCarousel = ({ data, brand }) => {
   });
 };
 
+/* ============================================== */
+/* 10. VERTICAL STORY CAROUSEL                     */
+/* ============================================== */
+const V_StoryCarousel = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const slides = (data.slides || "").split("\n").filter(Boolean);
+  const total = slides.length + 2; // Cover + Slides + Outro
+
+  const coverSlide = (
+    <div {...VFRAME} key="cover" style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Case Study"} color={c.fg} />
+        <Asterisk size={64} color={c.accent} />
+      </div>
+      <div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 24 }}>
+          {data.clientName || "Atlas & Bell"} · {data.year || "2026"}
+        </div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(data.coverHeadline || "How we doubled client close-rate in 60 days", 120, 36, 68), lineHeight: 1.02, letterSpacing: "-0.02em" }}>
+          {data.coverHeadline || "How we doubled client close-rate in 60 days"}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1.5px solid ${c.borderColor}`, paddingTop: 32 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          Swipe to read →
+        </span>
+        <Wordmark brand={brand} />
+      </div>
+    </div>
+  );
+
+  const bodySlides = slides.map((line, i) => {
+    const parts = line.split("—");
+    const label = parts[0]?.trim() || `Step ${i + 1}`;
+    const body = parts.slice(1).join("—").trim() || line;
+    const isEven = i % 2 === 0;
+    const slideBg = isEven ? c.bg : (c.bg.includes("ink") ? "#161616" : "#EDE8DC");
+
+    return (
+      <div {...VFRAME} key={`body-${i}`} style={{ background: slideBg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <VLabel num={i + 1} text={label} color={c.fg} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, color: c.muted }}>
+            [ {String(i + 2).padStart(2, "0")} / {String(total).padStart(2, "0")} ]
+          </span>
+        </div>
+        <div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(body, 92, 45, 54), lineHeight: 1.08, letterSpacing: "-0.015em" }}>
+            {body}
+          </div>
+        </div>
+        <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+      </div>
+    );
+  });
+
+  const outroSlide = (
+    <div {...VFRAME} key="outro" style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text="Summary & CTA" color={c.fg} />
+        <Paperclip color={c.fg} />
+      </div>
+      <div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", color: c.accent, fontWeight: 700, marginBottom: 16 }}>
+          {data.metric || "+240% Growth"}
+        </div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 80, lineHeight: 1.04, letterSpacing: "-0.015em", marginBottom: 36 }}>
+          {data.outcome || "Ready to transform your client proposals?"}
+        </div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: c.btnBg, color: c.btnFg, padding: "24px 40px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
+          {data.ctaText || "Work with us →"}
+        </div>
+      </div>
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+    </div>
+  );
+
+  return [coverSlide, ...bodySlides, outroSlide];
+};
+
+/* ============================================== */
+/* 11. VERTICAL TIPS FRAMEWORK CAROUSEL            */
+/* ============================================== */
+const V_TipsCarousel = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const tips = (data.tips || "").split("\n").filter(Boolean);
+  const total = tips.length + 1; // Cover + Tips
+
+  const coverSlide = (
+    <div {...VFRAME} key="cover" style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Framework"} color={c.fg} />
+        <Asterisk size={64} color={c.accent} />
+      </div>
+      <div>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 800, fontSize: getDynamicFontSize(data.title || "5 Rules for High-Converting Proposals", 112, 34, 64), lineHeight: 0.98, letterSpacing: "-0.03em" }}>
+          {data.title || "5 Rules for High-Converting Proposals"}
+        </div>
+        <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: c.muted, lineHeight: 1.25 }}>
+          {data.subtitle || "Field notes from shipping freelance documents that win deals."}
+        </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1.5px solid ${c.borderColor}`, paddingTop: 32 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          Swipe to start →
+        </span>
+        <Wordmark brand={brand} />
+      </div>
+    </div>
+  );
+
+  const tipSlides = tips.map((tip, i) => {
+    const parts = tip.split("—");
+    const tipTitle = parts[0]?.trim() || `Tip ${i + 1}`;
+    const tipBody = parts.slice(1).join("—").trim() || "";
+
+    return (
+      <div {...VFRAME} key={`tip-${i}`} style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "inline-flex", padding: "8px 20px", background: c.tagBg, color: c.tagFg, borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, border: `1px solid ${c.cardBorder}` }}>
+            Rule {i + 1} of {tips.length}
+          </div>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, color: c.muted }}>
+            [ {String(i + 2).padStart(2, "0")} / {String(total).padStart(2, "0")} ]
+          </span>
+        </div>
+        <div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(tipTitle, 76, 26, 44), lineHeight: 1.06, letterSpacing: "-0.02em", marginBottom: 24 }}>
+            {tipTitle}
+          </div>
+          {tipBody && (
+            <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 44, lineHeight: 1.25, color: c.muted }}>
+              "{tipBody}"
+            </div>
+          )}
+        </div>
+        <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+      </div>
+    );
+  });
+
+  return [coverSlide, ...tipSlides];
+};
+
+/* ============================================== */
+/* 12. VERTICAL THREADS CAROUSEL                  */
+/* ============================================== */
+const V_ThreadCarousel = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const posts = (data.posts || "").split("\n---\n").filter(Boolean);
+  const total = posts.length;
+
+  return posts.map((post, i) => {
+    return (
+      <div {...VFRAME} key={`thread-${i}`} style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        {/* Author Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1.5px solid ${c.cardBorder}`, paddingBottom: 28 }}>
+          <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: c.accent, color: "#fff", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24 }}>
+              {((data.authorName || brand.studioName || "S")[0]).toUpperCase()}
+            </div>
+            <div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24, letterSpacing: "-0.01em" }}>
+                {data.authorName || brand.studioName || "Studio Lead"}
+              </div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, color: c.muted }}>
+                {data.authorHandle || brand.handle || "@studio"}
+              </div>
+            </div>
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, background: c.tagBg, color: c.tagFg, padding: "6px 16px", borderRadius: 999, border: `1px solid ${c.cardBorder}` }}>
+            {i + 1} / {total}
+          </div>
+        </div>
+
+        {/* Post Content */}
+        <div style={{ padding: "40px 0" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontSize: getDynamicFontSize(post.trim(), 56, 120, 36), lineHeight: 1.3, letterSpacing: "-0.01em", whiteSpace: "pre-line" }}>
+            {post.trim()}
+          </div>
+        </div>
+
+        {/* Engagement Strip */}
+        <div style={{ borderTop: `1.5px solid ${c.cardBorder}`, paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 28, fontFamily: "var(--font-mono)", fontSize: 16, color: c.muted }}>
+            <span>💬 {data.replies || "142"}</span>
+            <span>🔁 {data.reposts || "68"}</span>
+            <span>❤️ {data.likes || "1.4k"}</span>
+          </div>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            {i === total - 1 ? "Follow for more" : "Swipe →"}
+          </span>
+        </div>
+      </div>
+    );
+  });
+};
+
 const TikTokTemplates = [
   { id: "hottake", name: "Hot Take", kind: "Single", ...VERTICAL,
     slides: (p) => [<V_HotTake {...p} />],
@@ -603,6 +802,39 @@ const TikTokTemplates = [
       tI("image2", "Slide 2 — image (optional)"),
       tA("result", "Slide 3 — Result", { hint: "What was the measurable outcome?" }),
       tI("image3", "Slide 3 — image (optional)"),
+    ] },
+  { id: "v_story", name: "Vertical Story", kind: "Carousel", ...VERTICAL,
+    slides: (p) => V_StoryCarousel(p),
+    fields: [
+      tf("kicker", "Cover kicker", { placeholder: "Case Study" }),
+      tf("clientName", "Client / Author name", { placeholder: "Atlas & Bell" }),
+      tf("year", "Year", { placeholder: "2026" }),
+      tf("coverHeadline", "Cover headline", { placeholder: "How we doubled client close-rate in 60 days" }),
+      tA("slides", "Slides — 'Title — Detail', one per line", { hint: "Add 2–6 slides." }),
+      tf("metric", "Outro metric callout", { placeholder: "+240% Growth" }),
+      tf("outcome", "Outro outcome statement"),
+      tf("ctaText", "CTA button text", { placeholder: "Work with us →" }),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
+    ] },
+  { id: "v_tips", name: "Vertical Framework", kind: "Carousel", ...VERTICAL,
+    slides: (p) => V_TipsCarousel(p),
+    fields: [
+      tf("kicker", "Cover kicker", { placeholder: "Framework" }),
+      tf("title", "Framework title", { placeholder: "5 Rules for High-Converting Proposals" }),
+      tf("subtitle", "Cover subtitle"),
+      tA("tips", "Rules — 'Title — Description', one per line", { hint: "Add 3–7 rules." }),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
+    ] },
+  { id: "v_threads", name: "Threads Carousel", kind: "Carousel", ...VERTICAL,
+    slides: (p) => V_ThreadCarousel(p),
+    fields: [
+      tf("authorName", "Author name", { placeholder: "Studio Lead" }),
+      tf("authorHandle", "Author handle", { placeholder: "@studio" }),
+      tA("posts", "Posts (separate posts with '---')", { hint: "Separate each post slide with '---' on a new line." }),
+      tf("replies", "Replies count", { placeholder: "142" }),
+      tf("reposts", "Reposts count", { placeholder: "68" }),
+      tf("likes", "Likes count", { placeholder: "1.4k" }),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
     ] },
 ];
 

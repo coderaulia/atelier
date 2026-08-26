@@ -132,6 +132,119 @@ export function getDynamicFontSize(
   return Math.max(minSize, Math.round(baseSize * Math.pow(scale, 0.85)));
 }
 
+/* Theme options for template customization */
+export const THEME_OPTIONS = [
+  { value: "", label: "Cream (default)" },
+  { value: "ink", label: "Ink / Dark" },
+  { value: "blue", label: "Sapphire Blue" },
+  { value: "sage", label: "Sage / Matcha" },
+  { value: "mauve", label: "Lavender / Mauve" },
+  { value: "peach", label: "Peach / Rose" },
+];
+
+/* Centralized theme palette resolver */
+export function getThemeColors(theme?: string) {
+  const t = String(theme || "").toLowerCase().trim();
+  switch (t) {
+    case "ink":
+    case "dark":
+      return {
+        bg: "var(--vc-ink)",
+        fg: "var(--vc-cream)",
+        muted: "rgba(236,230,214,0.65)",
+        accent: "var(--vc-red)",
+        cardBg: "rgba(255,255,255,0.06)",
+        cardBorder: "rgba(255,255,255,0.14)",
+        borderColor: "rgba(236,230,214,0.18)",
+        ringBorder: "var(--vc-red)",
+        tagBg: "rgba(255,255,255,0.12)",
+        tagFg: "var(--vc-cream)",
+        btnBg: "var(--vc-red)",
+        btnFg: "#FFFFFF",
+      };
+    case "blue":
+    case "sapphire":
+      return {
+        bg: "#162B68", // Refined deep royal sapphire blue
+        fg: "#F8FAFC",
+        muted: "rgba(226,232,240,0.75)",
+        accent: "var(--vc-lime)",
+        cardBg: "rgba(255,255,255,0.08)",
+        cardBorder: "rgba(255,255,255,0.16)",
+        borderColor: "rgba(255,255,255,0.22)",
+        ringBorder: "var(--vc-lime)",
+        tagBg: "rgba(200,240,72,0.18)",
+        tagFg: "var(--vc-lime)",
+        btnBg: "var(--vc-lime)",
+        btnFg: "#0F172A",
+      };
+    case "sage":
+    case "matcha":
+      return {
+        bg: "#E8EFE9", // Soft pastel matcha/tea green (Catppuccin Green/Teal)
+        fg: "#1B382B", // Deep forest green ink
+        muted: "#526E60",
+        accent: "#2D6A4F",
+        cardBg: "#FFFFFF",
+        cardBorder: "rgba(27,56,43,0.12)",
+        borderColor: "rgba(27,56,43,0.16)",
+        ringBorder: "#2D6A4F",
+        tagBg: "rgba(45,106,79,0.12)",
+        tagFg: "#2D6A4F",
+        btnBg: "#2D6A4F",
+        btnFg: "#FFFFFF",
+      };
+    case "mauve":
+    case "lavender":
+      return {
+        bg: "#EFEBF6", // Soft aesthetic pastel lavender (Catppuccin Mauve)
+        fg: "#291B48", // Deep royal plum ink
+        muted: "#6B5D88",
+        accent: "#7C3AED",
+        cardBg: "#FFFFFF",
+        cardBorder: "rgba(41,27,72,0.12)",
+        borderColor: "rgba(41,27,72,0.16)",
+        ringBorder: "#7C3AED",
+        tagBg: "rgba(124,58,237,0.12)",
+        tagFg: "#7C3AED",
+        btnBg: "#7C3AED",
+        btnFg: "#FFFFFF",
+      };
+    case "peach":
+    case "rose":
+      return {
+        bg: "#FDF0EB", // Soft warm pastel peach/rose (Catppuccin Peach)
+        fg: "#3E1E17", // Deep espresso terracotta ink
+        muted: "#845A4F",
+        accent: "#D9381E",
+        cardBg: "#FFFFFF",
+        cardBorder: "rgba(62,30,23,0.12)",
+        borderColor: "rgba(62,30,23,0.16)",
+        ringBorder: "#D9381E",
+        tagBg: "rgba(217,56,30,0.12)",
+        tagFg: "#D9381E",
+        btnBg: "#D9381E",
+        btnFg: "#FFFFFF",
+      };
+    case "cream":
+    default:
+      return {
+        bg: "var(--vc-cream)",
+        fg: "var(--vc-ink)",
+        muted: "var(--vc-mute)",
+        accent: "var(--vc-red)",
+        cardBg: "#FFFFFF",
+        cardBorder: "rgba(14,14,14,0.1)",
+        borderColor: "rgba(14,14,14,0.15)",
+        ringBorder: "var(--vc-ink)",
+        tagBg: "rgba(14,14,14,0.06)",
+        tagFg: "var(--vc-ink)",
+        btnBg: "var(--vc-red)",
+        btnFg: "#FFFFFF",
+      };
+  }
+}
+
 /* ============================================== */
 /* 1. PULL QUOTE (single)                          */
 /* ============================================== */
@@ -898,6 +1011,171 @@ const T_WeeklyDigest = ({ data, brand }) => {
 };
 
 /* ============================================== */
+/* 16B. NEWS HERO PHOTO (News)                     */
+/* ============================================== */
+const T_NewsHero = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const headline = data.headline || "Freelance studios win 75% of new tech branding briefs";
+  const headSize = getDynamicFontSize(headline, 56, 32, 40);
+
+  return (
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "56px 64px", display: "grid", gridTemplateRows: "auto 1fr auto auto", gap: 20 }}>
+      {/* Top Bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+          <span style={{ background: c.accent, color: "#fff", padding: "4px 14px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700 }}>
+            {data.category || "Report"}
+          </span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: c.muted, letterSpacing: "0.1em" }}>
+            {data.date || "May 2026"}
+          </span>
+        </div>
+        <Asterisk size={40} color={c.accent} />
+      </div>
+
+      {/* Featured Photo Frame */}
+      <div style={{ width: "100%", height: 420, borderRadius: 20, overflow: "hidden", border: `1.5px solid ${c.cardBorder}`, background: "#222", position: "relative", boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
+        {data.image
+          ? <img src={data.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          : <PhotoSlot label="Featured Photo" style={{ width: "100%", height: "100%" }} />
+        }
+        {data.tag && (
+          <div style={{ position: "absolute", bottom: 16, left: 16, background: "rgba(14,14,14,0.85)", color: "#fff", padding: "6px 16px", borderRadius: 8, fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+            {data.tag}
+          </div>
+        )}
+      </div>
+
+      {/* Headline & Synopsis */}
+      <div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headSize, lineHeight: 1.06, letterSpacing: "-0.015em" }}>
+          {headline}
+        </div>
+        {data.synopsis && (
+          <div style={{ marginTop: 10, fontFamily: "var(--font-helvetica)", fontSize: 20, lineHeight: 1.35, color: c.muted }}>
+            {data.synopsis}
+          </div>
+        )}
+      </div>
+
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 16C. NEWS SPLIT 50/50 (News)                    */
+/* ============================================== */
+const T_NewsSplit = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const headline = data.headline || "The shift towards asynchronous studio retainers";
+  const headSize = getDynamicFontSize(headline, 52, 28, 36);
+  const takeaways = (data.takeaways || "54% increase in retainer proposals year-on-year\nClient demand shifts from agency teams to solo experts\nAverage contract size up 35% in Q2").split("\n").filter(Boolean).slice(0, 3);
+
+  return (
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: 0, display: "grid", gridTemplateColumns: "1fr 1.15fr" }}>
+      {/* Left Column: Photo */}
+      <div style={{ height: "100%", position: "relative", overflow: "hidden", background: "#222" }}>
+        {data.image
+          ? <img src={data.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          : <PhotoSlot label="News Portrait / Press" style={{ width: "100%", height: "100%" }} />
+        }
+        <div style={{ position: "absolute", top: 32, left: 32, background: c.accent, color: "#fff", padding: "6px 16px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700 }}>
+          {data.category || "Press"}
+        </div>
+      </div>
+
+      {/* Right Column: Editorial Copy */}
+      <div style={{ padding: "56px 60px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+            <VLabel text={data.kicker || "Industry Dispatch"} color={c.fg} />
+            <Asterisk size={36} color={c.accent} />
+          </div>
+
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headSize, lineHeight: 1.05, letterSpacing: "-0.015em", marginBottom: 20 }}>
+            {headline}
+          </div>
+
+          <div style={{ borderTop: `1px solid ${c.cardBorder}`, paddingTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted }}>
+              Key Takeaways
+            </div>
+            {takeaways.map((t, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 16, lineHeight: 1.35, fontFamily: "var(--font-sans)" }}>
+                <span style={{ color: c.accent, fontWeight: 700 }}>•</span>
+                <span>{t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 16D. NEWS INTERVIEW SPOTLIGHT (News)            */
+/* ============================================== */
+const T_NewsInterview = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const quote = data.quote || "The studios that win in 2026 are the ones that treat documents as brand assets, not paperwork.";
+  const quoteSize = getDynamicFontSize(quote, 54, 40, 36);
+
+  return (
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "64px 72px", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <span style={{ background: c.tagBg, color: c.tagFg, padding: "4px 14px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, border: `1px solid ${c.cardBorder}` }}>
+            {data.kicker || "Founder Spotlight"}
+          </span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: c.muted }}>
+            {data.publication || "Issue No. 12"}
+          </span>
+        </div>
+        <Asterisk size={42} color={c.accent} />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 36, alignItems: "center" }}>
+        {/* Portrait Circle */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+          <div style={{ width: 220, height: 220, borderRadius: "50%", padding: 6, border: `2.5px solid ${c.ringBorder}`, overflow: "hidden", marginBottom: 16, boxShadow: "0 12px 28px rgba(0,0,0,0.1)" }}>
+            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#222" }}>
+              {data.image
+                ? <img src={data.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                : <PhotoSlot label="Portrait" style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
+              }
+            </div>
+          </div>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 22, letterSpacing: "-0.01em" }}>
+            {data.speaker || "Marcus Bell"}
+          </div>
+          <div style={{ marginTop: 4, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.1em", textTransform: "uppercase", color: c.accent, fontWeight: 700 }}>
+            {data.title || "Managing Partner"}
+          </div>
+        </div>
+
+        {/* Pull Quote Box */}
+        <div style={{ borderLeft: `3px solid ${c.accent}`, paddingLeft: 32 }}>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: quoteSize, lineHeight: 1.15, letterSpacing: "-0.01em", color: c.fg }}>
+            "{quote}"
+          </div>
+          {data.context && (
+            <div style={{ marginTop: 16, fontFamily: "var(--font-mono)", fontSize: 14, color: c.muted, letterSpacing: "0.08em" }}>
+              — {data.context}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+    </div>
+  );
+};
+
+/* ============================================== */
 /* 17. PHOTO POST (Photo)                          */
 /* ============================================== */
 const T_PhotoPost = ({ data, brand }) => (
@@ -956,13 +1234,7 @@ const T_WorkShowcase = ({ data, brand }) => (
 /* 18B. TEAM ONBOARD · 1 MEMBER (Photo)           */
 /* ============================================== */
 const T_Team1 = ({ data, brand }) => {
-  const theme = data.bg || "";
-  const isInk = theme === "ink";
-  const isBlue = theme === "blue";
-  const bg = isInk ? "var(--vc-ink)" : isBlue ? "var(--vc-blue)" : "var(--vc-cream)";
-  const fg = (isInk || isBlue) ? "var(--vc-cream)" : "var(--vc-ink)";
-  const muted = (isInk || isBlue) ? "rgba(236,230,214,0.6)" : "var(--vc-mute)";
-  const ringBorder = isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-ink)";
+  const c = getThemeColors(data.bg);
   const name = data.name || "Elena Rostova";
   const nameSize = getDynamicFontSize(name, 84, 15, 52);
   const position = data.position || "Lead Brand Designer";
@@ -971,11 +1243,11 @@ const T_Team1 = ({ data, brand }) => {
   const badgeSize = getDynamicFontSize(badge, 13, 14, 10);
 
   return (
-    <div className="social-frame" style={{ background: bg, color: fg, padding: "72px 80px", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 32 }}>
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "72px 80px", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 32 }}>
       {/* Top Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <VLabel text={data.kicker || "Welcome to the Team"} color={fg} />
-        <Asterisk size={48} color={isBlue ? "var(--vc-lime)" : "var(--vc-red)"} />
+        <VLabel text={data.kicker || "Welcome to the Team"} color={c.fg} />
+        <Asterisk size={48} color={c.accent} />
       </div>
 
       {/* Main Content: Avatar Frame + Info */}
@@ -983,12 +1255,12 @@ const T_Team1 = ({ data, brand }) => {
         {/* Circle Photo Frame */}
         <div style={{
           width: 380, height: 380, borderRadius: "50%",
-          padding: 8, border: `3px solid ${ringBorder}`,
+          padding: 8, border: `3px solid ${c.ringBorder}`,
           position: "relative", marginBottom: 36,
-          boxShadow: isInk ? "0 20px 50px rgba(0,0,0,0.5)" : "0 20px 50px rgba(0,0,0,0.12)",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.14)",
           flexShrink: 0
         }}>
-          <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#e5e0d3" }}>
+          <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#222" }}>
             {data.image
               ? <img src={data.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               : <PhotoSlot label="Drop portrait" style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
@@ -998,7 +1270,7 @@ const T_Team1 = ({ data, brand }) => {
           {badge && badge.trim() && (
             <div style={{
               position: "absolute", bottom: -10, left: "50%", transform: "translateX(-50%)",
-              background: ringBorder, color: isBlue ? "var(--vc-ink)" : "#fff",
+              background: c.ringBorder, color: c.bg.includes("blue") ? "#0F172A" : "#fff",
               padding: "6px 20px", borderRadius: 999, fontFamily: "var(--font-mono)",
               fontSize: badgeSize, letterSpacing: "0.14em", textTransform: "uppercase",
               fontWeight: 700, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(0,0,0,0.18)"
@@ -1014,25 +1286,25 @@ const T_Team1 = ({ data, brand }) => {
         </div>
 
         {/* Position & Department */}
-        <div style={{ marginTop: 12, fontFamily: "var(--font-mono)", fontSize: posSize, letterSpacing: "0.12em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-red)", fontWeight: 700 }}>
+        <div style={{ marginTop: 12, fontFamily: "var(--font-mono)", fontSize: posSize, letterSpacing: "0.12em", textTransform: "uppercase", color: c.accent, fontWeight: 700 }}>
           {position}
         </div>
 
         {data.department && (
-          <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.1em", textTransform: "uppercase", color: muted }}>
+          <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted }}>
             {data.department}
           </div>
         )}
 
         {data.bio && (
-          <div style={{ marginTop: 18, fontFamily: "var(--font-helvetica)", fontSize: 24, lineHeight: 1.35, color: muted, maxWidth: 680 }}>
+          <div style={{ marginTop: 18, fontFamily: "var(--font-helvetica)", fontSize: 24, lineHeight: 1.35, color: c.muted, maxWidth: 680 }}>
             "{data.bio}"
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <VFooter brand={brand} color={fg} borderColor={isInk ? "rgba(236,230,214,0.18)" : isBlue ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.15)"} />
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
     </div>
   );
 };
@@ -1041,21 +1313,16 @@ const T_Team1 = ({ data, brand }) => {
 /* 18C. TEAM ONBOARD · 2 MEMBERS / DUO (Photo)    */
 /* ============================================== */
 const T_Team2 = ({ data, brand }) => {
-  const theme = data.bg || "";
-  const isInk = theme === "ink";
-  const isBlue = theme === "blue";
-  const bg = isInk ? "var(--vc-ink)" : isBlue ? "var(--vc-blue)" : "var(--vc-cream)";
-  const fg = (isInk || isBlue) ? "var(--vc-cream)" : "var(--vc-ink)";
-  const ringBorder = isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-ink)";
+  const c = getThemeColors(data.bg);
   const headline = data.headline || "Welcoming our new team members";
   const headSize = getDynamicFontSize(headline, 56, 32, 40);
 
   return (
-    <div className="social-frame" style={{ background: bg, color: fg, padding: "64px 72px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 24 }}>
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "64px 72px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 24 }}>
       {/* Top Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <VLabel text={data.kicker || "New Joiners"} color={fg} />
-        <Asterisk size={44} color={isBlue ? "var(--vc-lime)" : "var(--vc-red)"} />
+        <VLabel text={data.kicker || "New Joiners"} color={c.fg} />
+        <Asterisk size={44} color={c.accent} />
       </div>
 
       {/* Header Statement */}
@@ -1069,16 +1336,16 @@ const T_Team2 = ({ data, brand }) => {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 36, alignItems: "center" }}>
         {/* Person 1 */}
         <div style={{
-          background: isInk ? "rgba(255,255,255,0.05)" : isBlue ? "rgba(255,255,255,0.08)" : "#fff",
-          border: `1.5px solid ${isInk ? "rgba(255,255,255,0.12)" : isBlue ? "rgba(255,255,255,0.15)" : "rgba(14,14,14,0.1)"}`,
+          background: c.cardBg,
+          border: `1.5px solid ${c.cardBorder}`,
           borderRadius: 28, padding: "36px 28px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
           boxShadow: "0 12px 32px rgba(0,0,0,0.08)"
         }}>
           <div style={{
             width: 240, height: 240, borderRadius: "50%", padding: 6,
-            border: `2.5px solid ${ringBorder}`, overflow: "hidden", marginBottom: 22, flexShrink: 0
+            border: `2.5px solid ${c.ringBorder}`, overflow: "hidden", marginBottom: 22, flexShrink: 0
           }}>
-            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#eae5d8" }}>
+            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#222" }}>
               {data.image1
                 ? <img src={data.image1} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 : <PhotoSlot label="Photo 1" style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
@@ -1088,23 +1355,23 @@ const T_Team2 = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(data.name1 || "Marcus Vance", 42, 14, 28), lineHeight: 1.1 }}>
             {data.name1 || "Marcus Vance"}
           </div>
-          <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(data.position1 || "Creative Director", 16, 20, 13), letterSpacing: "0.12em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : "var(--vc-red)", fontWeight: 700 }}>
+          <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(data.position1 || "Creative Director", 16, 20, 13), letterSpacing: "0.12em", textTransform: "uppercase", color: c.accent, fontWeight: 700 }}>
             {data.position1 || "Creative Director"}
           </div>
         </div>
 
         {/* Person 2 */}
         <div style={{
-          background: isInk ? "rgba(255,255,255,0.05)" : isBlue ? "rgba(255,255,255,0.08)" : "#fff",
-          border: `1.5px solid ${isInk ? "rgba(255,255,255,0.12)" : isBlue ? "rgba(255,255,255,0.15)" : "rgba(14,14,14,0.1)"}`,
+          background: c.cardBg,
+          border: `1.5px solid ${c.cardBorder}`,
           borderRadius: 28, padding: "36px 28px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
           boxShadow: "0 12px 32px rgba(0,0,0,0.08)"
         }}>
           <div style={{
             width: 240, height: 240, borderRadius: "50%", padding: 6,
-            border: `2.5px solid ${ringBorder}`, overflow: "hidden", marginBottom: 22, flexShrink: 0
+            border: `2.5px solid ${c.ringBorder}`, overflow: "hidden", marginBottom: 22, flexShrink: 0
           }}>
-            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#eae5d8" }}>
+            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#222" }}>
               {data.image2
                 ? <img src={data.image2} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 : <PhotoSlot label="Photo 2" style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
@@ -1114,14 +1381,14 @@ const T_Team2 = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(data.name2 || "Aria Chen", 42, 14, 28), lineHeight: 1.1 }}>
             {data.name2 || "Aria Chen"}
           </div>
-          <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(data.position2 || "Senior Engineer", 16, 20, 13), letterSpacing: "0.12em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : "var(--vc-red)", fontWeight: 700 }}>
+          <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(data.position2 || "Senior Engineer", 16, 20, 13), letterSpacing: "0.12em", textTransform: "uppercase", color: c.accent, fontWeight: 700 }}>
             {data.position2 || "Senior Engineer"}
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <VFooter brand={brand} color={fg} borderColor={isInk ? "rgba(236,230,214,0.18)" : isBlue ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.15)"} />
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
     </div>
   );
 };
@@ -1130,12 +1397,7 @@ const T_Team2 = ({ data, brand }) => {
 /* 18D. TEAM ONBOARD · 3 MEMBERS / TRIO (Photo)   */
 /* ============================================== */
 const T_Team3 = ({ data, brand }) => {
-  const theme = data.bg || "";
-  const isInk = theme === "ink";
-  const isBlue = theme === "blue";
-  const bg = isInk ? "var(--vc-ink)" : isBlue ? "var(--vc-blue)" : "var(--vc-cream)";
-  const fg = (isInk || isBlue) ? "var(--vc-cream)" : "var(--vc-ink)";
-  const ringBorder = isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-ink)";
+  const c = getThemeColors(data.bg);
   const headline = data.headline || "Meet the new faces at the studio";
   const headSize = getDynamicFontSize(headline, 56, 32, 40);
 
@@ -1146,11 +1408,11 @@ const T_Team3 = ({ data, brand }) => {
   ];
 
   return (
-    <div className="social-frame" style={{ background: bg, color: fg, padding: "64px 68px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 24 }}>
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "64px 68px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 24 }}>
       {/* Top Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <VLabel text={data.kicker || "Meet the Crew"} color={fg} />
-        <Asterisk size={44} color={isBlue ? "var(--vc-lime)" : "var(--vc-red)"} />
+        <VLabel text={data.kicker || "Meet the Crew"} color={c.fg} />
+        <Asterisk size={44} color={c.accent} />
       </div>
 
       {/* Header Statement */}
@@ -1164,16 +1426,16 @@ const T_Team3 = ({ data, brand }) => {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, alignItems: "stretch" }}>
         {members.map((m, idx) => (
           <div key={idx} style={{
-            background: isInk ? "rgba(255,255,255,0.05)" : isBlue ? "rgba(255,255,255,0.08)" : "#fff",
-            border: `1.5px solid ${isInk ? "rgba(255,255,255,0.12)" : isBlue ? "rgba(255,255,255,0.15)" : "rgba(14,14,14,0.1)"}`,
+            background: c.cardBg,
+            border: `1.5px solid ${c.cardBorder}`,
             borderRadius: 24, padding: "28px 18px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
             boxShadow: "0 10px 28px rgba(0,0,0,0.06)", justifyContent: "space-between"
           }}>
             <div style={{
               width: 190, height: 190, borderRadius: "50%", padding: 5,
-              border: `2px solid ${ringBorder}`, overflow: "hidden", marginBottom: 18, flexShrink: 0
+              border: `2px solid ${c.ringBorder}`, overflow: "hidden", marginBottom: 18, flexShrink: 0
             }}>
-              <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#eae5d8" }}>
+              <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#222" }}>
                 {m.image
                   ? <img src={m.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   : <PhotoSlot label={m.defaultSlot} style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
@@ -1184,7 +1446,7 @@ const T_Team3 = ({ data, brand }) => {
               <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(m.name, 34, 12, 24), lineHeight: 1.15 }}>
                 {m.name}
               </div>
-              <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(m.position, 14, 18, 11), letterSpacing: "0.1em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : "var(--vc-red)", fontWeight: 700 }}>
+              <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(m.position, 14, 18, 11), letterSpacing: "0.1em", textTransform: "uppercase", color: c.accent, fontWeight: 700 }}>
                 {m.position}
               </div>
             </div>
@@ -1193,7 +1455,7 @@ const T_Team3 = ({ data, brand }) => {
       </div>
 
       {/* Footer */}
-      <VFooter brand={brand} color={fg} borderColor={isInk ? "rgba(236,230,214,0.18)" : isBlue ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.15)"} />
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
     </div>
   );
 };
@@ -1202,12 +1464,7 @@ const T_Team3 = ({ data, brand }) => {
 /* 18E. TEAM ONBOARD · 4 MEMBERS / QUAD (Photo)   */
 /* ============================================== */
 const T_Team4 = ({ data, brand }) => {
-  const theme = data.bg || "";
-  const isInk = theme === "ink";
-  const isBlue = theme === "blue";
-  const bg = isInk ? "var(--vc-ink)" : isBlue ? "var(--vc-blue)" : "var(--vc-cream)";
-  const fg = (isInk || isBlue) ? "var(--vc-cream)" : "var(--vc-ink)";
-  const ringBorder = isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-ink)";
+  const c = getThemeColors(data.bg);
   const headline = data.headline || "Welcoming 4 new team members";
   const headSize = getDynamicFontSize(headline, 52, 34, 38);
 
@@ -1219,11 +1476,11 @@ const T_Team4 = ({ data, brand }) => {
   ];
 
   return (
-    <div className="social-frame" style={{ background: bg, color: fg, padding: "56px 64px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 20 }}>
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "56px 64px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 20 }}>
       {/* Top Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <VLabel text={data.kicker || "Team Expansion"} color={fg} />
-        <Asterisk size={40} color={isBlue ? "var(--vc-lime)" : "var(--vc-red)"} />
+        <VLabel text={data.kicker || "Team Expansion"} color={c.fg} />
+        <Asterisk size={40} color={c.accent} />
       </div>
 
       {/* Header Statement */}
@@ -1237,16 +1494,16 @@ const T_Team4 = ({ data, brand }) => {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 20, alignItems: "stretch" }}>
         {members.map((m, idx) => (
           <div key={idx} style={{
-            background: isInk ? "rgba(255,255,255,0.05)" : isBlue ? "rgba(255,255,255,0.08)" : "#fff",
-            border: `1.5px solid ${isInk ? "rgba(255,255,255,0.12)" : isBlue ? "rgba(255,255,255,0.15)" : "rgba(14,14,14,0.1)"}`,
+            background: c.cardBg,
+            border: `1.5px solid ${c.cardBorder}`,
             borderRadius: 22, padding: "20px 24px", display: "flex", alignItems: "center", gap: 22,
             boxShadow: "0 8px 24px rgba(0,0,0,0.06)"
           }}>
             <div style={{
               width: 140, height: 140, borderRadius: "50%", padding: 4,
-              border: `2px solid ${ringBorder}`, overflow: "hidden", flexShrink: 0
+              border: `2px solid ${c.ringBorder}`, overflow: "hidden", flexShrink: 0
             }}>
-              <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#eae5d8" }}>
+              <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#222" }}>
                 {m.image
                   ? <img src={m.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   : <PhotoSlot label={m.slot} style={{ width: "100%", height: "100%", borderRadius: "50%", fontSize: 11 }} />
@@ -1257,7 +1514,7 @@ const T_Team4 = ({ data, brand }) => {
               <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(m.name, 32, 14, 22), lineHeight: 1.15, wordBreak: "break-word" }}>
                 {m.name}
               </div>
-              <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(m.position, 14, 18, 11), letterSpacing: "0.1em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : "var(--vc-red)", fontWeight: 700, wordBreak: "break-word" }}>
+              <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(m.position, 14, 18, 11), letterSpacing: "0.1em", textTransform: "uppercase", color: c.accent, fontWeight: 700, wordBreak: "break-word" }}>
                 {m.position}
               </div>
             </div>
@@ -1266,7 +1523,7 @@ const T_Team4 = ({ data, brand }) => {
       </div>
 
       {/* Footer */}
-      <VFooter brand={brand} color={fg} borderColor={isInk ? "rgba(236,230,214,0.18)" : isBlue ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.15)"} />
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
     </div>
   );
 };
@@ -1426,6 +1683,237 @@ const T_PricingEditorial = ({ data, brand }) => {
         </span>
         <ArrowOut size={60} color={fg} />
       </div>
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 19B. PRICING 3-TIER COMPARISON (Pricing)       */
+/* ============================================== */
+const T_Pricing3Tier = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const headline = data.headline || "Transparent packages for every project stage";
+  const headSize = getDynamicFontSize(headline, 48, 36, 34);
+
+  const tiers = [
+    {
+      name: data.tier1Name || "Starter",
+      price: data.tier1Price || "$1,200",
+      desc: data.tier1Desc || "Essential brand basics",
+      features: (data.tier1Features || "Logo & mark\nColor palette\nType system\n1 Revision round").split("\n").filter(Boolean).slice(0, 4),
+      popular: false,
+    },
+    {
+      name: data.tier2Name || "Pro Package",
+      price: data.tier2Price || "$3,500",
+      desc: data.tier2Desc || "Full identity & system",
+      features: (data.tier2Features || "Complete brand identity\n32-Page design system\nDocument templates\n3 Revision rounds\nSource files included").split("\n").filter(Boolean).slice(0, 5),
+      popular: true,
+    },
+    {
+      name: data.tier3Name || "Partner",
+      price: data.tier3Price || "$6,000",
+      desc: data.tier3Desc || "Custom end-to-end",
+      features: (data.tier3Features || "Strategy & positioning\nFull multi-platform kit\nOngoing advisory\nPriority 48h turnaround\nDirect Slack access").split("\n").filter(Boolean).slice(0, 5),
+      popular: false,
+    },
+  ];
+
+  return (
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "56px 64px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 22 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Investment & Plans"} color={c.fg} />
+        <Asterisk size={42} color={c.accent} />
+      </div>
+
+      <div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headSize, lineHeight: 1.05, letterSpacing: "-0.01em" }}>
+          {headline}
+        </div>
+      </div>
+
+      {/* 3 Tier Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, alignItems: "stretch" }}>
+        {tiers.map((t, idx) => {
+          const isPop = t.popular;
+          return (
+            <div key={idx} style={{
+              background: isPop ? (c.bg.includes("ink") ? "rgba(255,255,255,0.12)" : c.cardBg) : (c.bg.includes("ink") ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.6)"),
+              border: isPop ? `2px solid ${c.accent}` : `1.5px solid ${c.cardBorder}`,
+              borderRadius: 22, padding: "26px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between",
+              position: "relative", boxShadow: isPop ? "0 14px 36px rgba(0,0,0,0.1)" : "0 6px 18px rgba(0,0,0,0.04)"
+            }}>
+              {isPop && (
+                <div style={{
+                  position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)",
+                  background: c.accent, color: "#fff", padding: "4px 14px", borderRadius: 999,
+                  fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap"
+                }}>
+                  Most Popular
+                </div>
+              )}
+              <div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: isPop ? c.accent : c.muted, fontWeight: 700 }}>
+                  {t.name}
+                </div>
+                <div style={{ marginTop: 8, fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(t.price, 44, 7, 30), lineHeight: 1, letterSpacing: "-0.02em" }}>
+                  {t.price}
+                </div>
+                <div style={{ marginTop: 4, fontFamily: "var(--font-helvetica)", fontSize: 13, color: c.muted, minHeight: 18 }}>
+                  {t.desc}
+                </div>
+                <div style={{ marginTop: 16, borderTop: `1px solid ${c.cardBorder}`, paddingTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                  {t.features.map((f, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, lineHeight: 1.3, fontFamily: "var(--font-sans)" }}>
+                      <span style={{ color: c.accent, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{
+                marginTop: 20, textAlign: "center", padding: "10px 14px", borderRadius: 999,
+                background: isPop ? c.btnBg : "transparent", color: isPop ? c.btnFg : c.fg,
+                border: isPop ? "none" : `1.5px solid ${c.cardBorder}`,
+                fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 700
+              }}>
+                Select {t.name}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 19C. PRICING MONTHLY RETAINER (Pricing)        */
+/* ============================================== */
+const T_PricingRetainer = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const rate = data.rate || "$4,500";
+  const rateSize = getDynamicFontSize(rate, 116, 7, 68);
+  const items = (data.deliverables || "Dedicated private Slack channel\n48-Hour average turnaround on briefs\nUnlimited request queue (1 active at a time)\nDesign systems, decks & client docs\nPause or cancel anytime").split("\n").filter(Boolean).slice(0, 5);
+
+  return (
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "64px 72px", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 28 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Studio Retainer"} color={c.fg} />
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: c.tagBg, color: c.tagFg, padding: "6px 16px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, border: `1px solid ${c.cardBorder}` }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.accent, display: "inline-block" }} />
+          {data.availability || "2 Spots Available for Q3"}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 36, alignItems: "center" }}>
+        <div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
+            {data.packageName || "Dedicated Design Partner"}
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+            <span style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: rateSize, lineHeight: 0.9, letterSpacing: "-0.03em" }}>
+              {rate}
+            </span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, color: c.muted, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              / month
+            </span>
+          </div>
+          <div style={{ marginTop: 22, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 26, lineHeight: 1.25, color: c.fg }}>
+            {data.tagline || "Senior-level design bandwidth without the agency overhead."}
+          </div>
+          <div style={{ marginTop: 28 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: c.btnBg, color: c.btnFg, padding: "18px 32px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
+              {data.ctaText || "Inquire via DM →"}
+            </div>
+          </div>
+        </div>
+
+        {/* Deliverables Card */}
+        <div style={{
+          background: c.cardBg, border: `1.5px solid ${c.cardBorder}`, borderRadius: 24, padding: "32px 28px",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.08)", display: "flex", flexDirection: "column", gap: 14
+        }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", color: c.accent, fontWeight: 700, marginBottom: 4 }}>
+            Included in Retainer
+          </div>
+          {items.map((it, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontFamily: "var(--font-sans)", fontSize: 16, lineHeight: 1.35 }}>
+              <span style={{ color: c.accent, fontWeight: 700, flexShrink: 0 }}>✓</span>
+              <span>{it}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 19D. PRICING FIXED AUDIT / SPRINT (Pricing)    */
+/* ============================================== */
+const T_PricingAudit = ({ data, brand }) => {
+  const c = getThemeColors(data.bg);
+  const headline = data.headline || "Proposal & Document Teardown";
+  const headSize = getDynamicFontSize(headline, 56, 28, 38);
+  const price = data.price || "$1,800";
+  const items = (data.deliverables || "24-Page comprehensive teardown report\nRewrite of proposal narrative & pricing table\nCustom production-ready Figma/Doc template\n60-Minute live strategy & review session").split("\n").filter(Boolean).slice(0, 4);
+
+  return (
+    <div className="social-frame" style={{ background: c.bg, color: c.fg, padding: "64px 72px", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 28 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Fixed-Scope Sprint"} color={c.fg} />
+        <div style={{ display: "inline-flex", padding: "6px 18px", border: `1.5px solid ${c.fg}`, borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+          {data.duration || "2-Week Turnaround"}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headSize, lineHeight: 1.05, letterSpacing: "-0.015em", marginBottom: 24 }}>
+          {headline}
+        </div>
+
+        <div style={{
+          background: c.cardBg, border: `1.5px solid ${c.cardBorder}`, borderRadius: 24, padding: "32px 36px",
+          display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 32, alignItems: "center",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.06)"
+        }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 12 }}>
+              What You Receive
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {items.map((item, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 15, lineHeight: 1.35 }}>
+                  <span style={{ color: c.accent, fontWeight: 700 }}>→</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ borderLeft: `1px solid ${c.cardBorder}`, paddingLeft: 32, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: c.muted }}>
+              Flat Investment
+            </div>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 64, lineHeight: 1, letterSpacing: "-0.02em", color: c.accent, marginTop: 8 }}>
+              {price}
+            </div>
+            <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 12, color: c.muted, textTransform: "uppercase" }}>
+              One-time · 100% money-back guarantee
+            </div>
+            <div style={{ marginTop: 20, width: "100%", padding: "14px 20px", background: c.btnBg, color: c.btnFg, borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, textAlign: "center" }}>
+              {data.ctaText || "Book Sprint →"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
     </div>
   );
 };
@@ -2069,6 +2557,39 @@ const SocialTemplates = [
       f("topic", "Topic", { placeholder: "Design" }),
       fA("items", "Items (one per line)", { hint: "3–5 items works best." }),
     ] },
+  { id: "newshero",    name: "News Hero Photo",     kind: "News",
+    slides: (p) => [<T_NewsHero {...p} />],
+    fields: [
+      f("category", "Category pill", { placeholder: "Report" }),
+      f("date", "Date label", { placeholder: "May 2026" }),
+      { key: "image", label: "Featured Photo", type: "image" },
+      f("tag", "Photo overlay tag (optional)", { placeholder: "Exclusive" }),
+      f("headline", "News headline", { placeholder: "Freelance studios win 75% of new tech branding briefs" }),
+      fA("synopsis", "Editorial synopsis / summary"),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
+    ] },
+  { id: "newssplit",   name: "News Split 50/50",    kind: "News",
+    slides: (p) => [<T_NewsSplit {...p} />],
+    fields: [
+      f("category", "Category pill", { placeholder: "Press" }),
+      { key: "image", label: "Portrait Photo", type: "image" },
+      f("kicker", "Kicker label", { placeholder: "Industry Dispatch" }),
+      f("headline", "Headline", { placeholder: "The shift towards asynchronous studio retainers" }),
+      fA("takeaways", "Key takeaways (one per line, up to 3)"),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
+    ] },
+  { id: "newsinterview", name: "News Spotlight",   kind: "News",
+    slides: (p) => [<T_NewsInterview {...p} />],
+    fields: [
+      f("kicker", "Kicker pill", { placeholder: "Founder Spotlight" }),
+      f("publication", "Publication / Issue tag", { placeholder: "Issue No. 12" }),
+      { key: "image", label: "Portrait Photo", type: "image" },
+      f("speaker", "Speaker Name", { placeholder: "Marcus Bell" }),
+      f("title", "Speaker Title", { placeholder: "Managing Partner" }),
+      fA("quote", "Pull quote statement"),
+      f("context", "Quote source / context", { placeholder: "On the future of document design" }),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
+    ] },
 
   /* --- Photo --- */
   { id: "photopost",   name: "Photo Post",          kind: "Photo",
@@ -2097,7 +2618,7 @@ const SocialTemplates = [
       f("position", "Position / Role", { placeholder: "Lead Brand Designer" }),
       f("department", "Department / Location (optional)", { placeholder: "Brand Studio · London" }),
       fA("bio", "Short Welcome Note (optional)", { placeholder: "Joining our studio to lead brand identity and digital design systems." }),
-      { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
     ] },
   { id: "team2",       name: "Team Onboard · Duo",    kind: "Photo",
     slides: (p) => [<T_Team2 {...p} />],
@@ -2110,7 +2631,7 @@ const SocialTemplates = [
       { key: "image2", label: "Member 2 Photo", type: "image" },
       f("name2", "Member 2 Name", { placeholder: "Aria Chen" }),
       f("position2", "Member 2 Position", { placeholder: "Senior Engineer" }),
-      { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
     ] },
   { id: "team3",       name: "Team Onboard · Trio",   kind: "Photo",
     slides: (p) => [<T_Team3 {...p} />],
@@ -2126,7 +2647,7 @@ const SocialTemplates = [
       { key: "image3", label: "Member 3 Photo", type: "image" },
       f("name3", "Member 3 Name", { placeholder: "Maya Patel" }),
       f("position3", "Member 3 Position", { placeholder: "Product Strategist" }),
-      { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
     ] },
   { id: "team4",       name: "Team Onboard · Quad",   kind: "Photo",
     slides: (p) => [<T_Team4 {...p} />],
@@ -2145,7 +2666,7 @@ const SocialTemplates = [
       { key: "image4", label: "Member 4 Photo", type: "image" },
       f("name4", "Member 4 Name", { placeholder: "Sophia Ray" }),
       f("position4", "Member 4 Position", { placeholder: "Product Strategist" }),
-      { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
     ] },
 
   /* --- Pricing --- */
@@ -2157,7 +2678,49 @@ const SocialTemplates = [
       { key: "currency", label: "Currency", type: "select", options: [{ value: "USD", label: "USD ($)" }, { value: "IDR", label: "IDR (Rp)" }, { value: "EUR", label: "EUR (€)" }, { value: "GBP", label: "GBP (£)" }] },
       fA("features", "Features (one per line, 4–6 lines)"),
       f("ctaText", "CTA text", { placeholder: "DM to get started →" }),
-      { key: "bg", label: "Background", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "accent", label: "Accent color" }] },
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
+    ] },
+  { id: "pricing3tier", name: "Pricing 3-Tier Grid", kind: "Pricing",
+    slides: (p) => [<T_Pricing3Tier {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Investment & Plans" }),
+      f("headline", "Headline", { placeholder: "Transparent packages for every project stage" }),
+      f("tier1Name", "Tier 1 Name", { placeholder: "Starter" }),
+      f("tier1Price", "Tier 1 Price", { placeholder: "$1,200" }),
+      f("tier1Desc", "Tier 1 Subtitle", { placeholder: "Essential brand basics" }),
+      fA("tier1Features", "Tier 1 Features (one per line, up to 4)"),
+      f("tier2Name", "Tier 2 Name (Popular)", { placeholder: "Pro Package" }),
+      f("tier2Price", "Tier 2 Price", { placeholder: "$3,500" }),
+      f("tier2Desc", "Tier 2 Subtitle", { placeholder: "Full identity & system" }),
+      fA("tier2Features", "Tier 2 Features (one per line, up to 5)"),
+      f("tier3Name", "Tier 3 Name", { placeholder: "Partner" }),
+      f("tier3Price", "Tier 3 Price", { placeholder: "$6,000" }),
+      f("tier3Desc", "Tier 3 Subtitle", { placeholder: "Custom end-to-end" }),
+      fA("tier3Features", "Tier 3 Features (one per line, up to 5)"),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
+    ] },
+  { id: "pricingretainer", name: "Pricing Retainer", kind: "Pricing",
+    slides: (p) => [<T_PricingRetainer {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Studio Retainer" }),
+      f("availability", "Availability badge", { placeholder: "2 Spots Available for Q3" }),
+      f("packageName", "Package name", { placeholder: "Dedicated Design Partner" }),
+      f("rate", "Monthly rate", { placeholder: "$4,500" }),
+      f("tagline", "Tagline / Value proposition"),
+      fA("deliverables", "Included deliverables (one per line, up to 5)"),
+      f("ctaText", "CTA button text", { placeholder: "Inquire via DM →" }),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
+    ] },
+  { id: "pricingaudit", name: "Pricing Audit / Sprint", kind: "Pricing",
+    slides: (p) => [<T_PricingAudit {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Fixed-Scope Sprint" }),
+      f("duration", "Duration pill", { placeholder: "2-Week Turnaround" }),
+      f("headline", "Sprint Title", { placeholder: "Proposal & Document Teardown" }),
+      f("price", "Flat fee", { placeholder: "$1,800" }),
+      fA("deliverables", "Deliverables checklist (one per line, up to 4)"),
+      f("ctaText", "Booking button text", { placeholder: "Book Sprint →" }),
+      { key: "bg", label: "Theme", type: "select", options: THEME_OPTIONS },
     ] },
 ];
 

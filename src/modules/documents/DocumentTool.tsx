@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Icon, useLocalStorage, exportPrint, exportImage, copyImage,
   Field, TextInput, Textarea, ImageField,
@@ -311,6 +311,7 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [socialStep, setSocialStep] = useState("pick");
   const [socialPickerKey, setSocialPickerKey] = useState(0);
+  const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
   const [zoom, setZoom] = useState(0.5);
   const [copyState, setCopyState] = useState("idle");
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -459,7 +460,7 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   }, [docType]);
 
   const stageRef = useRef<HTMLDivElement>(null);
-  const fitPreview = () => {
+  const fitPreview = useCallback(() => {
     const stage = stageRef.current;
     if (!stage) return;
     let tW = 8.5 * 96, tH = 11 * 96;
@@ -468,13 +469,20 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
       tW = (tpl && (tpl as any).width) || 1080;
       tH = (tpl && (tpl as any).height) || 1080;
     }
-    const padding = 80;
+    const isSmall = stage.clientWidth < 640;
+    const padding = isSmall ? 20 : 64;
     const fitW = (stage.clientWidth - padding) / tW;
     const fitH = (stage.clientHeight - padding) / tH;
-    const fit = Math.max(0.15, Math.min(0.9, Math.min(fitW, fitH)));
+    const fit = Math.max(0.12, Math.min(0.95, Math.min(fitW, fitH)));
     setZoom(Number(fit.toFixed(2)));
-  };
-  useEffect(() => { fitPreview(); }, [docType, socialTemplateId]);
+  }, [docType, socialTemplateId, AllSocialTemplates]);
+
+  useEffect(() => {
+    fitPreview();
+    const handleResize = () => { fitPreview(); };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [fitPreview]);
 
   useEffect(() => { (window as any).__brand = brand; }, [brand]);
 
@@ -573,7 +581,7 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   };
 
   return (
-    <div className="app">
+    <div className={`app app--mode-${mode} app--mobile-${mobileTab} ${docType === "social" && socialStep === "pick" ? "app--social-pick" : "app--social-edit"}`}>
       {/* ===== Sidebar ===== */}
       <aside className="sidebar">
         <div className="sidebar__brand">
@@ -665,6 +673,28 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
               ? cfg.name
               : ((data as any).title || (data as any).projectName || (data as any).clientName || cfg.name)}
           </h1>
+          {/* Mobile View Switcher (Visible on mobile when editing) */}
+          {(docType !== "social" || socialStep === "edit") && !cfg.isTool && (
+            <div className="mobile-tab-switch">
+              <button
+                type="button"
+                className={`mobile-tab-btn ${mobileTab === 'editor' ? 'mobile-tab-btn--active' : ''}`}
+                onClick={() => setMobileTab('editor')}
+              >
+                ✍️ Edit Form
+              </button>
+              <button
+                type="button"
+                className={`mobile-tab-btn ${mobileTab === 'preview' ? 'mobile-tab-btn--active' : ''}`}
+                onClick={() => {
+                  setMobileTab('preview');
+                  setTimeout(fitPreview, 60);
+                }}
+              >
+                👁️ Preview & Export
+              </button>
+            </div>
+          )}
           {!cfg.isTool && (
             <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14 }}>
               <select
@@ -886,6 +916,13 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
       {/* ===== Preview ===== */}
       <section className="preview">
         <div className="preview__bar">
+          <button
+            type="button"
+            className="mobile-back-to-edit-btn"
+            onClick={() => setMobileTab('editor')}
+          >
+            ← Edit Form
+          </button>
           <span className="preview__bar-title">Preview</span>
           <span className="preview__bar-meta">
             {isToolMode

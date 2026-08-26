@@ -30,11 +30,13 @@ const ArrowOut = ({ size = 64, color = "currentColor" }) => (
   </svg>
 );
 
-const Asterisk = ({ size = 80, color = "var(--vc-red)" }) => (
-  <svg width={size} height={size} viewBox="0 0 80 80" fill={color}>
-    {Array.from({ length: 8 }).map((_, i) => (
-      <ellipse key={i} cx="40" cy="40" rx="6" ry="34" transform={`rotate(${i * 22.5} 40 40)`} />
-    ))}
+const Asterisk = ({ size = 64, color = "var(--vc-red)" }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+    <g stroke={color} strokeWidth="5.5" strokeLinecap="round">
+      <line x1="32" y1="8" x2="32" y2="56" />
+      <line x1="11.2" y1="20" x2="52.8" y2="44" />
+      <line x1="11.2" y1="44" x2="52.8" y2="20" />
+    </g>
   </svg>
 );
 
@@ -1187,6 +1189,79 @@ const T_Team3 = ({ data, brand }) => {
 };
 
 /* ============================================== */
+/* 18E. TEAM ONBOARD · 4 MEMBERS / QUAD (Photo)   */
+/* ============================================== */
+const T_Team4 = ({ data, brand }) => {
+  const theme = data.bg || "";
+  const isInk = theme === "ink";
+  const isBlue = theme === "blue";
+  const bg = isInk ? "var(--vc-ink)" : isBlue ? "var(--vc-blue)" : "var(--vc-cream)";
+  const fg = (isInk || isBlue) ? "var(--vc-cream)" : "var(--vc-ink)";
+  const ringBorder = isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-ink)";
+  const headline = data.headline || "Welcoming 4 new team members";
+  const headSize = getDynamicFontSize(headline, 52, 34, 38);
+
+  const members = [
+    { image: data.image1, name: data.name1 || "Elena Rostova", position: data.position1 || "Brand Lead", slot: "Photo 1" },
+    { image: data.image2, name: data.name2 || "Marcus Vance", position: data.position2 || "Creative Director", slot: "Photo 2" },
+    { image: data.image3, name: data.name3 || "Aria Chen", position: data.position3 || "Staff Engineer", slot: "Photo 3" },
+    { image: data.image4, name: data.name4 || "Sophia Ray", position: data.position4 || "Product Strategist", slot: "Photo 4" },
+  ];
+
+  return (
+    <div className="social-frame" style={{ background: bg, color: fg, padding: "56px 64px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 20 }}>
+      {/* Top Bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Team Expansion"} color={fg} />
+        <Asterisk size={40} color={isBlue ? "var(--vc-lime)" : "var(--vc-red)"} />
+      </div>
+
+      {/* Header Statement */}
+      <div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headSize, lineHeight: 1.05, letterSpacing: "-0.01em" }}>
+          {headline}
+        </div>
+      </div>
+
+      {/* 2x2 Quad Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 20, alignItems: "stretch" }}>
+        {members.map((m, idx) => (
+          <div key={idx} style={{
+            background: isInk ? "rgba(255,255,255,0.05)" : isBlue ? "rgba(255,255,255,0.08)" : "#fff",
+            border: `1.5px solid ${isInk ? "rgba(255,255,255,0.12)" : isBlue ? "rgba(255,255,255,0.15)" : "rgba(14,14,14,0.1)"}`,
+            borderRadius: 22, padding: "20px 24px", display: "flex", alignItems: "center", gap: 22,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.06)"
+          }}>
+            <div style={{
+              width: 140, height: 140, borderRadius: "50%", padding: 4,
+              border: `2px solid ${ringBorder}`, overflow: "hidden", flexShrink: 0
+            }}>
+              <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#eae5d8" }}>
+                {m.image
+                  ? <img src={m.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  : <PhotoSlot label={m.slot} style={{ width: "100%", height: "100%", borderRadius: "50%", fontSize: 11 }} />
+                }
+              </div>
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(m.name, 32, 14, 22), lineHeight: 1.15, wordBreak: "break-word" }}>
+                {m.name}
+              </div>
+              <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(m.position, 14, 18, 11), letterSpacing: "0.1em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : "var(--vc-red)", fontWeight: 700, wordBreak: "break-word" }}>
+                {m.position}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <VFooter brand={brand} color={fg} borderColor={isInk ? "rgba(236,230,214,0.18)" : isBlue ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.15)"} />
+    </div>
+  );
+};
+
+/* ============================================== */
 /* 19. PRICING / PACKAGE CARD (single)             */
 /* ============================================== */
 const T_PricingCard = ({ data, brand }) => {
@@ -2040,6 +2115,25 @@ const SocialTemplates = [
       { key: "image3", label: "Member 3 Photo", type: "image" },
       f("name3", "Member 3 Name", { placeholder: "Maya Patel" }),
       f("position3", "Member 3 Position", { placeholder: "Product Strategist" }),
+      { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
+    ] },
+  { id: "team4",       name: "Team Onboard · Quad",   kind: "Photo",
+    slides: (p) => [<T_Team4 {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Team Expansion" }),
+      f("headline", "Headline", { placeholder: "Welcoming 4 new team members" }),
+      { key: "image1", label: "Member 1 Photo", type: "image" },
+      f("name1", "Member 1 Name", { placeholder: "Elena Rostova" }),
+      f("position1", "Member 1 Position", { placeholder: "Brand Lead" }),
+      { key: "image2", label: "Member 2 Photo", type: "image" },
+      f("name2", "Member 2 Name", { placeholder: "Marcus Vance" }),
+      f("position2", "Member 2 Position", { placeholder: "Creative Director" }),
+      { key: "image3", label: "Member 3 Photo", type: "image" },
+      f("name3", "Member 3 Name", { placeholder: "Aria Chen" }),
+      f("position3", "Member 3 Position", { placeholder: "Staff Engineer" }),
+      { key: "image4", label: "Member 4 Photo", type: "image" },
+      f("name4", "Member 4 Name", { placeholder: "Sophia Ray" }),
+      f("position4", "Member 4 Position", { placeholder: "Product Strategist" }),
       { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
     ] },
 

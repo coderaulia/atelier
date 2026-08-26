@@ -951,6 +951,242 @@ const T_WorkShowcase = ({ data, brand }) => (
 );
 
 /* ============================================== */
+/* 18B. TEAM ONBOARD · 1 MEMBER (Photo)           */
+/* ============================================== */
+const T_Team1 = ({ data, brand }) => {
+  const theme = data.bg || "";
+  const isInk = theme === "ink";
+  const isBlue = theme === "blue";
+  const bg = isInk ? "var(--vc-ink)" : isBlue ? "var(--vc-blue)" : "var(--vc-cream)";
+  const fg = (isInk || isBlue) ? "var(--vc-cream)" : "var(--vc-ink)";
+  const muted = (isInk || isBlue) ? "rgba(236,230,214,0.6)" : "var(--vc-mute)";
+  const ringBorder = isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-ink)";
+  const name = data.name || "Elena Rostova";
+  const nameSize = getDynamicFontSize(name, 84, 15, 52);
+  const position = data.position || "Lead Brand Designer";
+  const posSize = getDynamicFontSize(position, 22, 24, 15);
+
+  return (
+    <div className="social-frame" style={{ background: bg, color: fg, padding: "72px 80px", display: "grid", gridTemplateRows: "auto 1fr auto", gap: 32 }}>
+      {/* Top Bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Welcome to the Team"} color={fg} />
+        <Asterisk size={48} color={isBlue ? "var(--vc-lime)" : "var(--vc-red)"} />
+      </div>
+
+      {/* Main Content: Avatar Frame + Info */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+        {/* Circle Photo Frame */}
+        <div style={{
+          width: 380, height: 380, borderRadius: "50%",
+          padding: 8, border: `3px solid ${ringBorder}`,
+          position: "relative", marginBottom: 36,
+          boxShadow: isInk ? "0 20px 50px rgba(0,0,0,0.5)" : "0 20px 50px rgba(0,0,0,0.12)",
+          flexShrink: 0
+        }}>
+          <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#e5e0d3" }}>
+            {data.image
+              ? <img src={data.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              : <PhotoSlot label="Drop portrait" style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
+            }
+          </div>
+          {/* Badge at bottom of circle */}
+          <div style={{ position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)", background: ringBorder, color: isBlue ? "var(--vc-ink)" : "#fff", padding: "6px 18px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap" }}>
+            New Joiner
+          </div>
+        </div>
+
+        {/* Member Name */}
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: nameSize, lineHeight: 1, letterSpacing: "-0.015em" }}>
+          {name}
+        </div>
+
+        {/* Position & Department */}
+        <div style={{ marginTop: 12, fontFamily: "var(--font-mono)", fontSize: posSize, letterSpacing: "0.12em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-red)", fontWeight: 700 }}>
+          {position}
+        </div>
+
+        {data.department && (
+          <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.1em", textTransform: "uppercase", color: muted }}>
+            {data.department}
+          </div>
+        )}
+
+        {data.bio && (
+          <div style={{ marginTop: 18, fontFamily: "var(--font-helvetica)", fontSize: 24, lineHeight: 1.35, color: muted, maxWidth: 680 }}>
+            "{data.bio}"
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <VFooter brand={brand} color={fg} borderColor={isInk ? "rgba(236,230,214,0.18)" : isBlue ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.15)"} />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 18C. TEAM ONBOARD · 2 MEMBERS / DUO (Photo)    */
+/* ============================================== */
+const T_Team2 = ({ data, brand }) => {
+  const theme = data.bg || "";
+  const isInk = theme === "ink";
+  const isBlue = theme === "blue";
+  const bg = isInk ? "var(--vc-ink)" : isBlue ? "var(--vc-blue)" : "var(--vc-cream)";
+  const fg = (isInk || isBlue) ? "var(--vc-cream)" : "var(--vc-ink)";
+  const ringBorder = isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-ink)";
+  const headline = data.headline || "Welcoming our new team members";
+  const headSize = getDynamicFontSize(headline, 56, 32, 40);
+
+  return (
+    <div className="social-frame" style={{ background: bg, color: fg, padding: "64px 72px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 24 }}>
+      {/* Top Bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "New Joiners"} color={fg} />
+        <Asterisk size={44} color={isBlue ? "var(--vc-lime)" : "var(--vc-red)"} />
+      </div>
+
+      {/* Header Statement */}
+      <div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headSize, lineHeight: 1.05, letterSpacing: "-0.01em" }}>
+          {headline}
+        </div>
+      </div>
+
+      {/* Duo Grid: 2 Members Side-by-Side */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 36, alignItems: "center" }}>
+        {/* Person 1 */}
+        <div style={{
+          background: isInk ? "rgba(255,255,255,0.05)" : isBlue ? "rgba(255,255,255,0.08)" : "#fff",
+          border: `1.5px solid ${isInk ? "rgba(255,255,255,0.12)" : isBlue ? "rgba(255,255,255,0.15)" : "rgba(14,14,14,0.1)"}`,
+          borderRadius: 28, padding: "36px 28px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.08)"
+        }}>
+          <div style={{
+            width: 240, height: 240, borderRadius: "50%", padding: 6,
+            border: `2.5px solid ${ringBorder}`, overflow: "hidden", marginBottom: 22, flexShrink: 0
+          }}>
+            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#eae5d8" }}>
+              {data.image1
+                ? <img src={data.image1} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                : <PhotoSlot label="Photo 1" style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
+              }
+            </div>
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(data.name1 || "Marcus Vance", 42, 14, 28), lineHeight: 1.1 }}>
+            {data.name1 || "Marcus Vance"}
+          </div>
+          <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(data.position1 || "Creative Director", 16, 20, 13), letterSpacing: "0.12em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : "var(--vc-red)", fontWeight: 700 }}>
+            {data.position1 || "Creative Director"}
+          </div>
+        </div>
+
+        {/* Person 2 */}
+        <div style={{
+          background: isInk ? "rgba(255,255,255,0.05)" : isBlue ? "rgba(255,255,255,0.08)" : "#fff",
+          border: `1.5px solid ${isInk ? "rgba(255,255,255,0.12)" : isBlue ? "rgba(255,255,255,0.15)" : "rgba(14,14,14,0.1)"}`,
+          borderRadius: 28, padding: "36px 28px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.08)"
+        }}>
+          <div style={{
+            width: 240, height: 240, borderRadius: "50%", padding: 6,
+            border: `2.5px solid ${ringBorder}`, overflow: "hidden", marginBottom: 22, flexShrink: 0
+          }}>
+            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#eae5d8" }}>
+              {data.image2
+                ? <img src={data.image2} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                : <PhotoSlot label="Photo 2" style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
+              }
+            </div>
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(data.name2 || "Aria Chen", 42, 14, 28), lineHeight: 1.1 }}>
+            {data.name2 || "Aria Chen"}
+          </div>
+          <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(data.position2 || "Senior Engineer", 16, 20, 13), letterSpacing: "0.12em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : "var(--vc-red)", fontWeight: 700 }}>
+            {data.position2 || "Senior Engineer"}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <VFooter brand={brand} color={fg} borderColor={isInk ? "rgba(236,230,214,0.18)" : isBlue ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.15)"} />
+    </div>
+  );
+};
+
+/* ============================================== */
+/* 18D. TEAM ONBOARD · 3 MEMBERS / TRIO (Photo)   */
+/* ============================================== */
+const T_Team3 = ({ data, brand }) => {
+  const theme = data.bg || "";
+  const isInk = theme === "ink";
+  const isBlue = theme === "blue";
+  const bg = isInk ? "var(--vc-ink)" : isBlue ? "var(--vc-blue)" : "var(--vc-cream)";
+  const fg = (isInk || isBlue) ? "var(--vc-cream)" : "var(--vc-ink)";
+  const ringBorder = isBlue ? "var(--vc-lime)" : isInk ? "var(--vc-red)" : "var(--vc-ink)";
+  const headline = data.headline || "Meet the new faces at the studio";
+  const headSize = getDynamicFontSize(headline, 56, 32, 40);
+
+  const members = [
+    { image: data.image1, name: data.name1 || "Sophia Ray", position: data.position1 || "Design Lead", defaultSlot: "Photo 1" },
+    { image: data.image2, name: data.name2 || "Liam Thorne", position: data.position2 || "Staff Engineer", defaultSlot: "Photo 2" },
+    { image: data.image3, name: data.name3 || "Maya Patel", position: data.position3 || "Product Strategist", defaultSlot: "Photo 3" },
+  ];
+
+  return (
+    <div className="social-frame" style={{ background: bg, color: fg, padding: "64px 68px", display: "grid", gridTemplateRows: "auto auto 1fr auto", gap: 24 }}>
+      {/* Top Bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <VLabel text={data.kicker || "Meet the Crew"} color={fg} />
+        <Asterisk size={44} color={isBlue ? "var(--vc-lime)" : "var(--vc-red)"} />
+      </div>
+
+      {/* Header Statement */}
+      <div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headSize, lineHeight: 1.05, letterSpacing: "-0.01em" }}>
+          {headline}
+        </div>
+      </div>
+
+      {/* 3 Members Row / Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, alignItems: "stretch" }}>
+        {members.map((m, idx) => (
+          <div key={idx} style={{
+            background: isInk ? "rgba(255,255,255,0.05)" : isBlue ? "rgba(255,255,255,0.08)" : "#fff",
+            border: `1.5px solid ${isInk ? "rgba(255,255,255,0.12)" : isBlue ? "rgba(255,255,255,0.15)" : "rgba(14,14,14,0.1)"}`,
+            borderRadius: 24, padding: "28px 18px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+            boxShadow: "0 10px 28px rgba(0,0,0,0.06)", justifyContent: "space-between"
+          }}>
+            <div style={{
+              width: 190, height: 190, borderRadius: "50%", padding: 5,
+              border: `2px solid ${ringBorder}`, overflow: "hidden", marginBottom: 18, flexShrink: 0
+            }}>
+              <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: isInk ? "#222" : "#eae5d8" }}>
+                {m.image
+                  ? <img src={m.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  : <PhotoSlot label={m.defaultSlot} style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
+                }
+              </div>
+            </div>
+            <div>
+              <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(m.name, 34, 12, 24), lineHeight: 1.15 }}>
+                {m.name}
+              </div>
+              <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: getDynamicFontSize(m.position, 14, 18, 11), letterSpacing: "0.1em", textTransform: "uppercase", color: isBlue ? "var(--vc-lime)" : "var(--vc-red)", fontWeight: 700 }}>
+                {m.position}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <VFooter brand={brand} color={fg} borderColor={isInk ? "rgba(236,230,214,0.18)" : isBlue ? "rgba(255,255,255,0.2)" : "rgba(14,14,14,0.15)"} />
+    </div>
+  );
+};
+
+/* ============================================== */
 /* 19. PRICING / PACKAGE CARD (single)             */
 /* ============================================== */
 const T_PricingCard = ({ data, brand }) => {
@@ -1765,6 +2001,46 @@ const SocialTemplates = [
       f("projectType", "Project type", { placeholder: "Brand" }),
       f("year", "Year", { placeholder: "2026" }),
       fA("tagline", "Project tagline"),
+    ] },
+  { id: "team1",       name: "Team Onboard · Single", kind: "Photo",
+    slides: (p) => [<T_Team1 {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Welcome to the Team" }),
+      { key: "image", label: "Member Photo", type: "image" },
+      f("name", "Member Name", { placeholder: "Elena Rostova" }),
+      f("position", "Position / Role", { placeholder: "Lead Brand Designer" }),
+      f("department", "Department / Location (optional)", { placeholder: "Brand Studio · London" }),
+      fA("bio", "Short Welcome Note (optional)", { placeholder: "Joining our studio to lead brand identity and digital design systems." }),
+      { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
+    ] },
+  { id: "team2",       name: "Team Onboard · Duo",    kind: "Photo",
+    slides: (p) => [<T_Team2 {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "New Joiners" }),
+      f("headline", "Headline", { placeholder: "Welcoming two new leads to the studio" }),
+      { key: "image1", label: "Member 1 Photo", type: "image" },
+      f("name1", "Member 1 Name", { placeholder: "Marcus Vance" }),
+      f("position1", "Member 1 Position", { placeholder: "Creative Director" }),
+      { key: "image2", label: "Member 2 Photo", type: "image" },
+      f("name2", "Member 2 Name", { placeholder: "Aria Chen" }),
+      f("position2", "Member 2 Position", { placeholder: "Senior Engineer" }),
+      { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
+    ] },
+  { id: "team3",       name: "Team Onboard · Trio",   kind: "Photo",
+    slides: (p) => [<T_Team3 {...p} />],
+    fields: [
+      f("kicker", "Kicker label", { placeholder: "Meet the Crew" }),
+      f("headline", "Headline", { placeholder: "Meet the new faces at the studio" }),
+      { key: "image1", label: "Member 1 Photo", type: "image" },
+      f("name1", "Member 1 Name", { placeholder: "Sophia Ray" }),
+      f("position1", "Member 1 Position", { placeholder: "Design Lead" }),
+      { key: "image2", label: "Member 2 Photo", type: "image" },
+      f("name2", "Member 2 Name", { placeholder: "Liam Thorne" }),
+      f("position2", "Member 2 Position", { placeholder: "Staff Engineer" }),
+      { key: "image3", label: "Member 3 Photo", type: "image" },
+      f("name3", "Member 3 Name", { placeholder: "Maya Patel" }),
+      f("position3", "Member 3 Position", { placeholder: "Product Strategist" }),
+      { key: "bg", label: "Theme", type: "select", options: [{ value: "", label: "Cream (default)" }, { value: "ink", label: "Ink / Dark" }, { value: "blue", label: "Blue" }] },
     ] },
 
   /* --- Pricing --- */

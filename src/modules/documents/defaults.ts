@@ -41,6 +41,9 @@ export const DEFAULT_INVOICE = {
     { desc: "Project management — May", qty: 6, rate: 180 },
   ],
   taxPct: 0,
+  taxPreset: "none",
+  taxEffect: "add",
+  showTerbilang: true,
   discountPct: 0,
   notes: "**Payable by bank transfer or Wise.** Late payments accrue 1.5% interest per month.\n\nThank you — *N&Q*.",
 };

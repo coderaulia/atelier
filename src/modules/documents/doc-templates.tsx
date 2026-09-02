@@ -1,5 +1,7 @@
 // @ts-nocheck
 import { MD, MDInline, fmt } from './utils';
+import { getInvoiceCalculations } from './helpers/invoiceCalc';
+import { amountToWords } from './helpers/terbilang';
 
 /* ---------- Reusable bits ---------- */
 const DocBody = ({ md }) => md ? <div className="doc-body" dangerouslySetInnerHTML={{ __html: MD(md) }} /> : null;
@@ -173,12 +175,13 @@ function AgreementEditorial({ data, brand }) {
 /* ============================================== */
 
 function calcInvoice(data) {
-  const subtotal = (data.items || []).reduce((s, it) => s + (Number(it.qty) || 0) * (Number(it.rate) || 0), 0);
-  const discount = subtotal * (Number(data.discountPct) || 0) / 100;
-  const taxBase = subtotal - discount;
-  const tax = taxBase * (Number(data.taxPct) || 0) / 100;
-  const total = taxBase + tax;
-  return { subtotal, discount, tax, total };
+  const calcs = getInvoiceCalculations(data);
+  return {
+    subtotal: calcs.subtotal,
+    discount: calcs.discountAmount,
+    tax: calcs.taxAmount,
+    total: calcs.grandTotal,
+  };
 }
 
 function InvoiceTable({ data }) {
@@ -207,13 +210,31 @@ function InvoiceTable({ data }) {
 }
 
 function InvoiceTotals({ data }) {
-  const { subtotal, discount, tax, total } = calcInvoice(data);
+  const { subtotal, taxAmount, discountAmount, grandTotal } = getInvoiceCalculations(data);
+  const taxEffect = data.taxEffect || 'add';
+  const taxLabel = data.taxPreset === 'ppn_11'
+    ? 'PPN (11%)'
+    : data.taxPreset === 'ppn_12'
+    ? 'PPN (12%)'
+    : `Tax (${data.taxPct || 0}%)`;
+  const words = data.showTerbilang !== false && grandTotal > 0 ? amountToWords(grandTotal, data.currency) : null;
+
   return (
     <div className="inv-totals">
       <div className="inv-totals-row"><span>Subtotal</span><span>{fmt.money(subtotal, data.currency)}</span></div>
-      {discount > 0 && <div className="inv-totals-row"><span>Discount ({data.discountPct}%)</span><span>−{fmt.money(discount, data.currency)}</span></div>}
-      {tax > 0 && <div className="inv-totals-row"><span>Tax ({data.taxPct}%)</span><span>{fmt.money(tax, data.currency)}</span></div>}
-      <div className="inv-totals-row inv-totals-row--final"><span>Total due</span><span>{fmt.money(total, data.currency)}</span></div>
+      {discountAmount > 0 && <div className="inv-totals-row"><span>Discount ({data.discountPct}%)</span><span>−{fmt.money(discountAmount, data.currency)}</span></div>}
+      {taxAmount > 0 && (
+        <div className="inv-totals-row">
+          <span>{taxLabel}</span>
+          <span>{taxEffect === 'deduct' ? '−' : '+'}{fmt.money(taxAmount, data.currency)}</span>
+        </div>
+      )}
+      <div className="inv-totals-row inv-totals-row--final"><span>Total due</span><span>{fmt.money(grandTotal, data.currency)}</span></div>
+      {words && (
+        <div className="inv-totals-words" style={{ fontStyle: 'italic', fontSize: '8.5pt', color: 'var(--paper-muted)', marginTop: 8, textAlign: 'right' }}>
+          Terbilang: {words}
+        </div>
+      )}
     </div>
   );
 }

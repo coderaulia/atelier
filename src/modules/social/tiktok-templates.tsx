@@ -116,7 +116,7 @@ const V_Question = ({ data, brand }) => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <Asterisk size={84} color="#fff" />
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.85 }}>
-          Reply your answer →
+          {data.ctaText || "Reply your answer →"}
         </span>
       </div>
     </div>
@@ -233,7 +233,7 @@ const V_Tutorial = ({ data, brand }) => {
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 26, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>
-          How to
+          {data.prefix || "How to"}
         </div>
         <div style={{ marginTop: 8, fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: whatSize, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
           {whatText}
@@ -333,7 +333,7 @@ const V_CaseStudy = ({ data, brand }) => (
       </div>
       <div>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--vc-mute)" }}>
-          The result
+          {data.resultLabel || "The result"}
         </div>
         <div style={{ marginTop: 12, fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 44, lineHeight: 1.18, color: "var(--vc-ink)", letterSpacing: "-0.005em" }}>
           {data.statLabel || "increase in qualified leads in the first 90 days post-launch."}
@@ -369,7 +369,7 @@ const V_POV = ({ data, brand }) => (
   <div {...VFRAME} style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 96, display: "flex", flexDirection: "column" }}>
     <div style={{ display: "flex", justifyContent: "space-between" }}>
       <span style={{ fontFamily: "var(--font-mono)", fontSize: 24, letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 700 }}>
-        POV:
+        {data.kicker || "POV:"}
       </span>
       <Asterisk size={72} color="var(--vc-ink)" />
     </div>
@@ -721,6 +721,7 @@ const TikTokTemplates = [
       tf("question", "Question · roman"),
       tf("questionAccent", "Question · italic"),
       tA("answer", "Brief answer"),
+      tf("ctaText", "Bottom prompt / CTA", { placeholder: "Reply your answer →" }),
     ] },
   { id: "statv", name: "Stat (Vertical)", kind: "Single", ...VERTICAL,
     slides: (p) => [<V_StatVertical {...p} />],
@@ -747,6 +748,7 @@ const TikTokTemplates = [
     fields: [
       tf("kicker", "Kicker"),
       tf("duration", "Duration pill", { placeholder: "60 sec" }),
+      tf("prefix", "Step prefix", { placeholder: "How to" }),
       tf("what", "What · roman"),
       tf("whatItalic", "What · italic accent"),
       tA("steps", "Steps (one per line)", { hint: "Up to 5 lines." }),
@@ -763,13 +765,14 @@ const TikTokTemplates = [
       tf("client", "Client / project name"),
       tf("titleItalic", "Italic subtitle"),
     ] },
-  { id: "casestudy", name: "Case Study", kind: "Portfolio", ...VERTICAL,
+  { id: "casestudyv", name: "Case Study", kind: "Portfolio", ...VERTICAL,
     slides: (p) => [<V_CaseStudy {...p} />],
     fields: [
       tI("image", "Screenshot / artifact", { hint: "Crops to landscape 5:4" }),
       tf("client", "Client name"),
       tf("year", "Year"),
       tf("stat", "Big stat", { placeholder: "+312%" }),
+      tf("resultLabel", "Result label", { placeholder: "The result" }),
       tA("statLabel", "What the stat means"),
       tf("tag1", "Tag 1"),
       tf("tag2", "Tag 2"),
@@ -778,6 +781,7 @@ const TikTokTemplates = [
   { id: "pov", name: "POV", kind: "Single", ...VERTICAL,
     slides: (p) => [<V_POV {...p} />],
     fields: [
+      tf("kicker", "Top label", { placeholder: "POV:" }),
       tf("scene", "Scene · roman before action"),
       tf("action", "Bold action phrase"),
       tf("tail", "Scene · roman after action"),

@@ -382,9 +382,11 @@ const T_BeforeAfter = ({ data, brand }) => {
   return (
     <div className="social-frame" style={{ padding: 0, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
       <div style={{ background: "var(--vc-cream)", padding: 72, display: "flex", flexDirection: "column", justifyContent: "space-between", color: "var(--vc-ink)" }}>
-        <VLabel num={null} text="Before" />
+        <VLabel num={null} text={data.beforeLabel || "Before"} />
         <div>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, color: "var(--vc-mute)", marginBottom: 16 }}>The way most freelancers work.</div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, color: "var(--vc-mute)", marginBottom: 16 }}>
+            {data.beforeSubtitle || "The way most freelancers work."}
+          </div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: beforeSize, lineHeight: 1.04, color: "var(--vc-ink)", wordBreak: "break-word" }}>
             {data.before || "A blank page and a deadline."}
           </div>
@@ -395,11 +397,13 @@ const T_BeforeAfter = ({ data, brand }) => {
       </div>
       <div style={{ background: "var(--vc-blue)", color: "#fff", padding: 72, display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <VLabel num={null} text="After" color="#fff" />
+          <VLabel num={null} text={data.afterLabel || "After"} color="#fff" />
           <Asterisk size={48} color="#fff" />
         </div>
         <div>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, opacity: 0.8, marginBottom: 16 }}>The way our system works.</div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, opacity: 0.8, marginBottom: 16 }}>
+            {data.afterSubtitle || "The way our system works."}
+          </div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: afterSize, lineHeight: 1.04, wordBreak: "break-word" }}>
             {data.after || "A document that earns the deal."}
           </div>
@@ -535,7 +539,7 @@ const T_Story = ({ data, brand }) => {
   const cover = (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <VLabel num={2} text="A Short Story" color="var(--vc-cream)" style={{ opacity: 0.7 }} />
+        <VLabel num={2} text={data.kicker || "A Short Story"} color="var(--vc-cream)" style={{ opacity: 0.7 }} />
         <Paperclip color="var(--vc-cream)" />
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
@@ -591,8 +595,9 @@ const T_Tips = ({ data, brand }) => {
   const tips = (data.tips || "Write the email before the spec.\nPrice the outcome, not the hour.\nNever pitch what you can't deliver.\nDocument decisions, not opinions.\nShip the smallest useful thing.").split("\n").filter(Boolean);
   const ruleWord = data.ruleLabel || "Rule";
 
+  const titleItalic = data.titleItalic || "I keep close.";
   const ruleSize = getDynamicFontSize(`${tips.length} ${ruleWord}s`, 108, 12, 48);
-  const italicSize = getDynamicFontSize("I keep close.", 96, 14, 44);
+  const italicSize = getDynamicFontSize(titleItalic, 96, 14, 44);
 
   const cover = (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
@@ -606,7 +611,7 @@ const T_Tips = ({ data, brand }) => {
             {tips.length} <Underscribble>{ruleWord.toLowerCase()}s</Underscribble>
           </div>
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: italicSize, lineHeight: 1.02, color: "var(--vc-ink)", marginTop: 8, letterSpacing: "-0.02em" }}>
-            I keep close.
+            {titleItalic}
           </div>
           <div style={{ marginTop: 24, fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", maxWidth: 720, lineHeight: 1.4, wordBreak: "break-word" }}>
             {data.subtitle || "What I've learned shipping freelance work for the better part of a decade."}
@@ -665,7 +670,8 @@ const Wordmark = ({ brand, color }) => {
 const T_Booking = ({ data, brand }) => {
   const cta = data.ctaText || "Inquire via DM";
   const ctaBtnSize = getDynamicFontSize(cta, 20, 16, 13);
-  const leadFull = `${data.lead || "Two spots open for"} ${data.window || "Q3"} projects.`;
+  const project = data.projectText ?? data.project ?? "projects.";
+  const leadFull = `${data.lead || "Two spots open for"} ${data.window || "Q3"} ${project}`;
   const leadSize = getDynamicFontSize(leadFull, 96, 24, 44);
   const subtextSize = getDynamicFontSize(data.subtext || "", 32, 70, 20);
   return (
@@ -678,7 +684,7 @@ const T_Booking = ({ data, brand }) => {
         <div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: leadSize, lineHeight: 1.02, color: "var(--vc-ink)", letterSpacing: "-0.025em", wordBreak: "break-word" }}>
             {data.lead || "Two spots open for"} <HandCircle color="var(--vc-red)">{data.window || "Q3"}</HandCircle>{" "}
-            <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-red)" }}>projects.</em>
+            <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-red)" }}>{project}</em>
           </div>
           <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: subtextSize, color: "var(--vc-mute)", maxWidth: 740, lineHeight: 1.35, wordBreak: "break-word" }}>
             {data.subtext || "Brand and product work. Four-to-six-week engagements. Friendly intake, written deliverables, no agency overhead."}
@@ -821,8 +827,9 @@ const T_Mistakes = ({ data, brand }) => {
   const fgPalette  = ["var(--vc-ink)",   "#fff",           "var(--vc-ink)",  "var(--vc-cream)"];
   const borderOp   = ["rgba(14,14,14,0.15)", "rgba(255,255,255,0.2)", "rgba(14,14,14,0.15)", "rgba(236,230,214,0.2)"];
 
+  const titleItalic = data.titleItalic || "I made for you.";
   const mistakeSize = getDynamicFontSize(`${items.length} mistakes`, 108, 12, 48);
-  const subSize = getDynamicFontSize("I made for you.", 96, 16, 44);
+  const subSize = getDynamicFontSize(titleItalic, 96, 16, 44);
 
   const cover = (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
@@ -836,7 +843,7 @@ const T_Mistakes = ({ data, brand }) => {
             {items.length} mistakes
           </div>
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: subSize, lineHeight: 1.02, color: "var(--vc-red)", marginTop: 4, letterSpacing: "-0.02em" }}>
-            I made for you.
+            {titleItalic}
           </div>
           <div style={{ marginTop: 24, fontFamily: "var(--font-helvetica)", fontSize: 28, opacity: 0.6, lineHeight: 1.4, maxWidth: 720, wordBreak: "break-word" }}>
             {data.subtitle || "So you don't have to learn them the hard way."}
@@ -904,7 +911,7 @@ const T_MiniGuide = ({ data, brand }) => {
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
         <div>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.6, marginBottom: 12 }}>
-            How to
+            {data.prefix || "How to"}
           </div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: topicSize, lineHeight: 0.95, letterSpacing: "-0.03em", wordBreak: "break-word" }}>
             {data.topic || "Ship Faster"}.
@@ -1666,7 +1673,7 @@ const T_PricingEditorial = ({ data, brand }) => {
       <div style={{ position: "absolute", right: -72, top: 210, width: 320, height: 320, border: `1.5px solid ${rule}`, borderRadius: "50%" }} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "start", gap: 28 }}>
         <div>
-          <VLabel text="Proposal No. 01" color={fg} />
+          <VLabel text={data.kicker || "Proposal No. 01"} color={fg} />
           <div style={{ marginTop: 20, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: packageSize, lineHeight: 0.98, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
             {packageName}
           </div>
@@ -1959,7 +1966,7 @@ const T_TestimonialEditorial = ({ data, brand }) => {
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 0, display: "grid", gridTemplateRows: "170px 1fr 190px", overflow: "hidden", position: "relative" }}>
       <div style={{ position: "absolute", inset: "28px 28px auto auto", width: 174, height: 174, border: "1.5px solid rgba(244,238,222,0.24)", borderRadius: "50%" }} />
       <div style={{ padding: "64px 72px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-        <VLabel text="Client proof" color="var(--vc-cream)" />
+        <VLabel text={data.kicker || "Client proof"} color="var(--vc-cream)" />
         {brand.logo && brand.logoEnabled !== false
           ? (brand.logoLight
               ? <img src={brand.logoLight} alt="" style={{ height: 30, width: "auto", maxWidth: 120, objectFit: "contain" }} />
@@ -2390,8 +2397,10 @@ const SocialTemplates = [
   { id: "ba",           name: "Before / After",    kind: "Single",
     slides: (p) => [<T_BeforeAfter {...p} />],
     fields: [
+      f("beforeSubtitle", "Before — subtitle", { placeholder: "The way most freelancers work." }),
       fA("before", "Before — headline"),
       f("beforeNote", "Before — mono note"),
+      f("afterSubtitle", "After — subtitle", { placeholder: "The way our system works." }),
       fA("after", "After — headline"),
       f("afterNote", "After — mono note"),
     ] },
@@ -2446,6 +2455,7 @@ const SocialTemplates = [
   { id: "story",        name: "Short Story",       kind: "Carousel",
     slides: (p) => T_Story(p),
     fields: [
+      f("kicker", "Cover kicker", { placeholder: "A Short Story" }),
       f("coverLead", "Cover · roman"),
       f("coverItalic", "Cover · italic"),
       fA("slides", "Story slides — 'Kicker — Body', one per line", { hint: "Colors cycle cream → blue → lime → ink. Add as many slides as needed." }),
@@ -2455,15 +2465,17 @@ const SocialTemplates = [
     slides: (p) => T_Tips(p),
     fields: [
       f("kicker", "Kicker"),
+      f("ruleLabel", "Slide label word", { placeholder: "Rule", hint: "Appears as 'Rule 1 of N'. Change to Tip, Lesson, Step…" }),
+      f("titleItalic", "Cover italic line", { placeholder: "I keep close." }),
       fA("subtitle", "Subtitle (cover)"),
       fA("tips", "Tips (one per line)", { hint: "Add as many as needed — no limit." }),
-      f("ruleLabel", "Slide label word", { placeholder: "Rule", hint: "Appears as 'Rule 1 of N'. Change to Tip, Lesson, Step…" }),
       f("ctaText", "Closing slide CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
     ] },
   { id: "mistakes",    name: "Mistakes Made",      kind: "Carousel",
     slides: (p) => T_Mistakes(p),
     fields: [
       f("kicker", "Kicker", { placeholder: "Hard Lessons" }),
+      f("titleItalic", "Cover italic title", { placeholder: "I made for you." }),
       fA("subtitle", "Cover subtitle"),
       fA("mistakes", "Mistakes — 'Title — Lesson', one per line", { hint: "No limit. Title is bold; lesson appears as italic note." }),
       f("ctaText", "Closing CTA text (optional)", { hint: "Leave empty to skip the closing slide." }),
@@ -2472,6 +2484,7 @@ const SocialTemplates = [
     slides: (p) => T_MiniGuide(p),
     fields: [
       f("kicker", "Kicker", { placeholder: "Mini Guide" }),
+      f("prefix", "Top prefix label", { placeholder: "How to" }),
       f("topic", "Topic / title", { placeholder: "Ship Faster" }),
       f("intro", "Cover intro line", { hint: "Leave empty to auto-generate from step count." }),
       fA("steps", "Steps — 'Name — detail', one per line", { hint: "Detail is optional. No slide limit." }),
@@ -2485,6 +2498,7 @@ const SocialTemplates = [
       f("label", "Top-left label", { placeholder: "Now Booking" }),
       f("lead", "Lead-in", { placeholder: "Two spots open for" }),
       f("window", "Window (circled)", { placeholder: "Q3" }),
+      f("project", "Accent / Trailing text", { placeholder: "projects." }),
       fA("subtext", "Subtext"),
       f("ctaText", "CTA text"),
     ] },
@@ -2539,6 +2553,7 @@ const SocialTemplates = [
   { id: "testimonial", name: "Testimonial Card",    kind: "Social Proof",
     slides: (p) => [<T_TestimonialEditorial {...p} />],
     fields: [
+      f("kicker", "Kicker label", { placeholder: "Client proof" }),
       fA("quote", "Quote"),
       f("clientName", "Client name"),
       f("clientTitle", "Client title / company", { placeholder: "Founder · Atlas & Bell" }),
@@ -2708,6 +2723,7 @@ const SocialTemplates = [
   { id: "pricing",     name: "Pricing Card",        kind: "Pricing",
     slides: (p) => [<T_PricingEditorial {...p} />],
     fields: [
+      f("kicker", "Proposal / kicker label", { placeholder: "Proposal No. 01" }),
       f("packageName", "Package name", { placeholder: "Brand Starter" }),
       f("price", "Price (number only)", { placeholder: "1500" }),
       { key: "currency", label: "Currency", type: "select", options: [{ value: "USD", label: "USD ($)" }, { value: "IDR", label: "IDR (Rp)" }, { value: "EUR", label: "EUR (€)" }, { value: "GBP", label: "GBP (£)" }] },

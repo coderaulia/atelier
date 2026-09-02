@@ -86,7 +86,7 @@ export function sanitizeTemplateHtml(input: string): TemplateSanitizeResult {
   // Inline styles are allowed for layout, but must pass through the same CSS
   // URL/property checks as a stylesheet. Also remove srcdoc, which is an HTML
   // execution context even when attached to an otherwise harmless element.
-  html = html.replace(/\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi, (match, doubleQuoted?: string, singleQuoted?: string, bare?: string) => {
+  html = html.replace(/\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi, (_match, doubleQuoted?: string, singleQuoted?: string, bare?: string) => {
     const value = doubleQuoted ?? singleQuoted ?? bare ?? ''
     const clean = sanitizeTemplateCss(value).clean.replace(/["']/g, '')
     return ` style="${clean}"`

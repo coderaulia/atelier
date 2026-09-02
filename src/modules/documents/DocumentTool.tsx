@@ -83,6 +83,8 @@ import { SocialPreview } from './SocialPreview';
 import { DocumentSettingsModal as SettingsModal } from './DocumentSettingsModal';
 import { BulkCSVPanel } from './BulkCSVPanel';
 import { DocumentSidebar } from './DocumentSidebar';
+import { DocumentHistory } from './DocumentHistory';
+import { useDocumentStore } from './useDocumentStore';
 
 type DocumentToolMode = 'full' | 'documents' | 'social';
 
@@ -148,7 +150,33 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const [copyState, setCopyState] = useState("idle");
   const [showUpgrade, setShowUpgrade] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'editor' | 'bulk'>('editor');
+  const [activeTab, setActiveTab] = useState<'editor' | 'history' | 'bulk'>('editor');
+  const docStore = useDocumentStore(docType);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get('type');
+      if (p && DOC_TYPES.some((d: any) => d.id === p)) {
+        setDocType(p);
+      }
+    } catch {}
+  }, []);
+
+  const handleSaveDocument = async (status: 'draft' | 'final' = 'draft') => {
+    setSaving(true);
+    try {
+      await docStore.save(docType, data, variant, status);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2500);
+    } catch (e: any) {
+      alert(e?.message || 'Failed to save document');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [csvRows, setCsvRows] = useState<string[][]>([]);
   const [mappings, setMappings] = useState<Record<string, string>>({});
@@ -370,6 +398,9 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const handlePrint = () => {
     if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
+    if (docType !== 'social' && !isToolMode) {
+      handleSaveDocument('final').catch(() => {});
+    }
     exportPrint(exportTarget);
     increment();
   };
@@ -533,8 +564,29 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
           {cfg.hasVariants && !cfg.isTool && (
             <div className="editor__variants" style={{ flexWrap: 'wrap', gap: '8px 12px' }}>
               <div className="bulk-tab-header" style={{ marginBottom: 0, marginRight: 16 }}>
-                <button className={`tab-btn ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>Editor</button>
-                <button className={`tab-btn ${activeTab === 'bulk' ? 'active' : ''}`} onClick={() => setActiveTab('bulk')}>Bulk CSV</button>
+                <button
+                  type="button"
+                  className={`tab-btn ${activeTab === 'editor' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('editor')}
+                >
+                  ✍️ Editor
+                </button>
+                <button
+                  type="button"
+                  className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('history')}
+                >
+                  📋 History ({docStore.totalCount})
+                </button>
+                {!cfg.isTool && docType !== 'social' && (
+                  <button
+                    type="button"
+                    className={`tab-btn ${activeTab === 'bulk' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('bulk')}
+                  >
+                    ⚡ Bulk CSV
+                  </button>
+                )}
               </div>
               {activeTab === 'editor' && VARIANTS.map(v => (
                 <button
@@ -559,7 +611,39 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
           )}
         </div>
         <div className="editor__body">
-          {activeTab === 'bulk' && !cfg.isTool && docType !== 'social' ? (
+          {activeTab === 'history' ? (
+            <DocumentHistory
+              docType={docType}
+              items={docStore.items}
+              isLoading={docStore.isLoading}
+              onEdit={async (id) => {
+                try {
+                  const doc = await docStore.load(id);
+                  setData(doc.data);
+                  if (doc.variant) setVariant(doc.variant);
+                  setActiveTab('editor');
+                } catch {
+                  alert("Failed to load document");
+                }
+              }}
+              onDuplicate={async (id) => {
+                try {
+                  await docStore.duplicate(id);
+                } catch {
+                  alert("Failed to duplicate document");
+                }
+              }}
+              onDelete={async (id) => {
+                try {
+                  await docStore.remove(id);
+                } catch {
+                  alert("Failed to delete document");
+                }
+              }}
+              onSearchChange={(q) => docStore.fetchItems(docType, undefined, q)}
+              onStatusChange={(s) => docStore.fetchItems(docType, s, undefined)}
+            />
+          ) : activeTab === 'bulk' && !cfg.isTool && docType !== 'social' ? (
             <BulkCSVPanel
               docType={docType}
               csvHeaders={csvHeaders}
@@ -636,7 +720,19 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
           )}
 
           {isToolMode ? null : docType !== "social" ? (
-            <button className="export-btn" onClick={handlePrint}>{Icon.print} Export PDF</button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button
+                type="button"
+                className="export-btn export-btn--ghost"
+                onClick={() => handleSaveDocument('draft')}
+                disabled={saving}
+                style={{ fontSize: 12, padding: '7px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                title="Save this document to your cloud history"
+              >
+                {saveSuccess ? '✓ Saved' : saving ? 'Saving…' : '💾 Save'}
+              </button>
+              <button className="export-btn" onClick={handlePrint}>{Icon.print} Export PDF</button>
+            </div>
           ) : socialSlides.length > 1 ? (
             <>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--shell-muted)" }}>

@@ -18,6 +18,18 @@ const UPSELL_KEY = 'vs_upsell_dismissed'
 const LAST_TOOL_KEY = 'vs_last_used_tool'
 const WELCOME_KEY = 'vs_welcome_dismissed'
 
+const DOC_TYPE_INFO: Record<string, { name: string; icon: string; desc: string }> = {
+  agreement:  { name: 'Agreement', icon: '📄', desc: 'Client engagement agreement' },
+  invoice:    { name: 'Invoice', icon: '🧾', desc: 'Billing with auto-calculations' },
+  proposal:   { name: 'Proposal', icon: '📑', desc: 'Client pitch & scope' },
+  prd:        { name: 'PRD', icon: '📋', desc: 'Product requirements doc' },
+  retainer:   { name: 'Retainer', icon: '🔄', desc: 'Monthly recurring design retainer' },
+  receipt:    { name: 'Receipt', icon: '🏷️', desc: 'Payment confirmation slip' },
+  onboarding: { name: 'Onboarding', icon: '🚀', desc: 'New client kickoff guide' },
+  scopeguard: { name: 'Scope Guard', icon: '🛡️', desc: 'Revision terms & boundaries' },
+  handover:   { name: 'Handover', icon: '📦', desc: 'Deliverables & credential handoff' },
+}
+
 export default function Dashboard() {
   const { user } = useAuth()
   const { isPro } = usePlan()
@@ -26,6 +38,15 @@ export default function Dashboard() {
   const [pricing, setPricing] = useState<PricingData | null>(null)
   const [upsellVisible, setUpsellVisible] = useState(() => shouldShowUpsell())
   const [welcomeVisible, setWelcomeVisible] = useState(() => !localStorage.getItem(WELCOME_KEY) && !localStorage.getItem(LAST_TOOL_KEY))
+
+  const [pinnedDocTypes] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('dg.pinnedDocTypes.v1')
+      return raw ? JSON.parse(raw) : ['agreement', 'invoice', 'proposal']
+    } catch {
+      return ['agreement', 'invoice', 'proposal']
+    }
+  })
 
   const recentTool = useMemo(() => {
     const lastToolId = localStorage.getItem(LAST_TOOL_KEY)
@@ -163,6 +184,35 @@ export default function Dashboard() {
               })}
             </div>
           )}
+        </section>
+      )}
+
+      {pinnedDocTypes.length > 0 && (
+        <section className="dashboard-section">
+          <div className="dashboard-section__header">
+            <h2>⭐ Priority Documents</h2>
+            <Link to="/app/documents">Open Document Studio →</Link>
+          </div>
+          <div className="dashboard-tool-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+            {pinnedDocTypes.map((type) => {
+              const doc = DOC_TYPE_INFO[type]
+              if (!doc) return null
+              return (
+                <Link
+                  key={type}
+                  to={`/app/documents?type=${type}`}
+                  className="dashboard-tool-card"
+                  style={{ textDecoration: 'none', border: '1px solid rgba(148, 163, 184, 0.12)' }}
+                >
+                  <div className="dashboard-tool-card__icon" style={{ fontSize: '1.4rem' }}>{doc.icon}</div>
+                  <div className="dashboard-tool-card__content">
+                    <h3 style={{ fontSize: '0.95rem', margin: '0 0 4px', color: '#f1f5f9' }}>{doc.name}</h3>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(148, 163, 184, 0.7)', margin: 0 }}>{doc.desc}</p>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
         </section>
       )}
 

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Icon, useLocalStorage, exportPrint, exportImage, copyImage,
-  Field, TextInput, Textarea, ImageField,
 } from './utils';
 import {
   AgreementEditor, InvoiceEditor, ProposalEditor, PRDEditor,
@@ -27,7 +26,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { hasGlobalMetadata, metadataFingerprint, metadataToBrand } from '../../lib/globalMetadata';
 import UpgradeModal from '../../components/UpgradeModal';
 import { usePlan } from '../../hooks/usePlan';
-import { parseCSV, generateCSVTemplate, autoMapHeaders, constructRowData, convertPngToPdf, DOCUMENT_FIELDS, FIELD_LABELS } from './bulk-utils';
+import { parseCSV, autoMapHeaders, constructRowData, convertPngToPdf, DOCUMENT_FIELDS } from './bulk-utils';
 
 const BuiltInSocialTemplates = [...SocialTemplates, ...TikTokTemplates];
 
@@ -80,185 +79,10 @@ const VARIANTS = [
 
 const GLOBAL_METADATA_SYNC_KEY = "dg.globalMetadataFingerprint.v1";
 
-/* ---------- Social Preview ---------- */
-function SocialPreview({ template, data, brand, zoom }: any) {
-  if (!template) return null;
-  const slides = template.slides({ data, brand });
-  const isCarousel = slides.length > 1;
-  const fileBase = template.name.toLowerCase().replace(/\s+/g, "-");
-
-  const dlSlide = async (i: number, fmt: string) => {
-    await exportImage(`#social-target-${i}`, `${fileBase}-${String(i + 1).padStart(2, "0")}`, fmt);
-  };
-
-  return (
-    <div className="social-stage">
-      {slides.map((slide: any, i: number) => (
-        <div className="slide-wrap" key={i}>
-          {isCarousel && <div className="slide-wrap__num">Slide {String(i + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}</div>}
-          {isCarousel && (
-            <div className="slide-wrap__chrome">
-              <button className="slide-wrap__btn" onClick={() => dlSlide(i, "png")} title="Download this slide as PNG">{Icon.image} PNG</button>
-              <button className="slide-wrap__btn" onClick={() => dlSlide(i, "jpg")} title="Download this slide as JPG">{Icon.download} JPG</button>
-            </div>
-          )}
-          <div id={`social-target-${i}`} style={{ transform: `scale(${zoom})`, transformOrigin: "top center", boxShadow: "0 24px 70px -24px rgba(0,0,0,0.4)" }}>
-            {slide}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ---------- Settings Modal ---------- */
-function SettingsModal({ brand, setBrand, onClose }: any) {
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
-
-  const set = (k: string, v: any) => setBrand({ ...brand, [k]: v });
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e: any) => e.stopPropagation()}>
-        <div className="modal__head">
-          <span className="modal__title">Studio settings</span>
-          <button className="modal__close" onClick={onClose}>×</button>
-        </div>
-        <div className="modal__body">
-          <div style={{ fontSize: 12, color: "var(--shell-muted)", marginBottom: 14, lineHeight: 1.5 }}>
-            Used as the "from" details on every document. Stored locally on this device.
-          </div>
-          <Field label="Studio / Business name">
-            <TextInput value={brand.studioName} onChange={(v: any) => set("studioName", v)} />
-          </Field>
-          <Field label="Your full name">
-            <TextInput value={brand.fullName} onChange={(v: any) => set("fullName", v)} />
-          </Field>
-          <div className="field__row">
-            <Field label="Social handle">
-              <TextInput value={brand.handle} onChange={(v: any) => set("handle", v)} />
-            </Field>
-            <Field label="Email">
-              <TextInput value={brand.email} onChange={(v: any) => set("email", v)} />
-            </Field>
-          </div>
-          <Field label="Studio address">
-            <Textarea value={brand.studioAddress} onChange={(v: any) => set("studioAddress", v)} />
-          </Field>
-          <Field label="Payment details (markdown)">
-            <Textarea value={brand.payment} onChange={(v: any) => set("payment", v)} />
-          </Field>
-          <Field label="Tax ID / Business no.">
-            <TextInput value={brand.taxId} onChange={(v: any) => set("taxId", v)} />
-          </Field>
-
-          <div style={{ borderTop: "1px solid var(--shell-rule)", paddingTop: 20, marginTop: 8 }}>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--shell-muted)", marginBottom: 14 }}>
-              Brand Identity
-            </div>
-            <ImageField
-              label="Company logo (Dark / Default version)"
-              hint="Used on light backgrounds. SVG, PNG or JPG format."
-              value={brand.logo}
-              onChange={(v: any) => set("logo", v)}
-            />
-            <ImageField
-              label="Company logo (Light / White version)"
-              hint="Used on dark backgrounds. SVG, PNG or JPG format."
-              value={brand.logoLight}
-              onChange={(v: any) => set("logoLight", v)}
-            />
-            <ImageField
-              label="Social profile picture / Avatar"
-              hint="Used for social feed templates. Square format recommended."
-              value={brand.logoAvatar}
-              onChange={(v: any) => set("logoAvatar", v)}
-            />
-            {(brand.logo || brand.logoLight || brand.logoAvatar) && (
-              <Field label="Show logo on templates">
-                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "6px 0" }}>
-                  <input
-                    type="checkbox"
-                    checked={brand.logoEnabled !== false}
-                    onChange={(e: any) => set("logoEnabled", e.target.checked)}
-                    style={{ width: 16, height: 16, cursor: "pointer", accentColor: "var(--accent)" }}
-                  />
-                  <span style={{ fontSize: 13, color: "var(--shell-muted)" }}>
-                    {brand.logoEnabled !== false ? "Enabled — showing on all templates" : "Disabled"}
-                  </span>
-                </label>
-              </Field>
-            )}
-            <div style={{ borderTop: "1px solid var(--shell-rule)", paddingTop: 20, marginTop: 20 }}>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--shell-muted)", marginBottom: 14 }}>
-                Backup &amp; Restore
-              </div>
-              <div style={{ display: "flex", gap: 10 }}>
-                <button
-                  onClick={() => {
-                    const keys = ["dg.data.v2", "dg.brand.v2", "dg.drafts.v3", "dg.variant.v2", "dg.socialTemplateId.v2"];
-                    const backup: Record<string, any> = {};
-                    keys.forEach(k => {
-                      try {
-                        const val = localStorage.getItem(k);
-                        if (val) backup[k] = JSON.parse(val);
-                      } catch (e) {}
-                    });
-                    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `atelier-backup-${new Date().toISOString().slice(0, 10)}.json`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                  style={{ flex: 1, background: "var(--shell-btn-bg)", color: "var(--shell-ink)", border: "1px solid var(--shell-rule)", borderRadius: 6, padding: "10px 14px", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-mono)" }}
-                >
-                  📥 Export Backup
-                </button>
-                <button
-                  onClick={() => {
-                    const input = document.createElement("input");
-                    input.type = "file";
-                    input.accept = ".json";
-                    input.onchange = (e: any) => {
-                      const file = e.target.files[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = (evt: any) => {
-                        try {
-                          const data = JSON.parse(evt.target.result);
-                          const ALLOWED_KEYS = ["dg.data.v2", "dg.brand.v2", "dg.drafts.v3", "dg.variant.v2", "dg.socialTemplateId.v2"];
-                          if (confirm("This will overwrite your current settings, drafts, and content. Proceed?")) {
-                            Object.entries(data).forEach(([k, v]) => {
-                              if (ALLOWED_KEYS.includes(k)) localStorage.setItem(k, JSON.stringify(v));
-                            });
-                            window.location.reload();
-                          }
-                        } catch (err) {
-                          alert("Invalid backup file format.");
-                        }
-                      };
-                      reader.readAsText(file);
-                    };
-                    input.click();
-                  }}
-                  style={{ flex: 1, background: "var(--shell-btn-bg)", color: "var(--shell-ink)", border: "1px solid var(--shell-rule)", borderRadius: 6, padding: "10px 14px", fontSize: 13, cursor: "pointer", fontFamily: "var(--font-mono)" }}
-                >
-                  📤 Import Backup
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { SocialPreview } from './SocialPreview';
+import { DocumentSettingsModal as SettingsModal } from './DocumentSettingsModal';
+import { BulkCSVPanel } from './BulkCSVPanel';
+import { DocumentSidebar } from './DocumentSidebar';
 
 type DocumentToolMode = 'full' | 'documents' | 'social';
 
@@ -308,7 +132,15 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const [recentSocialTemplateId, setRecentSocialTemplateId] = useLocalStorage("dg.recentSocialTemplateId.v2", socialTemplateId);
   const [drafts, setDrafts] = useLocalStorage("dg.drafts.v3", [] as any[]);
   const [activeDraftId, setActiveDraftId] = useLocalStorage("dg.activeDraftId.v3", "");
+  const [pinnedDocTypes, setPinnedDocTypes] = useLocalStorage("dg.pinnedDocTypes.v1", ["agreement", "invoice", "proposal"]);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const togglePin = (id: string) => {
+    setPinnedDocTypes((prev: string[]) => {
+      const list = Array.isArray(prev) ? prev : [];
+      return list.includes(id) ? list.filter((p: string) => p !== id) : [...list, id];
+    });
+  };
   const [socialStep, setSocialStep] = useState("pick");
   const [socialPickerKey, setSocialPickerKey] = useState(0);
   const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
@@ -583,78 +415,21 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   return (
     <div className={`app app--mode-${mode} app--mobile-${mobileTab} ${docType === "social" && socialStep === "pick" ? "app--social-pick" : "app--social-edit"}`}>
       {/* ===== Sidebar ===== */}
-      <aside className="sidebar">
-        <div className="sidebar__brand">
-          <span className="sidebar__brand-mark"></span>
-          <span className="sidebar__brand-name">Studio</span>
-          <span className="sidebar__brand-tag">v 0.1</span>
-        </div>
-
-        {!isSocialDemo && (
-          <div className="sidebar__group">
-            <div className="sidebar__heading">Documents</div>
-            {DOC_TYPES.filter((d: any) => d.id !== "social" && !d.isTool).map((d: any) => (
-              <button
-                key={d.id}
-                className={"sidebar__item " + (docType === d.id ? "sidebar__item--active" : "")}
-                onClick={() => setDocType(d.id)}
-              >
-                <span className="sidebar__item-icon">{d.icon}</span>
-                <span>{d.name}</span>
-                {d.hasVariants && <span className="sidebar__item-count">{String(VARIANTS.length).padStart(2, "0")}</span>}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {!isDocumentsDemo && (
-          <div className="sidebar__group">
-            <div className="sidebar__heading">Social</div>
-            <button
-              className={"sidebar__item " + (docType === "social" ? "sidebar__item--active" : "")}
-              onClick={showSocialPicker}
-            >
-              <span className="sidebar__item-icon">{Icon.social}</span>
-              <span>Social media</span>
-              <span className="sidebar__item-count">{AllSocialTemplates.length}</span>
-            </button>
-          </div>
-        )}
-
-        {!isMarketingDemo && (
-          <div className="sidebar__group">
-            <div className="sidebar__heading">Tools</div>
-            {DOC_TYPES.filter((d: any) => d.isTool).map((d: any) => (
-              <button
-                key={d.id}
-                className={"sidebar__item " + (docType === d.id ? "sidebar__item--active" : "")}
-                onClick={() => setDocType(d.id)}
-              >
-                <span className="sidebar__item-icon">{d.icon}</span>
-                <span>{d.name}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {!isMarketingDemo && (
-          <>
-            <div className="sidebar__footer">
-              <span className="sidebar__avatar">{((brand as any).fullName || "M A").split(" ").map((s: string) => s[0]).join("").slice(0, 2).toUpperCase()}</span>
-              <div className="sidebar__user">
-                <div className="sidebar__user-name">{(brand as any).fullName || "—"}</div>
-                <div className="sidebar__user-tag">{(brand as any).handle || "—"}</div>
-              </div>
-              <button className="sidebar__settings-btn" onClick={() => setSettingsOpen(true)}>{Icon.gear}</button>
-            </div>
-            <div className="sidebar__attribution">
-              <a href="https://vanaila.com" target="_blank" rel="noopener noreferrer" className="sidebar__attribution-link">
-                Vanaila Digital · Open source
-              </a>
-            </div>
-          </>
-        )}
-      </aside>
+      <DocumentSidebar
+        docTypes={DOC_TYPES}
+        currentDocType={docType}
+        onSelectDocType={setDocType}
+        variantsCount={VARIANTS.length}
+        isSocialDemo={isSocialDemo}
+        isDocumentsDemo={isDocumentsDemo}
+        isMarketingDemo={isMarketingDemo}
+        onSocialPick={showSocialPicker}
+        socialCount={AllSocialTemplates.length}
+        brand={brand}
+        onOpenSettings={() => setSettingsOpen(true)}
+        pinnedDocTypes={pinnedDocTypes}
+        onTogglePin={togglePin}
+      />
 
       {/* ===== Editor ===== */}
       <section className="editor">
@@ -785,102 +560,20 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
         </div>
         <div className="editor__body">
           {activeTab === 'bulk' && !cfg.isTool && docType !== 'social' ? (
-            <div style={{ padding: '0 20px 40px' }}>
-              <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: 14, fontWeight: 500 }}>Bulk Generation ({cfg.name})</h3>
-                <button
-                  onClick={() => {
-                    const csv = generateCSVTemplate(docType);
-                    const blob = new Blob([csv], { type: 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${docType}-template.csv`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                  className="export-btn export-btn--ghost"
-                  style={{ fontSize: 12, padding: '4px 8px', border: '1px solid var(--shell-rule)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-                >
-                  {Icon.download} CSV Template
-                </button>
-              </div>
-
-              <label className="bulk-dropzone" style={{ display: 'block' }}>
-                <input type="file" accept=".csv" onChange={handleBulkUpload} style={{ display: 'none' }} />
-                <div style={{ marginBottom: 8 }}>{Icon.doc}</div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--shell-ink)', marginBottom: 4 }}>Upload CSV Data</div>
-                <div style={{ fontSize: 12 }}>Drag and drop or click to browse</div>
-              </label>
-
-              {csvHeaders.length > 0 && (
-                <div className="bulk-mapping-wrap">
-                  <div style={{ marginBottom: 16, fontSize: 13, fontWeight: 500, color: 'var(--shell-ink)', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Map Fields</span>
-                    <span style={{ color: 'var(--shell-muted)', fontWeight: 400 }}>{csvRows.length} rows detected</span>
-                  </div>
-
-                  <div style={{ maxHeight: 300, overflowY: 'auto', paddingRight: 10, marginBottom: 20 }}>
-                    {(DOCUMENT_FIELDS[docType] || []).map(field => (
-                      <div className="bulk-mapping-row" key={field}>
-                        <div style={{ color: 'var(--shell-muted)' }}>{FIELD_LABELS[docType]?.[field] || field}</div>
-                        <select
-                          value={mappings[field] || ''}
-                          onChange={(e: any) => setMappings({ ...mappings, [field]: e.target.value })}
-                        >
-                          <option value="">-- Ignore --</option>
-                          {csvHeaders.map(h => <option key={h} value={h}>{h}</option>)}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', paddingTop: 16, borderTop: '1px solid var(--shell-rule)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-                      <span style={{ fontSize: 12, color: 'var(--shell-muted)' }}>Format:</span>
-                      <select
-                        value={bulkExportFormat}
-                        onChange={(e: any) => setBulkExportFormat(e.target.value)}
-                        style={{ background: "var(--shell-field-bg)", color: "var(--shell-ink)", border: "1px solid var(--shell-rule)", borderRadius: 6, padding: "6px 10px", fontSize: 12, cursor: 'pointer' }}
-                      >
-                        <option value="pdf">PDF (Vector)</option>
-                        <option value="png">PNG (Image)</option>
-                      </select>
-                    </div>
-
-                    <button
-                      onClick={startBulkGeneration}
-                      disabled={bulkProcessing}
-                      style={{ background: "var(--shell-ink)", color: "var(--shell-bg)", border: "none", borderRadius: 6, padding: "8px 16px", fontSize: 13, fontWeight: 500, cursor: bulkProcessing ? "default" : "pointer", opacity: bulkProcessing ? 0.7 : 1 }}
-                    >
-                      {bulkProcessing ? "Processing..." : `Generate ${csvRows.length} Files`}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {bulkQueue.length > 0 && (
-                <div className="bulk-progress-wrap">
-                  <div style={{ fontSize: 12, display: 'flex', justifyContent: 'space-between', color: 'var(--shell-muted)' }}>
-                    <span>Processing {bulkProgressIndex >= 0 ? Math.min(bulkProgressIndex + 1, bulkQueue.length) : 0} of {bulkQueue.length}</span>
-                    <span>{Math.round((Math.max(0, bulkProgressIndex) / Math.max(1, bulkQueue.length)) * 100)}%</span>
-                  </div>
-                  <div className="bulk-progress-bar">
-                    <div className="bulk-progress-fill" style={{ width: `${(Math.max(0, bulkProgressIndex) / Math.max(1, bulkQueue.length)) * 100}%` }}></div>
-                  </div>
-                  <div style={{ maxHeight: 200, overflowY: 'auto' }}>
-                    {bulkQueue.map((q) => (
-                      <div key={q.id} className="bulk-queue-item">
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>{q.name}</span>
-                        <span className={`bulk-status--${q.status}`}>
-                          {q.status === 'pending' ? 'Waiting' : q.status === 'processing' ? 'Rendering...' : q.status === 'done' ? 'Success' : 'Failed'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <BulkCSVPanel
+              docType={docType}
+              csvHeaders={csvHeaders}
+              csvRows={csvRows}
+              mappings={mappings}
+              setMappings={setMappings}
+              handleBulkUpload={handleBulkUpload}
+              bulkExportFormat={bulkExportFormat}
+              setBulkExportFormat={setBulkExportFormat}
+              startBulkGeneration={startBulkGeneration}
+              bulkProcessing={bulkProcessing}
+              bulkQueue={bulkQueue}
+              bulkProgressIndex={bulkProgressIndex}
+            />
           ) : (
             <div style={{ display: activeTab === 'editor' || cfg.isTool || docType === 'social' ? 'block' : 'none' }}>
               {docType === "agreement"  && <AgreementEditor  data={data} onChange={setData} />}

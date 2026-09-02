@@ -16,7 +16,7 @@ export default function SidebarItem({ tool, onNavigate }: SidebarItemProps) {
       to={tool.appPath}
       className={`sidebar-item ${isActive ? 'sidebar-item--active' : ''}`}
       onClick={onNavigate}
-      title={tool.description}
+      title={`${tool.name} — ${tool.description}`}
     >
       <span className="sidebar-item__icon">{tool.icon}</span>
       <span className="sidebar-item__label">{tool.name}</span>

@@ -8,6 +8,27 @@ import UpgradeModal from '@/components/UpgradeModal'
 import { useState } from 'react'
 import './app-shell.css'
 
+import { useAppContext } from '@/context/AppContext'
+
+function AppShellContent({ upgradeOpen, setUpgradeOpen }: { upgradeOpen: boolean; setUpgradeOpen: (v: boolean) => void }) {
+  const { sidebarCollapsed } = useAppContext()
+
+  return (
+    <>
+      <div className={`app-shell ${sidebarCollapsed ? 'app-shell--collapsed' : ''}`}>
+        <AppSidebar />
+        <div className="app-main">
+          <TopBar />
+          <main className="app-content">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+      {upgradeOpen && <UpgradeModal onClose={() => setUpgradeOpen(false)} />}
+    </>
+  )
+}
+
 function AppShellInner() {
   const navigate = useNavigate()
   const { isAuthenticated, isLoading } = useAuth()
@@ -34,16 +55,7 @@ function AppShellInner() {
       onAuthRequired={() => navigate('/login')}
       onUpgradeRequired={() => setUpgradeOpen(true)}
     >
-      <div className="app-shell">
-        <AppSidebar />
-        <div className="app-main">
-          <TopBar />
-          <main className="app-content">
-            <Outlet />
-          </main>
-        </div>
-      </div>
-      {upgradeOpen && <UpgradeModal onClose={() => setUpgradeOpen(false)} />}
+      <AppShellContent upgradeOpen={upgradeOpen} setUpgradeOpen={setUpgradeOpen} />
     </AppContextProvider>
   )
 }

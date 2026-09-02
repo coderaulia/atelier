@@ -6,6 +6,8 @@ interface AppContextValue {
   onUpgradeRequired: () => void
   sidebarOpen: boolean
   setSidebarOpen: (value: boolean) => void
+  sidebarCollapsed: boolean
+  setSidebarCollapsed: (value: boolean | ((prev: boolean) => boolean)) => void
   activeTool: ToolDefinition | null
   setActiveTool: (tool: ToolDefinition | null) => void
 }
@@ -17,6 +19,8 @@ const AppContext = createContext<AppContextValue>({
   onUpgradeRequired: noop,
   sidebarOpen: false,
   setSidebarOpen: noop,
+  sidebarCollapsed: false,
+  setSidebarCollapsed: noop,
   activeTool: null,
   setActiveTool: noop,
 })
@@ -35,7 +39,24 @@ export function AppContextProvider({
   activeTool: controlledActiveTool,
 }: AppContextProviderProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsedState] = useState(() => {
+    try {
+      return localStorage.getItem('app.sidebarCollapsed') === 'true'
+    } catch {
+      return false
+    }
+  })
   const [internalActiveTool, setInternalActiveTool] = useState<ToolDefinition | null>(null)
+
+  const setSidebarCollapsed = (value: boolean | ((prev: boolean) => boolean)) => {
+    setSidebarCollapsedState((prev) => {
+      const next = typeof value === 'function' ? value(prev) : value
+      try {
+        localStorage.setItem('app.sidebarCollapsed', String(next))
+      } catch {}
+      return next
+    })
+  }
 
   const value = useMemo(
     () => ({
@@ -43,10 +64,12 @@ export function AppContextProvider({
       onUpgradeRequired,
       sidebarOpen,
       setSidebarOpen,
+      sidebarCollapsed,
+      setSidebarCollapsed,
       activeTool: controlledActiveTool ?? internalActiveTool,
       setActiveTool: setInternalActiveTool,
     }),
-    [onAuthRequired, onUpgradeRequired, sidebarOpen, controlledActiveTool, internalActiveTool]
+    [onAuthRequired, onUpgradeRequired, sidebarOpen, sidebarCollapsed, controlledActiveTool, internalActiveTool]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

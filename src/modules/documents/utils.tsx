@@ -137,13 +137,27 @@ export function exportPrint(targetSelector: string) {
 export async function captureImage(targetSelector: string, format = "png"): Promise<string | null> {
   const node = document.querySelector(targetSelector) as HTMLElement | null;
   if (!node) return null;
+
+  if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch (e) {}
+  }
+
   const oldTransform = node.style.transform;
   const oldBoxShadow = node.style.boxShadow;
   node.style.transform = "none";
   node.style.boxShadow = "none";
   try {
     const htmlToImage = await loadHtmlToImage();
-    const opts = { pixelRatio: 2, cacheBust: true };
+    const frame = (node.classList.contains("social-frame") ? node : node.querySelector(".social-frame")) as HTMLElement | null;
+    const width = frame ? (frame.offsetWidth || (frame.classList.contains("social-frame--vertical") ? 1080 : 1080)) : (node.offsetWidth || 1080);
+    const height = frame ? (frame.offsetHeight || (frame.classList.contains("social-frame--vertical") ? 1920 : 1080)) : (node.offsetHeight || 1080);
+
+    const opts: any = {
+      pixelRatio: 2,
+      cacheBust: true,
+      width,
+      height,
+    };
     if (format === "jpg" || format === "jpeg") {
       return await htmlToImage.toJpeg(node, { ...opts, quality: 0.95, backgroundColor: "#ffffff" });
     }

@@ -71,14 +71,28 @@ export function sanitizeTemplateHtml(input: string): TemplateSanitizeResult {
 
   // 5. Block external resource loads (leak vector + breaks html-to-image export).
   //    Allow only data:image, blob:, {{tokens}}, and relative/same-origin paths.
-  html = html.replace(/\ssrc\s*=\s*"(https?:|\/\/)[^"]*"/gi, () => {
-    record(removed, 'external src (use data:image or {{token}})')
-    return ' src=""'
+  //    Match quoted and unquoted attributes: browsers accept all three forms.
+  const externalUrl = /^(?:https?:|\/\/)/i
+  html = html.replace(/\s(src|href|xlink:href|srcset)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi, (match, attr: string, doubleQuoted?: string, singleQuoted?: string, bare?: string) => {
+    const value = doubleQuoted ?? singleQuoted ?? bare ?? ''
+    // srcset can contain several URLs and is not needed by the template format.
+    if (attr.toLowerCase() === 'srcset' || externalUrl.test(value)) {
+      record(removed, `external ${attr.toLowerCase()} (use data:image or {{token}})`)
+      return ` ${attr}=""`
+    }
+    return match
   })
-  html = html.replace(/\ssrc\s*=\s*'(https?:|\/\/)[^']*'/gi, () => {
-    record(removed, 'external src (use data:image or {{token}})')
-    return " src=''"
+
+  // Inline styles are allowed for layout, but must pass through the same CSS
+  // URL/property checks as a stylesheet. Also remove srcdoc, which is an HTML
+  // execution context even when attached to an otherwise harmless element.
+  html = html.replace(/\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi, (match, doubleQuoted?: string, singleQuoted?: string, bare?: string) => {
+    const value = doubleQuoted ?? singleQuoted ?? bare ?? ''
+    const clean = sanitizeTemplateCss(value).clean.replace(/["']/g, '')
+    return ` style="${clean}"`
   })
+  if (/\ssrcdoc\s*=/i.test(html)) record(removed, 'srcdoc attributes')
+  html = html.replace(/\ssrcdoc\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
 
   // 6. Strip any remaining tag that is not in the allowlist (keep inner text).
   html = html.replace(/<\/?([a-zA-Z][a-zA-Z0-9:-]*)\b[^>]*>/g, (match, tagName: string) => {
@@ -114,6 +128,10 @@ export function sanitizeTemplateCss(input: string): TemplateSanitizeResult {
     record(removed, 'external url() (embed as data: URI)')
     return 'none'
   })
+
+  // Fixed/sticky positioning can escape the canvas and overlay the host app.
+  if (/position\s*:\s*(?:fixed|sticky)\b/i.test(css)) record(removed, 'fixed/sticky positioning')
+  css = css.replace(/position\s*:\s*(?:fixed|sticky)\b/gi, 'position: absolute')
 
   return { clean: css, removed }
 }

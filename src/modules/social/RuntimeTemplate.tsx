@@ -44,11 +44,14 @@ function escapeHtml(v: unknown): string {
     .replace(/'/g, '&#39;');
 }
 
-// Image tokens carry data:/blob: URLs the user supplied — allow them into an
-// attribute context without entity-escaping (DOMPurify still vets the scheme).
+// Raster image tokens carry data:/blob: URLs the user supplied — allow them into
+// an attribute context without entity-escaping (DOMPurify still vets the scheme).
+// SVG data URLs are deliberately escaped because SVG can contain active markup.
 function isImageValue(v: unknown): boolean {
   const s = String(v ?? '');
-  return s.startsWith('data:image/') || s.startsWith('blob:');
+  // SVG data URLs can contain active markup. Keep the raw-value shortcut limited
+  // to raster data URLs; DOMPurify still validates the resulting attribute.
+  return /^data:image\/(?:png|jpe?g|gif|webp);/i.test(s) || s.startsWith('blob:');
 }
 
 function resolveTokens(
@@ -104,7 +107,8 @@ function scopeCss(css: string, scopeId: string): string {
     .replace(/@import[^;]*;?/gi, '')
     .replace(/expression\s*\([^)]*\)/gi, '')
     .replace(/(javascript|vbscript):/gi, '')
-    .replace(/url\(\s*(['"]?)(https?:|\/\/)[^)]*\1\s*\)/gi, 'none');
+    .replace(/url\(\s*(['"]?)(https?:|\/\/)[^)]*\1\s*\)/gi, 'none')
+    .replace(/position\s*:\s*(?:fixed|sticky)\b/gi, 'position: absolute');
 
   const scope = `#${scopeId}`;
   // Prefix each rule's selectors. Leaves @-rules (media/keyframes) bodies alone

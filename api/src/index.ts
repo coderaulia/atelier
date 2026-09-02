@@ -11,6 +11,7 @@ import cvAi from './routes/cv-ai'
 import anonUsage from './routes/anon-usage'
 import { contentPublic } from './routes/admin/content'
 import { socialTemplatesPublic } from './routes/admin/social-templates'
+import documents from './routes/documents'
 import { checkRateLimit, getClientIP } from './lib/rate-limit'
 import { createAuth } from './lib/better-auth'
 import { isAllowedOrigin, requiresCsrfProtection } from './lib/request-security'
@@ -83,6 +84,7 @@ app.route('/content', contentPublic)
 app.route('/social-templates', socialTemplatesPublic)
 app.route('/api', cvAi)
 app.route('/anon-usage', anonUsage)
+app.route('/documents', documents)
 
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }))
 

@@ -122,14 +122,14 @@ const VFooter = ({ brand, color = "var(--vc-ink)", borderColor, useLightLogo }) 
 export function getDynamicFontSize(
   text: string | undefined | null,
   baseSize: number,
-  maxCharsAtBase: number = 8,
-  minSize: number = Math.max(16, Math.round(baseSize * 0.32))
+  maxCharsAtBase: number = 5,
+  minSize: number = Math.max(16, Math.round(baseSize * 0.35))
 ): number {
   const str = String(text ?? "").trim();
   const len = str.length;
   if (len <= maxCharsAtBase || maxCharsAtBase <= 0) return baseSize;
   const scale = maxCharsAtBase / len;
-  return Math.max(minSize, Math.round(baseSize * Math.pow(scale, 0.9)));
+  return Math.max(minSize, Math.round(baseSize * Math.pow(scale, 0.85)));
 }
 
 /* Theme options for template customization */
@@ -244,7 +244,7 @@ export function getThemeColors(themeName?: string) {
 /* ============================================== */
 const T_Quote = ({ data, brand }) => {
   const quoteText = data.quote || "The secret to social media success? Authenticity & consistency";
-  const quoteSize = getDynamicFontSize(quoteText, 88, 30, 36);
+  const quoteSize = getDynamicFontSize(quoteText, 116, 50, 60);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -252,7 +252,7 @@ const T_Quote = ({ data, brand }) => {
         <VLabel text={data.label || "A Better Future"} style={{ textAlign: "right", lineHeight: 1.4 }} />
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: quoteSize, lineHeight: 1.05, color: "var(--vc-ink)", letterSpacing: "-0.01em", wordBreak: "break-word" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: quoteSize, lineHeight: 1.02, color: "var(--vc-ink)", letterSpacing: "-0.01em", wordBreak: "break-word" }}>
           <span style={{ color: "var(--vc-red)" }}>"</span>{quoteText}<span style={{ color: "var(--vc-red)" }}>"</span>
         </div>
       </div>
@@ -277,9 +277,9 @@ const T_Quote = ({ data, brand }) => {
 /* ============================================== */
 const T_Stat = ({ data, brand }) => {
   const statText = data.stat || "91%";
-  const statSize = getDynamicFontSize(statText, 220, 4, 72);
-  const leadSize = getDynamicFontSize(data.italicLead || "Why do most posts fail?", 48, 25, 24);
-  const labelSize = getDynamicFontSize(data.statLabel || "of posts get zero meaningful engagement.", 34, 45, 20);
+  const statSize = getDynamicFontSize(statText, 380, 4, 130);
+  const leadSize = getDynamicFontSize(data.italicLead || "Why do most posts fail?", 56, 25, 32);
+  const labelSize = getDynamicFontSize(data.statLabel || "of posts get zero meaningful engagement.", 38, 45, 24);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "grid", gridTemplateRows: "auto 1fr auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -290,10 +290,10 @@ const T_Stat = ({ data, brand }) => {
         <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: leadSize, color: "var(--vc-ink)", marginBottom: 10, wordBreak: "break-word" }}>
           {data.italicLead || "Why do most posts fail?"}
         </div>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: statSize, lineHeight: 0.9, color: "var(--vc-red)", letterSpacing: "-0.04em", wordBreak: "break-word" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: statSize, lineHeight: 0.86, color: "var(--vc-red)", letterSpacing: "-0.04em", wordBreak: "break-word" }}>
           {statText}
         </div>
-        <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: labelSize, color: "var(--vc-mute)", maxWidth: 760, wordBreak: "break-word" }}>
+        <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: labelSize, color: "var(--vc-mute)", maxWidth: 720, wordBreak: "break-word" }}>
           {data.statLabel || "of posts get zero meaningful engagement."}
         </div>
       </div>
@@ -309,7 +309,7 @@ const T_Announce = ({ data, brand }) => {
   const headA = data.headlineA || "The Startup Formula";
   const headB = data.headlineB || "Strategy, Execution, Growth.";
   const fullText = `${headA} ${headB}`;
-  const headSize = getDynamicFontSize(fullText, 92, 22, 36);
+  const headSize = getDynamicFontSize(fullText, 124, 30, 68);
   return (
     <div className="social-frame" style={{ background: "var(--vc-red)", color: "#fff", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -321,7 +321,7 @@ const T_Announce = ({ data, brand }) => {
         <VLabel text={data.label || "A Better Future"} color="#fff" style={{ textAlign: "right", lineHeight: 1.4, opacity: 0.85 }} />
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 24px" }}>
-        <div style={{ fontFamily: "var(--font-display)", fontSize: headSize, lineHeight: 1.05, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: headSize, lineHeight: 1.02, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
           {headA}{" "}
           <em>{headB}</em>
         </div>
@@ -340,7 +340,7 @@ const T_Announce = ({ data, brand }) => {
 const T_Steps = ({ data, brand }) => {
   const headline = data.headline || "MY STEP-BY-STEP PROCESS FOR CREATING HIGH-PERFORMING";
   const circled = data.circled || "POSTS";
-  const headSize = getDynamicFontSize(`${headline} ${circled}`, 92, 25, 38);
+  const headSize = getDynamicFontSize(`${headline} ${circled}`, 124, 15, 60);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -353,7 +353,7 @@ const T_Steps = ({ data, brand }) => {
         </span>
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: headSize, lineHeight: 1.02, color: "var(--vc-ink)", textTransform: "uppercase", letterSpacing: "-0.02em", wordBreak: "break-word" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: headSize, lineHeight: 0.98, color: "var(--vc-ink)", textTransform: "uppercase", letterSpacing: "-0.02em", wordBreak: "break-word" }}>
           {headline} <HandCircle color="var(--vc-red)">{circled}</HandCircle>
         </div>
       </div>
@@ -377,8 +377,8 @@ const T_Steps = ({ data, brand }) => {
 /* 5. BEFORE / AFTER (single) — split block        */
 /* ============================================== */
 const T_BeforeAfter = ({ data, brand }) => {
-  const beforeSize = getDynamicFontSize(data.before || "A blank page and a deadline.", 58, 25, 28);
-  const afterSize = getDynamicFontSize(data.after || "A document that earns the deal.", 58, 25, 28);
+  const beforeSize = getDynamicFontSize(data.before || "A blank page and a deadline.", 76, 18, 42);
+  const afterSize = getDynamicFontSize(data.after || "A document that earns the deal.", 76, 18, 42);
   return (
     <div className="social-frame" style={{ padding: 0, display: "grid", gridTemplateColumns: "1fr 1fr" }}>
       <div style={{ background: "var(--vc-cream)", padding: 72, display: "flex", flexDirection: "column", justifyContent: "space-between", color: "var(--vc-ink)" }}>
@@ -387,7 +387,7 @@ const T_BeforeAfter = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, color: "var(--vc-mute)", marginBottom: 16 }}>
             {data.beforeSubtitle || "The way most freelancers work."}
           </div>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: beforeSize, lineHeight: 1.04, color: "var(--vc-ink)", wordBreak: "break-word" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: beforeSize, lineHeight: 1, color: "var(--vc-ink)", wordBreak: "break-word" }}>
             {data.before || "A blank page and a deadline."}
           </div>
         </div>
@@ -404,7 +404,7 @@ const T_BeforeAfter = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, opacity: 0.8, marginBottom: 16 }}>
             {data.afterSubtitle || "The way our system works."}
           </div>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: afterSize, lineHeight: 1.04, wordBreak: "break-word" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: afterSize, lineHeight: 1, wordBreak: "break-word" }}>
             {data.after || "A document that earns the deal."}
           </div>
         </div>
@@ -424,7 +424,7 @@ const T_BeforeAfter = ({ data, brand }) => {
 /* ============================================== */
 const T_Manifesto = ({ data, brand }) => {
   const fullText = `${data.lead || "Tech that"} ${data.italic || "just works."} ${data.tail || "You should not have to worry about how it works. You just need it to perform."}`;
-  const headSize = getDynamicFontSize(fullText, 72, 45, 32);
+  const headSize = getDynamicFontSize(fullText, 90, 30, 48);
   return (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -432,7 +432,7 @@ const T_Manifesto = ({ data, brand }) => {
         <Asterisk size={56} color="var(--vc-blue)" />
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 400, fontSize: headSize, lineHeight: 1.1, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 400, fontSize: headSize, lineHeight: 1.08, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
           {data.lead || "Tech that"}{" "}
           <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-blue)" }}>{data.italic || "just works."}</em>{" "}
           <span style={{ color: "rgba(236,230,214,0.6)" }}>{data.tail || "You should not have to worry about how it works. You just need it to perform."}</span>
@@ -451,7 +451,7 @@ const T_Framework = ({ data, brand }) => {
   const palette = ["var(--vc-cream)", "var(--vc-blue)", "var(--vc-ink)", "var(--vc-lime)"];
   const colors = ["var(--vc-ink)", "#fff", "var(--vc-cream)", "var(--vc-ink)"];
 
-  const titleSize = getDynamicFontSize(data.title || "The LMMS Method", 108, 15, 48);
+  const titleSize = getDynamicFontSize(data.title || "The LMMS Method", 168, 15, 68);
 
   const cover = (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
@@ -461,13 +461,13 @@ const T_Framework = ({ data, brand }) => {
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
         <div>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 48, color: "var(--vc-mute)", marginBottom: 16 }}>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 56, color: "var(--vc-mute)", marginBottom: 16 }}>
             {data.subtitle || "How we run client projects,"}
           </div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: titleSize, lineHeight: 0.95, color: "var(--vc-ink)", letterSpacing: "-0.03em", wordBreak: "break-word" }}>
             {data.title || "The LMMS Method"}.
           </div>
-          <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: "var(--vc-red)" }}>
+          <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 40, color: "var(--vc-red)" }}>
             in {steps.length} moves.
           </div>
         </div>
@@ -487,8 +487,8 @@ const T_Framework = ({ data, brand }) => {
     const bg = palette[i % palette.length];
     const fg = colors[i % colors.length];
     const isDark = bg === "var(--vc-blue)" || bg === "var(--vc-ink)";
-    const nameSize = getDynamicFontSize(name.trim(), 84, 14, 38);
-    const bodySize = getDynamicFontSize(body, 32, 60, 20);
+    const nameSize = getDynamicFontSize(name.trim(), 132, 14, 52);
+    const bodySize = getDynamicFontSize(body, 32, 60, 22);
     return (
       <div className="social-frame" key={i} style={{ background: bg, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -497,7 +497,7 @@ const T_Framework = ({ data, brand }) => {
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
           <div>
-            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 180, lineHeight: 0.88, letterSpacing: "-0.04em", color: "var(--vc-red)" }}>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 280, lineHeight: 0.88, letterSpacing: "-0.04em", color: "var(--vc-red)" }}>
               {String(i + 1).padStart(2, "0")}
             </div>
             <div style={{ marginTop: 12, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: nameSize, lineHeight: 1, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
@@ -533,8 +533,8 @@ const T_Story = ({ data, brand }) => {
     "The Problem — You're getting views but no conversions. Here's why.\nThe Shift — Treat the document as part of the product, not an afterthought.\nThe Result — Clients sign faster. Briefs come back warmer. Work compounds."
   ).split("\n").filter(Boolean);
 
-  const leadSize = getDynamicFontSize(data.coverLead || "How we doubled close-rate", 76, 26, 38);
-  const italicSize = getDynamicFontSize(data.coverItalic || "in a quarter.", 92, 16, 44);
+  const leadSize = getDynamicFontSize(data.coverLead || "How we doubled close-rate", 96, 26, 52);
+  const italicSize = getDynamicFontSize(data.coverItalic || "in a quarter.", 132, 16, 64);
 
   const cover = (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
@@ -544,10 +544,10 @@ const T_Story = ({ data, brand }) => {
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
         <div>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 400, fontSize: leadSize, lineHeight: 1.05, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 400, fontSize: leadSize, lineHeight: 1.04, letterSpacing: "-0.015em", wordBreak: "break-word" }}>
             {data.coverLead || "How we doubled close-rate"}
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: italicSize, lineHeight: 1.02, color: "var(--vc-blue)", marginTop: 6, letterSpacing: "-0.02em", wordBreak: "break-word" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: italicSize, lineHeight: 1.0, color: "var(--vc-blue)", marginTop: 6, letterSpacing: "-0.02em", wordBreak: "break-word" }}>
             {data.coverItalic || "in a quarter."}
           </div>
         </div>
@@ -564,7 +564,7 @@ const T_Story = ({ data, brand }) => {
     const kicker = dashIdx > -1 ? line.slice(0, dashIdx).trim() : "";
     const body = dashIdx > -1 ? line.slice(dashIdx + 1).trim() : line.trim();
     const { color, fg } = palette[i % palette.length];
-    const bodySize = getDynamicFontSize(body, 68, 35, 32);
+    const bodySize = getDynamicFontSize(body, 96, 30, 48);
     return (
       <div className="social-frame" key={i} style={{ background: color, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -574,7 +574,7 @@ const T_Story = ({ data, brand }) => {
           </span>
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: bodySize, lineHeight: 1.1, letterSpacing: "-0.015em", maxWidth: 900, wordBreak: "break-word" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: bodySize, lineHeight: 1.05, letterSpacing: "-0.015em", maxWidth: 900, wordBreak: "break-word" }}>
             {body}
           </div>
         </div>
@@ -596,8 +596,8 @@ const T_Tips = ({ data, brand }) => {
   const ruleWord = data.ruleLabel || "Rule";
 
   const titleItalic = data.titleItalic || "I keep close.";
-  const ruleSize = getDynamicFontSize(`${tips.length} ${ruleWord}s`, 108, 12, 48);
-  const italicSize = getDynamicFontSize(titleItalic, 96, 14, 44);
+  const ruleSize = getDynamicFontSize(`${tips.length} ${ruleWord}s`, 156, 10, 68);
+  const italicSize = getDynamicFontSize(titleItalic, 132, 14, 56);
 
   const cover = (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
@@ -613,7 +613,7 @@ const T_Tips = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: italicSize, lineHeight: 1.02, color: "var(--vc-ink)", marginTop: 8, letterSpacing: "-0.02em" }}>
             {titleItalic}
           </div>
-          <div style={{ marginTop: 24, fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", maxWidth: 720, lineHeight: 1.4, wordBreak: "break-word" }}>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", maxWidth: 720, lineHeight: 1.4, wordBreak: "break-word" }}>
             {data.subtitle || "What I've learned shipping freelance work for the better part of a decade."}
           </div>
         </div>
@@ -626,15 +626,15 @@ const T_Tips = ({ data, brand }) => {
   );
 
   const tipSlides = tips.map((t, i) => {
-    const tipSize = getDynamicFontSize(t, 58, 35, 28);
+    const tipSize = getDynamicFontSize(t, 76, 30, 42);
     return (
       <div className="social-frame" key={i} style={{ background: i % 2 === 0 ? "var(--vc-cream)" : "var(--vc-ink)", color: i % 2 === 0 ? "var(--vc-ink)" : "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <VLabel num={i + 1} text={`${ruleWord} ${i + 1} of ${tips.length}`} color="currentColor" />
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.6 }}>{brand.handle || "@studio"}</span>
         </div>
-        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "auto 1fr", gap: 40, alignItems: "center" }}>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 240, lineHeight: 0.85, color: "var(--vc-red)", letterSpacing: "-0.04em" }}>
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "auto 1fr", gap: 60, alignItems: "center" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 480, lineHeight: 0.82, color: "var(--vc-red)", letterSpacing: "-0.04em" }}>
             {i + 1}
           </div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: tipSize, lineHeight: 1.15, letterSpacing: "-0.01em", wordBreak: "break-word" }}>
@@ -669,11 +669,11 @@ const Wordmark = ({ brand, color }) => {
 /* ============================================== */
 const T_Booking = ({ data, brand }) => {
   const cta = data.ctaText || "Inquire via DM";
-  const ctaBtnSize = getDynamicFontSize(cta, 20, 16, 13);
+  const ctaBtnSize = getDynamicFontSize(cta, 22, 16, 14);
   const project = data.projectText ?? data.project ?? "projects.";
   const leadFull = `${data.lead || "Two spots open for"} ${data.window || "Q3"} ${project}`;
-  const leadSize = getDynamicFontSize(leadFull, 96, 24, 44);
-  const subtextSize = getDynamicFontSize(data.subtext || "", 32, 70, 20);
+  const leadSize = getDynamicFontSize(leadFull, 152, 28, 76);
+  const subtextSize = getDynamicFontSize(data.subtext || "", 36, 70, 24);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -686,15 +686,15 @@ const T_Booking = ({ data, brand }) => {
             {data.lead || "Two spots open for"} <HandCircle color="var(--vc-red)">{data.window || "Q3"}</HandCircle>{" "}
             <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-red)" }}>{project}</em>
           </div>
-          <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: subtextSize, color: "var(--vc-mute)", maxWidth: 740, lineHeight: 1.35, wordBreak: "break-word" }}>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: subtextSize, color: "var(--vc-mute)", maxWidth: 740, lineHeight: 1.35, wordBreak: "break-word" }}>
             {data.subtext || "Brand and product work. Four-to-six-week engagements. Friendly intake, written deliverables, no agency overhead."}
           </div>
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-red)", color: "#fff", padding: "20px 32px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-red)", color: "#fff", padding: "24px 36px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
           <span>{cta}</span>
-          <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M5 17 L17 5 M9 5 L17 5 L17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 17 L17 5 M9 5 L17 5 L17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
         </div>
         <Asterisk size={68} />
       </div>
@@ -706,19 +706,19 @@ const T_Booking = ({ data, brand }) => {
 /* 11. LINK-IN-BIO (CTA)                           */
 /* ============================================== */
 const T_LinkBio = ({ data, brand }) => {
-  const headASize = getDynamicFontSize(data.headlineA || "Why your proposal is", 88, 20, 42);
-  const headBSize = getDynamicFontSize(data.headlineB || "your portfolio.", 96, 16, 46);
-  const urlSize = getDynamicFontSize(data.url || "northquill.studio/essays", 20, 28, 14);
-  const subSize = getDynamicFontSize(data.subtext || "", 26, 70, 18);
+  const headASize = getDynamicFontSize(data.headlineA || "Why your proposal is", 124, 22, 68);
+  const headBSize = getDynamicFontSize(data.headlineB || "your portfolio.", 136, 18, 72);
+  const urlSize = getDynamicFontSize(data.url || "northquill.studio/essays", 22, 28, 14);
+  const subSize = getDynamicFontSize(data.subtext || "", 28, 70, 20);
   return (
     <div className="social-frame" style={{ padding: 0, display: "grid", gridTemplateRows: "auto 1fr auto", background: "var(--vc-cream)" }}>
-      <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "40px 80px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "44px 80px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <VLabel text={data.label || "New Essay"} color="var(--vc-cream)" />
         <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.85 }}>
           Read now →
         </span>
       </div>
-      <div style={{ padding: "64px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ padding: 80, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <VLabel num={null} text={data.kicker || "On documents"} />
         <div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: headASize, lineHeight: 1.02, color: "var(--vc-ink)", letterSpacing: "-0.025em", wordBreak: "break-word" }}>
@@ -727,7 +727,7 @@ const T_LinkBio = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headBSize, lineHeight: 1.02, color: "var(--vc-red)", letterSpacing: "-0.025em", marginTop: 4, wordBreak: "break-word" }}>
             {data.headlineB || "your portfolio."}
           </div>
-          <div style={{ marginTop: 20, fontFamily: "var(--font-helvetica)", fontSize: subSize, color: "var(--vc-mute)", maxWidth: 800, lineHeight: 1.4, wordBreak: "break-word" }}>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: subSize, color: "var(--vc-mute)", maxWidth: 800, lineHeight: 1.4, wordBreak: "break-word" }}>
             {data.subtext || "A short piece on the small things that build trust before the work has even started."}
           </div>
         </div>
@@ -736,8 +736,8 @@ const T_LinkBio = ({ data, brand }) => {
           <Asterisk size={56} />
         </div>
       </div>
-      <div style={{ padding: "24px 80px", background: "var(--vc-blue)", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 30 }}>{brand.studioName || "Studio"}</span>
+      <div style={{ padding: "26px 80px", background: "var(--vc-blue)", color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32 }}>{brand.studioName || "Studio"}</span>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.85 }}>Link in bio</span>
       </div>
     </div>
@@ -749,10 +749,10 @@ const T_LinkBio = ({ data, brand }) => {
 /* ============================================== */
 const T_Launch = ({ data, brand }) => {
   const prodName = data.productName || "Atelier";
-  const nameSize = getDynamicFontSize(prodName, 180, 7, 64);
+  const nameSize = getDynamicFontSize(prodName, 380, 5, 110);
   const cta = data.ctaText || "Get early access";
-  const ctaBtnSize = getDynamicFontSize(cta, 20, 18, 14);
-  const tagSize = getDynamicFontSize(data.tagline || "", 36, 50, 22);
+  const ctaBtnSize = getDynamicFontSize(cta, 22, 18, 14);
+  const tagSize = getDynamicFontSize(data.tagline || "", 44, 50, 24);
   return (
     <div className="social-frame" style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -760,7 +760,7 @@ const T_Launch = ({ data, brand }) => {
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase" }}>{data.date || "May · 2026"}</span>
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--vc-ink)" }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 22, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--vc-ink)" }}>
           {data.category || "A new product"}
         </div>
         <div style={{ marginTop: 12, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: nameSize, lineHeight: 0.95, color: "var(--vc-ink)", letterSpacing: "-0.03em", wordBreak: "break-word" }}>
@@ -771,9 +771,9 @@ const T_Launch = ({ data, brand }) => {
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "20px 34px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "24px 38px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
           <span>{cta}</span>
-          <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><path d="M5 17 L17 5 M9 5 L17 5 L17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 17 L17 5 M9 5 L17 5 L17 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
         </div>
         <Asterisk size={88} />
       </div>
@@ -785,8 +785,8 @@ const T_Launch = ({ data, brand }) => {
 /* CAROUSEL CLOSING / CTA SLIDE                    */
 /* ============================================== */
 const CarouselCTA = ({ brand, data }) => {
-  const studioNameSize = getDynamicFontSize(brand.studioName || "Studio", 100, 8, 48);
-  const ctaTextSize = getDynamicFontSize(data.ctaText || "", 34, 30, 20);
+  const studioNameSize = getDynamicFontSize(brand.studioName || "Studio", 136, 8, 64);
+  const ctaTextSize = getDynamicFontSize(data.ctaText || "", 40, 24, 22);
   return (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -828,8 +828,8 @@ const T_Mistakes = ({ data, brand }) => {
   const borderOp   = ["rgba(14,14,14,0.15)", "rgba(255,255,255,0.2)", "rgba(14,14,14,0.15)", "rgba(236,230,214,0.2)"];
 
   const titleItalic = data.titleItalic || "I made for you.";
-  const mistakeSize = getDynamicFontSize(`${items.length} mistakes`, 108, 12, 48);
-  const subSize = getDynamicFontSize(titleItalic, 96, 16, 44);
+  const mistakeSize = getDynamicFontSize(`${items.length} mistakes`, 148, 12, 60);
+  const subSize = getDynamicFontSize(titleItalic, 116, 14, 52);
 
   const cover = (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
@@ -845,7 +845,7 @@ const T_Mistakes = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: subSize, lineHeight: 1.02, color: "var(--vc-red)", marginTop: 4, letterSpacing: "-0.02em" }}>
             {titleItalic}
           </div>
-          <div style={{ marginTop: 24, fontFamily: "var(--font-helvetica)", fontSize: 28, opacity: 0.6, lineHeight: 1.4, maxWidth: 720, wordBreak: "break-word" }}>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, opacity: 0.6, lineHeight: 1.4, maxWidth: 720, wordBreak: "break-word" }}>
             {data.subtitle || "So you don't have to learn them the hard way."}
           </div>
         </div>
@@ -863,8 +863,8 @@ const T_Mistakes = ({ data, brand }) => {
     const lesson = dash > -1 ? item.slice(dash + 1).trim() : "";
     const bg = bgPalette[i % bgPalette.length];
     const fg = fgPalette[i % fgPalette.length];
-    const titleSize = getDynamicFontSize(title, 80, 24, 40);
-    const lessonSize = getDynamicFontSize(lesson, 42, 60, 24);
+    const titleSize = getDynamicFontSize(title, 96, 24, 56);
+    const lessonSize = getDynamicFontSize(lesson, 48, 65, 30);
     return (
       <div className="social-frame" key={i} style={{ background: bg, color: fg, padding: 80, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -876,7 +876,7 @@ const T_Mistakes = ({ data, brand }) => {
             {title}.
           </div>
           {lesson && (
-            <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: lessonSize, lineHeight: 1.35, opacity: 0.65, wordBreak: "break-word" }}>
+            <div style={{ marginTop: 32, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: lessonSize, lineHeight: 1.35, opacity: 0.65, wordBreak: "break-word" }}>
               {lesson}
             </div>
           )}
@@ -900,7 +900,7 @@ const T_MiniGuide = ({ data, brand }) => {
   ).split("\n").filter(Boolean);
 
   const intro = data.intro || `A practical guide in ${steps.length} step${steps.length === 1 ? "" : "s"}.`;
-  const topicSize = getDynamicFontSize(data.topic || "Ship Faster", 100, 15, 46);
+  const topicSize = getDynamicFontSize(data.topic || "Ship Faster", 136, 12, 60);
 
   const cover = (
     <div className="social-frame" style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
@@ -910,13 +910,13 @@ const T_MiniGuide = ({ data, brand }) => {
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
         <div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.6, marginBottom: 12 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 22, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.6, marginBottom: 12 }}>
             {data.prefix || "How to"}
           </div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: topicSize, lineHeight: 0.95, letterSpacing: "-0.03em", wordBreak: "break-word" }}>
             {data.topic || "Ship Faster"}.
           </div>
-          <div style={{ marginTop: 24, fontFamily: "var(--font-helvetica)", fontSize: 28, opacity: 0.65, lineHeight: 1.4, maxWidth: 720, wordBreak: "break-word" }}>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, opacity: 0.65, lineHeight: 1.4, maxWidth: 720, wordBreak: "break-word" }}>
             {intro}
           </div>
         </div>
@@ -935,8 +935,8 @@ const T_MiniGuide = ({ data, brand }) => {
     const title  = dash > -1 ? s.slice(0, dash).trim() : s;
     const detail = dash > -1 ? s.slice(dash + 1).trim() : "";
     const dark = i % 2 === 1;
-    const titleSize = getDynamicFontSize(title, 64, 25, 34);
-    const detailSize = getDynamicFontSize(detail, 26, 70, 18);
+    const titleSize = getDynamicFontSize(title, 72, 20, 42);
+    const detailSize = getDynamicFontSize(detail, 28, 60, 20);
     return (
       <div className="social-frame" key={i} style={{ background: dark ? "var(--vc-ink)" : "var(--vc-cream)", color: dark ? "var(--vc-cream)" : "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -944,7 +944,7 @@ const T_MiniGuide = ({ data, brand }) => {
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.4 }}>{data.topic || "Guide"}</span>
         </div>
         <div style={{ flex: 1, display: "grid", gridTemplateColumns: "auto 1fr", gap: 36, alignItems: "center" }}>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 200, lineHeight: 0.88, color: "var(--vc-lime)", letterSpacing: "-0.04em" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 320, lineHeight: 0.88, color: "var(--vc-lime)", letterSpacing: "-0.04em" }}>
             {String(i + 1).padStart(2, "0")}
           </div>
           <div>
@@ -972,11 +972,11 @@ const T_MiniGuide = ({ data, brand }) => {
 /* 15. BREAKING POST (News)                        */
 /* ============================================== */
 const T_BreakingPost = ({ data, brand }) => {
-  const headSize = getDynamicFontSize(data.headline || "Something big just changed.", 84, 28, 40);
-  const subSize = getDynamicFontSize(data.subline || "", 44, 35, 24);
+  const headSize = getDynamicFontSize(data.headline || "Something big just changed.", 108, 25, 52);
+  const subSize = getDynamicFontSize(data.subline || "", 52, 35, 28);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 0, display: "flex", flexDirection: "column" }}>
-      <div style={{ background: "var(--vc-red)", color: "#fff", padding: "26px 80px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ background: "var(--vc-red)", color: "#fff", padding: "30px 80px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.18em", textTransform: "uppercase" }}>
           {data.category || "Industry"}
         </span>
@@ -984,7 +984,7 @@ const T_BreakingPost = ({ data, brand }) => {
           {data.date || "May · 2026"}
         </span>
       </div>
-      <div style={{ flex: 1, padding: "64px 80px", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, padding: 80, display: "flex", flexDirection: "column" }}>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--vc-mute)", marginBottom: 20 }}>
           {data.kicker || "Breaking"}
         </div>
@@ -998,7 +998,7 @@ const T_BreakingPost = ({ data, brand }) => {
         )}
         <div style={{ flex: 1 }} />
         {data.body && (
-          <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 26, color: "var(--vc-mute)", lineHeight: 1.5, maxWidth: 820, marginBottom: 32, wordBreak: "break-word" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", lineHeight: 1.5, maxWidth: 820, marginBottom: 40, wordBreak: "break-word" }}>
             {data.body}
           </div>
         )}
@@ -1015,7 +1015,7 @@ const T_WeeklyDigest = ({ data, brand }) => {
   const items = (data.items ||
     "The freelance market grew by 12% this quarter.\nAI tools cut design revision time by 40%.\nRemote clients now account for 67% of studio revenue."
   ).split("\n").filter(Boolean);
-  const topicSize = getDynamicFontSize(data.topic || "Design", 84, 15, 42);
+  const topicSize = getDynamicFontSize(data.topic || "Design", 100, 12, 48);
   return (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -1031,11 +1031,11 @@ const T_WeeklyDigest = ({ data, brand }) => {
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         {items.map((item, i) => (
-          <div key={i} style={{ padding: "24px 0", borderBottom: "1px solid rgba(236,230,214,0.1)", display: "flex", gap: 24, alignItems: "flex-start" }}>
+          <div key={i} style={{ padding: "28px 0", borderBottom: "1px solid rgba(236,230,214,0.1)", display: "flex", gap: 24, alignItems: "flex-start" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, color: "var(--vc-blue)", flexShrink: 0, marginTop: 4 }}>
               {String(i + 1).padStart(2, "0")}
             </span>
-            <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, lineHeight: 1.35, fontWeight: 500, wordBreak: "break-word" }}>
+            <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 32, lineHeight: 1.35, fontWeight: 500, wordBreak: "break-word" }}>
               {item}
             </span>
           </div>
@@ -1575,7 +1575,7 @@ const T_PricingCard = ({ data, brand }) => {
   const muted = useAccent ? "rgba(0,0,0,0.52)" : "var(--vc-mute)";
   const rule = useAccent ? "rgba(0,0,0,0.18)" : "rgba(14,14,14,0.15)";
   const price = fmt.money(Number(data.price) || 0, data.currency || "USD");
-  const priceSize = getDynamicFontSize(price, 120, 7, 56);
+  const priceSize = getDynamicFontSize(price, 152, 7, 72);
   const ctaText = data.ctaText || "DM to get started →";
   const ctaSize = getDynamicFontSize(ctaText, 18, 22, 13);
   return (
@@ -1594,11 +1594,11 @@ const T_PricingCard = ({ data, brand }) => {
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, marginTop: 12 }}>
           per month
         </div>
-        <div style={{ marginTop: 44, display: "flex", flexDirection: "column", gap: 18 }}>
+        <div style={{ marginTop: 52, display: "flex", flexDirection: "column", gap: 20 }}>
           {features.map((feat, i) => (
-            <div key={i} style={{ display: "flex", gap: 18, alignItems: "center" }}>
+            <div key={i} style={{ display: "flex", gap: 20, alignItems: "center" }}>
               <span style={{ color: "var(--vc-red)", fontFamily: "var(--font-mono)", fontSize: 20, flexShrink: 0, lineHeight: 1 }}>→</span>
-              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, lineHeight: 1.3, wordBreak: "break-word" }}>{feat}</span>
+              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 30, lineHeight: 1.3, wordBreak: "break-word" }}>{feat}</span>
             </div>
           ))}
         </div>
@@ -1618,11 +1618,11 @@ const T_PricingCard = ({ data, brand }) => {
 /* ============================================== */
 const T_Testimonial = ({ data, brand }) => {
   const quote = data.quote || "Working with this studio changed how I think about client communication entirely.";
-  const quoteSize = getDynamicFontSize(quote, 64, 60, 34);
+  const quoteSize = getDynamicFontSize(quote, 76, 50, 42);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 180, lineHeight: 0.68, color: "var(--vc-red)", marginTop: -16 }}>"</div>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 220, lineHeight: 0.68, color: "var(--vc-red)", marginTop: -16 }}>"</div>
         <div style={{ alignSelf: "flex-start", marginTop: 8 }}>
           {brand.logo && brand.logoEnabled !== false
             ? <img src={brand.logo} alt="" style={{ height: 30, width: "auto", maxWidth: 110, objectFit: "contain" }} />
@@ -1637,16 +1637,16 @@ const T_Testimonial = ({ data, brand }) => {
       </div>
       <div style={{ display: "flex", gap: 28, alignItems: "center", paddingTop: 28, borderTop: "1.5px solid rgba(14,14,14,0.18)" }}>
         {data.clientPhoto
-          ? <img src={data.clientPhoto} alt="" style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-          : <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 30, flexShrink: 0 }}>
+          ? <img src={data.clientPhoto} alt="" style={{ width: 88, height: 88, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+          : <div style={{ width: 88, height: 88, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 32, flexShrink: 0 }}>
               {((data.clientName || "?")[0] || "?").toUpperCase()}
             </div>
         }
         <div>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 28, color: "var(--vc-ink)", letterSpacing: "-0.005em" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 32, color: "var(--vc-ink)", letterSpacing: "-0.005em" }}>
             {data.clientName || "Client Name"}
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.1em", color: "var(--vc-mute)", textTransform: "uppercase", marginTop: 4 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.1em", color: "var(--vc-mute)", textTransform: "uppercase", marginTop: 4 }}>
             {data.clientTitle || "Founder · Atlas & Bell"}
           </div>
         </div>
@@ -1663,9 +1663,9 @@ const T_PricingEditorial = ({ data, brand }) => {
   const muted = useAccent ? "rgba(0,0,0,0.52)" : "var(--vc-mute)";
   const rule = useAccent ? "rgba(0,0,0,0.18)" : "rgba(14,14,14,0.15)";
   const price = fmt.money(Number(data.price) || 0, data.currency || "USD");
-  const priceSize = getDynamicFontSize(price, 76, 7, 42);
+  const priceSize = getDynamicFontSize(price, 88, 7, 50);
   const packageName = data.packageName || "Brand Starter";
-  const packageSize = getDynamicFontSize(packageName, 72, 14, 44);
+  const packageSize = getDynamicFontSize(packageName, 84, 14, 52);
   const ctaText = data.ctaText || "DM to get started ->";
   const ctaSize = getDynamicFontSize(ctaText, 17, 24, 13);
   return (
@@ -1688,7 +1688,7 @@ const T_PricingEditorial = ({ data, brand }) => {
           </div>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 48, alignItems: "end", minHeight: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 48, alignItems: "end", minHeight: 0 }}>
         <div style={{ alignSelf: "center" }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.16em", textTransform: "uppercase", color: muted, marginBottom: 20 }}>
             Included in the engagement
@@ -1697,7 +1697,7 @@ const T_PricingEditorial = ({ data, brand }) => {
             {features.map((feat, i) => (
               <div key={i} style={{ display: "grid", gridTemplateColumns: "38px 1fr", alignItems: "baseline", gap: 16, paddingBottom: 12, borderBottom: `1px solid ${rule}` }}>
                 <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", color: "var(--vc-red)", fontSize: 32, lineHeight: 0.8 }}>{String(i + 1).padStart(2, "0")}</span>
-                <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 26, lineHeight: 1.2, letterSpacing: "-0.005em", wordBreak: "break-word" }}>{feat}</span>
+                <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, lineHeight: 1.2, letterSpacing: "-0.005em", wordBreak: "break-word" }}>{feat}</span>
               </div>
             ))}
           </div>
@@ -1714,14 +1714,14 @@ const T_PricingEditorial = ({ data, brand }) => {
               Flat fee
             </div>
           </div>
-          <Asterisk size={76} color="var(--vc-red)" />
+          <Asterisk size={86} color="var(--vc-red)" />
         </div>
       </div>
       <div style={{ borderTop: `1.5px solid ${rule}`, paddingTop: 24, display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 24 }}>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: ctaSize, letterSpacing: "0.13em", textTransform: "uppercase" }}>
           {ctaText}
         </span>
-        <ArrowOut size={56} color={fg} />
+        <ArrowOut size={60} color={fg} />
       </div>
     </div>
   );
@@ -1733,7 +1733,7 @@ const T_PricingEditorial = ({ data, brand }) => {
 const T_Pricing3Tier = ({ data, brand }) => {
   const c = getThemeColors(data.bg);
   const headline = data.headline || "Transparent packages for every project stage";
-  const headSize = getDynamicFontSize(headline, 44, 36, 30);
+  const headSize = getDynamicFontSize(headline, 48, 36, 34);
 
   const tiers = [
     {
@@ -1780,7 +1780,7 @@ const T_Pricing3Tier = ({ data, brand }) => {
             <div key={idx} style={{
               background: isPop ? (c.bg.includes("ink") ? "rgba(255,255,255,0.12)" : c.cardBg) : (c.bg.includes("ink") ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.6)"),
               border: isPop ? `2px solid ${c.accent}` : `1.5px solid ${c.cardBorder}`,
-              borderRadius: 22, padding: "24px 18px", display: "flex", flexDirection: "column", justifyContent: "space-between",
+              borderRadius: 22, padding: "26px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between",
               position: "relative", boxShadow: isPop ? "0 14px 36px rgba(0,0,0,0.1)" : "0 6px 18px rgba(0,0,0,0.04)"
             }}>
               {isPop && (
@@ -1796,7 +1796,7 @@ const T_Pricing3Tier = ({ data, brand }) => {
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: isPop ? c.accent : c.muted, fontWeight: 700 }}>
                   {t.name}
                 </div>
-                <div style={{ marginTop: 8, fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(t.price, 38, 7, 24), lineHeight: 1, letterSpacing: "-0.02em", wordBreak: "break-word" }}>
+                <div style={{ marginTop: 8, fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(t.price, 44, 7, 30), lineHeight: 1, letterSpacing: "-0.02em", wordBreak: "break-word" }}>
                   {t.price}
                 </div>
                 <div style={{ marginTop: 4, fontFamily: "var(--font-helvetica)", fontSize: 13, color: c.muted, minHeight: 18, wordBreak: "break-word" }}>
@@ -1835,7 +1835,7 @@ const T_Pricing3Tier = ({ data, brand }) => {
 const T_PricingRetainer = ({ data, brand }) => {
   const c = getThemeColors(data.bg);
   const rate = data.rate || "$4,500";
-  const rateSize = getDynamicFontSize(rate, 96, 7, 52);
+  const rateSize = getDynamicFontSize(rate, 116, 7, 68);
   const items = (data.deliverables || "Dedicated private Slack channel\n48-Hour average turnaround on briefs\nUnlimited request queue (1 active at a time)\nDesign systems, decks & client docs\nPause or cancel anytime").split("\n").filter(Boolean).slice(0, 5);
 
   return (
@@ -1865,7 +1865,7 @@ const T_PricingRetainer = ({ data, brand }) => {
             {data.tagline || "Senior-level design bandwidth without the agency overhead."}
           </div>
           <div style={{ marginTop: 24 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: c.btnBg, color: c.btnFg, padding: "16px 28px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: c.btnBg, color: c.btnFg, padding: "18px 32px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
               {data.ctaText || "Inquire via DM →"}
             </div>
           </div>
@@ -1873,14 +1873,14 @@ const T_PricingRetainer = ({ data, brand }) => {
 
         {/* Deliverables Card */}
         <div style={{
-          background: c.cardBg, border: `1.5px solid ${c.cardBorder}`, borderRadius: 24, padding: "30px 26px",
+          background: c.cardBg, border: `1.5px solid ${c.cardBorder}`, borderRadius: 24, padding: "32px 28px",
           boxShadow: "0 12px 32px rgba(0,0,0,0.08)", display: "flex", flexDirection: "column", gap: 12
         }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", color: c.accent, fontWeight: 700, marginBottom: 4 }}>
             Included in Retainer
           </div>
           {items.map((it, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontFamily: "var(--font-sans)", fontSize: 15, lineHeight: 1.35 }}>
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontFamily: "var(--font-sans)", fontSize: 16, lineHeight: 1.35 }}>
               <span style={{ color: c.accent, fontWeight: 700, flexShrink: 0 }}>✓</span>
               <span style={{ wordBreak: "break-word" }}>{it}</span>
             </div>
@@ -1899,9 +1899,9 @@ const T_PricingRetainer = ({ data, brand }) => {
 const T_PricingAudit = ({ data, brand }) => {
   const c = getThemeColors(data.bg);
   const headline = data.headline || "Proposal & Document Teardown";
-  const headSize = getDynamicFontSize(headline, 48, 28, 32);
+  const headSize = getDynamicFontSize(headline, 56, 28, 38);
   const price = data.price || "$1,800";
-  const priceSize = getDynamicFontSize(price, 56, 7, 36);
+  const priceSize = getDynamicFontSize(price, 64, 7, 42);
   const items = (data.deliverables || "24-Page comprehensive teardown report\nRewrite of proposal narrative & pricing table\nCustom production-ready Figma/Doc template\n60-Minute live strategy & review session").split("\n").filter(Boolean).slice(0, 4);
 
   return (
@@ -1919,7 +1919,7 @@ const T_PricingAudit = ({ data, brand }) => {
         </div>
 
         <div style={{
-          background: c.cardBg, border: `1.5px solid ${c.cardBorder}`, borderRadius: 24, padding: "28px 32px",
+          background: c.cardBg, border: `1.5px solid ${c.cardBorder}`, borderRadius: 24, padding: "32px 36px",
           display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 28, alignItems: "center",
           boxShadow: "0 10px 30px rgba(0,0,0,0.06)"
         }}>
@@ -1947,7 +1947,7 @@ const T_PricingAudit = ({ data, brand }) => {
             <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 11, color: c.muted, textTransform: "uppercase" }}>
               One-time · 100% money-back guarantee
             </div>
-            <div style={{ marginTop: 16, width: "100%", padding: "12px 18px", background: c.btnBg, color: c.btnFg, borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, textAlign: "center" }}>
+            <div style={{ marginTop: 16, width: "100%", padding: "14px 20px", background: c.btnBg, color: c.btnFg, borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, textAlign: "center" }}>
               {data.ctaText || "Book Sprint →"}
             </div>
           </div>
@@ -1961,7 +1961,7 @@ const T_PricingAudit = ({ data, brand }) => {
 
 const T_TestimonialEditorial = ({ data, brand }) => {
   const quote = data.quote || "Working with this studio changed how I think about proposals entirely. We closed our next deal the same week.";
-  const quoteSize = getDynamicFontSize(quote, 64, 60, 34);
+  const quoteSize = getDynamicFontSize(quote, 74, 50, 42);
   return (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 0, display: "grid", gridTemplateRows: "170px 1fr 190px", overflow: "hidden", position: "relative" }}>
       <div style={{ position: "absolute", inset: "28px 28px auto auto", width: 174, height: 174, border: "1.5px solid rgba(244,238,222,0.24)", borderRadius: "50%" }} />
@@ -1975,9 +1975,9 @@ const T_TestimonialEditorial = ({ data, brand }) => {
           : <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.58 }}>{brand.studioName || "Studio"}</span>
         }
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 40, alignItems: "center", padding: "0 72px", position: "relative", zIndex: 1 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "250px 1fr", gap: 40, alignItems: "center", padding: "0 72px", position: "relative", zIndex: 1 }}>
         <div style={{ alignSelf: "stretch", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1.5px solid rgba(244,238,222,0.18)", paddingRight: 36 }}>
-          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 180, lineHeight: 0.7, color: "var(--vc-red)", marginTop: 16 }}>"</div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 240, lineHeight: 0.7, color: "var(--vc-red)", marginTop: 16 }}>"</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 20px)", gap: 8, marginBottom: 16 }}>
             {Array.from({ length: 5 }).map((_, i) => (
               <span key={i} style={{ width: 20, height: 20, borderRadius: "50%", background: i < 4 ? "var(--vc-red)" : "var(--vc-cream)", display: "block" }} />
@@ -1988,22 +1988,22 @@ const T_TestimonialEditorial = ({ data, brand }) => {
           {quote}
         </div>
       </div>
-      <div style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: "32px 72px", display: "grid", gridTemplateColumns: "100px 1fr auto", gap: 24, alignItems: "center" }}>
+      <div style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: "38px 72px", display: "grid", gridTemplateColumns: "112px 1fr auto", gap: 24, alignItems: "center" }}>
         {data.clientPhoto
-          ? <img src={data.clientPhoto} alt="" style={{ width: 100, height: 100, objectFit: "cover", flexShrink: 0 }} />
-          : <div style={{ width: 100, height: 100, background: "var(--vc-red)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 38, flexShrink: 0 }}>
+          ? <img src={data.clientPhoto} alt="" style={{ width: 112, height: 112, objectFit: "cover", flexShrink: 0 }} />
+          : <div style={{ width: 112, height: 112, background: "var(--vc-red)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 38, flexShrink: 0 }}>
               {((data.clientName || "?")[0] || "?").toUpperCase()}
             </div>
         }
         <div>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 30, letterSpacing: "-0.01em" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 34, letterSpacing: "-0.01em" }}>
             {data.clientName || "Client Name"}
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.12em", color: "var(--vc-mute)", textTransform: "uppercase", marginTop: 6 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.12em", color: "var(--vc-mute)", textTransform: "uppercase", marginTop: 6 }}>
             {data.clientTitle || "Founder - Atlas & Bell"}
           </div>
         </div>
-        <ArrowOut size={56} color="var(--vc-ink)" />
+        <ArrowOut size={62} color="var(--vc-ink)" />
       </div>
     </div>
   );
@@ -2014,9 +2014,9 @@ const T_TestimonialEditorial = ({ data, brand }) => {
 /* ============================================== */
 const T_Waitlist = ({ data, brand }) => {
   const headline = data.headline || "The new way to build freelance proposals";
-  const headSize = getDynamicFontSize(headline, 88, 30, 44);
+  const headSize = getDynamicFontSize(headline, 108, 32, 54);
   const cta = data.ctaText || "Join the waitlist →";
-  const ctaBtnSize = getDynamicFontSize(cta, 20, 18, 13);
+  const ctaBtnSize = getDynamicFontSize(cta, 22, 18, 14);
   return (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -2030,12 +2030,12 @@ const T_Waitlist = ({ data, brand }) => {
         <div style={{ fontFamily: "var(--font-display)", fontSize: headSize, lineHeight: 1.02, letterSpacing: "-0.02em", wordBreak: "break-word" }}>
           {headline}
         </div>
-        <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 30, lineHeight: 1.4, opacity: 0.65, maxWidth: 780, wordBreak: "break-word" }}>
+        <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 32, lineHeight: 1.4, opacity: 0.65, maxWidth: 780, wordBreak: "break-word" }}>
           {data.subtext || "Join 350+ designers & founders in private beta testing. Instant access upon invitation."}
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 24, borderTop: "1.5px solid rgba(236,230,214,0.18)" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-lime)", color: "var(--vc-ink)", padding: "20px 34px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-lime)", color: "var(--vc-ink)", padding: "24px 38px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
           <span>{cta}</span>
         </div>
         <Wordmark brand={brand} color="var(--vc-cream)" />
@@ -2050,9 +2050,9 @@ const T_Waitlist = ({ data, brand }) => {
 const T_LeadMagnet = ({ data, brand }) => {
   const benefits = (data.benefits || "Real pricing benchmarks for 2026\nClient outreach & follow-up scripts\nScope negotiation checklist\nContract clause cheatsheet").split("\n").filter(Boolean).slice(0, 4);
   const title = data.title || "The 2026 Freelance Rate & Pricing Guide";
-  const titleSize = getDynamicFontSize(title, 72, 30, 40);
+  const titleSize = getDynamicFontSize(title, 84, 30, 48);
   const cta = data.ctaText || "Download free copy →";
-  const ctaBtnSize = getDynamicFontSize(cta, 19, 20, 13);
+  const ctaBtnSize = getDynamicFontSize(cta, 20, 20, 13);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: 76, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 32 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -2068,14 +2068,14 @@ const T_LeadMagnet = ({ data, brand }) => {
         <div style={{ marginTop: 32, display: "grid", gap: 14 }}>
           {benefits.map((b, i) => (
             <div key={i} style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 13, flexShrink: 0 }}>✓</span>
-              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 26, lineHeight: 1.25, fontWeight: 500, wordBreak: "break-word" }}>{b}</span>
+              <span style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 13, flexShrink: 0 }}>✓</span>
+              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, lineHeight: 1.25, fontWeight: 500, wordBreak: "break-word" }}>{b}</span>
             </div>
           ))}
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 20, borderTop: "1.5px solid rgba(14,14,14,0.15)" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-red)", color: "#fff", padding: "18px 30px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: "var(--vc-red)", color: "#fff", padding: "22px 34px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
           <span>{cta}</span>
         </div>
         <Asterisk size={56} />
@@ -2089,9 +2089,9 @@ const T_LeadMagnet = ({ data, brand }) => {
 /* ============================================== */
 const T_DMKeyword = ({ data, brand }) => {
   const headline = data.headline || "Want my Notion Client Onboarding Portal?";
-  const headSize = getDynamicFontSize(headline, 80, 32, 42);
+  const headSize = getDynamicFontSize(headline, 100, 34, 52);
   const keyword = data.keyword || "ONBOARD";
-  const kwSize = getDynamicFontSize(keyword, 100, 8, 48);
+  const kwSize = getDynamicFontSize(keyword, 140, 7, 72);
   return (
     <div className="social-frame" style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -2102,7 +2102,7 @@ const T_DMKeyword = ({ data, brand }) => {
         <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: headSize, lineHeight: 1.04, letterSpacing: "-0.02em", maxWidth: 860, wordBreak: "break-word" }}>
           {headline}
         </div>
-        <div style={{ marginTop: 36, background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "32px 42px", borderRadius: 28, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ marginTop: 36, background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "36px 48px", borderRadius: 28, display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.7 }}>
             Drop this word in comments:
           </div>
@@ -2110,7 +2110,7 @@ const T_DMKeyword = ({ data, brand }) => {
             "{keyword}"
           </div>
         </div>
-        <div style={{ marginTop: 22, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, opacity: 0.75, wordBreak: "break-word" }}>
+        <div style={{ marginTop: 22, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32, opacity: 0.75, wordBreak: "break-word" }}>
           ...and I'll automatically DM you {data.resourceName || "the Notion template link"}.
         </div>
       </div>
@@ -2124,7 +2124,7 @@ const T_DMKeyword = ({ data, brand }) => {
 /* ============================================== */
 const T_MetricProof = ({ data, brand }) => {
   const metric = data.metric || "+240%";
-  const metricSize = getDynamicFontSize(metric, 180, 5, 72);
+  const metricSize = getDynamicFontSize(metric, 280, 5, 110);
   return (
     <div className="social-frame" style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 80, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 28 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -2135,19 +2135,19 @@ const T_MetricProof = ({ data, brand }) => {
         <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 800, fontSize: metricSize, lineHeight: 0.9, color: "var(--vc-lime)", letterSpacing: "-0.04em", wordBreak: "break-word" }}>
           {metric}
         </div>
-        <div style={{ marginTop: 18, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 40, lineHeight: 1.15, maxWidth: 800, wordBreak: "break-word" }}>
+        <div style={{ marginTop: 18, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 44, lineHeight: 1.15, maxWidth: 800, wordBreak: "break-word" }}>
           {data.metricLabel || "Increase in closed deal size in 60 days"}
         </div>
-        <div style={{ marginTop: 20, fontFamily: "var(--font-helvetica)", fontSize: 24, lineHeight: 1.4, opacity: 0.65, maxWidth: 760, wordBreak: "break-word" }}>
+        <div style={{ marginTop: 20, fontFamily: "var(--font-helvetica)", fontSize: 26, lineHeight: 1.4, opacity: 0.65, maxWidth: 760, wordBreak: "break-word" }}>
           {data.summary || "Complete repositioning and brand identity overhaul for an enterprise B2B consultancy."}
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 20, borderTop: "1.5px solid rgba(236,230,214,0.18)" }}>
         <div>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24 }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 26 }}>
             {data.clientName || "Sarah Jenkins"}
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.6, marginTop: 4 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.6, marginTop: 4 }}>
             {data.clientRole || "Managing Director · Apex"}
           </div>
         </div>
@@ -2162,7 +2162,7 @@ const T_MetricProof = ({ data, brand }) => {
 /* ============================================== */
 const T_TweetReview = ({ data, brand }) => {
   const review = data.review || "Vanaila Studio completely transformed our documents. Our conversion rate on proposals jumped from 22% to 68% in two weeks.";
-  const reviewSize = getDynamicFontSize(review, 56, 80, 32);
+  const reviewSize = getDynamicFontSize(review, 68, 80, 40);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: 80, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -2173,22 +2173,22 @@ const T_TweetReview = ({ data, brand }) => {
           ))}
         </div>
       </div>
-      <div style={{ padding: "40px 0" }}>
+      <div style={{ padding: "48px 0" }}>
         <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: reviewSize, lineHeight: 1.15, letterSpacing: "-0.01em", wordBreak: "break-word" }}>
           "{review}"
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 24, borderTop: "1.5px solid rgba(14,14,14,0.15)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24 }}>
+          <div style={{ width: 68, height: 68, borderRadius: "50%", background: "var(--vc-ink)", color: "var(--vc-cream)", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 26 }}>
             {((data.clientName || "A")[0] || "A").toUpperCase()}
           </div>
           <div>
-            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 26, display: "flex", alignItems: "center", gap: 8 }}>
               {data.clientName || "Alex Rivera"}
               <span style={{ fontSize: 16, color: "var(--vc-blue)" }}>✓</span>
             </div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 14, color: "var(--vc-mute)", marginTop: 2 }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, color: "var(--vc-mute)", marginTop: 2 }}>
               {data.handle || "@alexrivera_"} · {data.clientTitle || "Founder"}
             </div>
           </div>
@@ -2241,7 +2241,7 @@ const T_CaseStudy = ({ data, brand }) => {
 const T_Checklist = ({ data, brand }) => {
   const items = (data.items || "PO or written approval attached\nPayment due date and bank details clear\nItemized deliverables breakdown\nLate fee terms clearly stated\nDirect contact for accounts payable").split("\n").filter(Boolean).slice(0, 5);
   const title = data.title || "5 Things to check before sending an invoice";
-  const titleSize = getDynamicFontSize(title, 68, 30, 38);
+  const titleSize = getDynamicFontSize(title, 76, 32, 46);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: 76, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 28 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -2252,11 +2252,11 @@ const T_Checklist = ({ data, brand }) => {
         <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: titleSize, lineHeight: 1.05, letterSpacing: "-0.02em", wordBreak: "break-word" }}>
           {title}
         </div>
-        <div style={{ marginTop: 32, display: "grid", gap: 14 }}>
+        <div style={{ marginTop: 32, display: "grid", gap: 16 }}>
           {items.map((it, i) => (
             <div key={i} style={{ display: "flex", gap: 18, alignItems: "center", paddingBottom: 10, borderBottom: "1px solid rgba(14,14,14,0.1)" }}>
-              <span style={{ width: 28, height: 28, borderRadius: 8, background: "var(--vc-ink)", color: "var(--vc-lime)", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, flexShrink: 0 }}>✓</span>
-              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 26, fontWeight: 500, lineHeight: 1.2, wordBreak: "break-word" }}>{it}</span>
+              <span style={{ width: 32, height: 32, borderRadius: 8, background: "var(--vc-ink)", color: "var(--vc-lime)", display: "grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, flexShrink: 0 }}>✓</span>
+              <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 28, fontWeight: 500, lineHeight: 1.2, wordBreak: "break-word" }}>{it}</span>
             </div>
           ))}
         </div>
@@ -2287,7 +2287,7 @@ const T_Opinion = ({ data, brand }) => {
             <div style={{ display: "inline-flex", padding: "6px 16px", background: "rgba(239,68,68,0.2)", color: "var(--vc-red)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
               {data.mythTitle || "Myth"}
             </div>
-            <div style={{ marginTop: 20, fontFamily: "var(--font-helvetica)", fontSize: 28, lineHeight: 1.3, opacity: 0.75, textDecoration: "line-through", wordBreak: "break-word" }}>
+            <div style={{ marginTop: 20, fontFamily: "var(--font-helvetica)", fontSize: 32, lineHeight: 1.3, opacity: 0.75, textDecoration: "line-through", wordBreak: "break-word" }}>
               {data.myth || "Work 80 hours a week, lower your rates to compete, and take every client you can find."}
             </div>
           </div>
@@ -2298,7 +2298,7 @@ const T_Opinion = ({ data, brand }) => {
             <div style={{ display: "inline-flex", padding: "6px 16px", background: "var(--vc-ink)", color: "var(--vc-lime)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
               {data.truthTitle || "Reality"}
             </div>
-            <div style={{ marginTop: 20, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32, lineHeight: 1.25, wordBreak: "break-word" }}>
+            <div style={{ marginTop: 20, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, lineHeight: 1.25, wordBreak: "break-word" }}>
               {data.truth || "Pick one high-value niche, price on business outcomes, and say no to 80% of inquiries."}
             </div>
           </div>
@@ -2315,7 +2315,7 @@ const T_Opinion = ({ data, brand }) => {
 /* ============================================== */
 const T_Pillars = ({ data, brand }) => {
   const headline = data.headline || "The 3 Pillars of High-Earning Freelancers";
-  const headSize = getDynamicFontSize(headline, 64, 32, 38);
+  const headSize = getDynamicFontSize(headline, 72, 34, 46);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", color: "var(--vc-ink)", padding: 76, display: "grid", gridTemplateRows: "auto 1fr auto", gap: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -2327,25 +2327,25 @@ const T_Pillars = ({ data, brand }) => {
           {headline}
         </div>
         <div style={{ display: "grid", gap: 14 }}>
-          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "20px 28px", borderRadius: 18, display: "grid", gridTemplateColumns: "44px 1fr", gap: 16, alignItems: "center" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 22, color: "var(--vc-lime)", fontWeight: 700 }}>01</span>
+          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "22px 30px", borderRadius: 18, display: "grid", gridTemplateColumns: "44px 1fr", gap: 16, alignItems: "center" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 24, color: "var(--vc-lime)", fontWeight: 700 }}>01</span>
             <div>
-              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 22, wordBreak: "break-word" }}>{data.pillar1Title || "Positioning"}</div>
-              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 18, opacity: 0.7, marginTop: 2, wordBreak: "break-word" }}>{data.pillar1Body || "Specialist over generalist. Solve an expensive problem."}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24, wordBreak: "break-word" }}>{data.pillar1Title || "Positioning"}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 20, opacity: 0.7, marginTop: 2, wordBreak: "break-word" }}>{data.pillar1Body || "Specialist over generalist. Solve an expensive problem."}</div>
             </div>
           </div>
-          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "20px 28px", borderRadius: 18, display: "grid", gridTemplateColumns: "44px 1fr", gap: 16, alignItems: "center" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 22, color: "var(--vc-lime)", fontWeight: 700 }}>02</span>
+          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "22px 30px", borderRadius: 18, display: "grid", gridTemplateColumns: "44px 1fr", gap: 16, alignItems: "center" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 24, color: "var(--vc-lime)", fontWeight: 700 }}>02</span>
             <div>
-              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 22, wordBreak: "break-word" }}>{data.pillar2Title || "Packaging"}</div>
-              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 18, opacity: 0.7, marginTop: 2, wordBreak: "break-word" }}>{data.pillar2Body || "Fixed deliverables, clear scopes, zero hourly billing."}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24, wordBreak: "break-word" }}>{data.pillar2Title || "Packaging"}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 20, opacity: 0.7, marginTop: 2, wordBreak: "break-word" }}>{data.pillar2Body || "Fixed deliverables, clear scopes, zero hourly billing."}</div>
             </div>
           </div>
-          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "20px 28px", borderRadius: 18, display: "grid", gridTemplateColumns: "44px 1fr", gap: 16, alignItems: "center" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 22, color: "var(--vc-lime)", fontWeight: 700 }}>03</span>
+          <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "22px 30px", borderRadius: 18, display: "grid", gridTemplateColumns: "44px 1fr", gap: 16, alignItems: "center" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 24, color: "var(--vc-lime)", fontWeight: 700 }}>03</span>
             <div>
-              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 22, wordBreak: "break-word" }}>{data.pillar3Title || "Pipeline"}</div>
-              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 18, opacity: 0.7, marginTop: 2, wordBreak: "break-word" }}>{data.pillar3Body || "Always cultivate relationships before you need work."}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24, wordBreak: "break-word" }}>{data.pillar3Title || "Pipeline"}</div>
+              <div style={{ fontFamily: "var(--font-helvetica)", fontSize: 20, opacity: 0.7, marginTop: 2, wordBreak: "break-word" }}>{data.pillar3Body || "Always cultivate relationships before you need work."}</div>
             </div>
           </div>
         </div>

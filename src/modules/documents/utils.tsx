@@ -158,10 +158,11 @@ export async function captureImage(targetSelector: string, format = "png"): Prom
       width,
       height,
     };
+    const targetEl = frame || node;
     if (format === "jpg" || format === "jpeg") {
-      return await htmlToImage.toJpeg(node, { ...opts, quality: 0.95, backgroundColor: "#ffffff" });
+      return await htmlToImage.toJpeg(targetEl, { ...opts, quality: 0.95, backgroundColor: "#ffffff" });
     }
-    return await htmlToImage.toPng(node, opts);
+    return await htmlToImage.toPng(targetEl, opts);
   } finally {
     node.style.transform = oldTransform;
     node.style.boxShadow = oldBoxShadow;

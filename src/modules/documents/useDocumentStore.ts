@@ -98,14 +98,29 @@ export function extractDocumentMetadata(docType: string, data: any) {
 export function useDocumentStore(currentDocType: string) {
   const [items, setItems] = useState<StoredDocumentItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [countsByCategory, setCountsByCategory] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
+
+  const refreshCounts = useCallback(async () => {
+    try {
+      const res = await listDocuments({ limit: 100 });
+      const counts: Record<string, number> = {};
+      (res.items || []).forEach(item => {
+        counts[item.doc_type] = (counts[item.doc_type] || 0) + 1;
+      });
+      setCountsByCategory(counts);
+    } catch {
+      // Offline / fallback
+    }
+  }, []);
 
   const fetchItems = useCallback(async (type?: string, status?: string, q?: string) => {
     setIsLoading(true);
     try {
+      const targetType = type || (currentDocType !== 'social' && currentDocType !== 'quote' ? currentDocType : undefined);
       const res = await listDocuments({
-        type: type || (currentDocType !== 'social' && currentDocType !== 'quote' ? currentDocType : undefined),
+        type: targetType,
         status: status && status !== 'all' ? status : undefined,
         q: q || undefined,
         limit: 100,
@@ -125,7 +140,8 @@ export function useDocumentStore(currentDocType: string) {
     if (currentDocType && currentDocType !== 'social' && currentDocType !== 'quote') {
       fetchItems(currentDocType);
     }
-  }, [currentDocType, fetchItems]);
+    refreshCounts();
+  }, [currentDocType, fetchItems, refreshCounts]);
 
   const save = async (docType: string, data: any, variant: string = 'classic', status: 'draft' | 'final' = 'draft') => {
     const meta = extractDocumentMetadata(docType, data);
@@ -137,16 +153,15 @@ export function useDocumentStore(currentDocType: string) {
       data,
     };
 
+    let result: StoredDocumentItem;
     if (activeDocumentId) {
-      const updated = await updateDocument(activeDocumentId, payload);
-      await fetchItems(docType);
-      return updated;
+      result = await updateDocument(activeDocumentId, payload);
     } else {
-      const created = await createDocument(payload);
-      setActiveDocumentId(created.id);
-      await fetchItems(docType);
-      return created;
+      result = await createDocument(payload);
+      setActiveDocumentId(result.id);
     }
+    await Promise.all([fetchItems(docType), refreshCounts()]);
+    return result;
   };
 
   const load = async (id: string) => {
@@ -155,27 +170,29 @@ export function useDocumentStore(currentDocType: string) {
     return doc;
   };
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, category?: string) => {
     await apiDeleteDocument(id);
     if (activeDocumentId === id) {
       setActiveDocumentId(null);
     }
-    await fetchItems(currentDocType);
+    await Promise.all([fetchItems(category || currentDocType), refreshCounts()]);
   };
 
-  const duplicate = async (id: string) => {
+  const duplicate = async (id: string, category?: string) => {
     const copy = await apiDuplicateDocument(id);
-    await fetchItems(currentDocType);
+    await Promise.all([fetchItems(category || currentDocType), refreshCounts()]);
     return copy;
   };
 
   return {
     items,
     totalCount,
+    countsByCategory,
     isLoading,
     activeDocumentId,
     setActiveDocumentId,
     fetchItems,
+    refreshCounts,
     save,
     load,
     remove,

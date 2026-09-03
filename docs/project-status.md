@@ -105,6 +105,8 @@ Deployment prerequisites still requiring operator action:
 
 ## In progress
 
+- **Social template sizing & dynamic scaling** — restored bold editorial proportions across templates 1–34 in `src/modules/social/social-templates.tsx`, calibrated dynamic scaling curves for 5, 10, and 15+ characters, and improved image capture targeting in `src/modules/documents/utils.tsx`.
+- **Document history enhancements** — category filter tabs, per-type count badges, and category-aware document filtering in `DocumentHistory.tsx` and `useDocumentStore.ts`.
 - **Runtime social templates** (feat/runtime-social-templates) — admin-authored, data-driven templates for the social generator, addable without a redeploy. All core phases complete:
   - Phase 1 — `social_templates` table (migration `010`), Workers-safe sanitizer (26-case XSS suite), admin CRUD + import API, public published-only feed.
   - Phase 2 — `RuntimeTemplate.tsx` render boundary (token/brand/`{{#each}}` resolution, HTML-escaped values, DOMPurify, scoped CSS), merged into the social registry; export parity with built-ins.

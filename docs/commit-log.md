@@ -97,3 +97,15 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 - Multi-slide carousels are now authorable: editor gains a slide strip (Slide 1..N, add/remove) that edits each slide's HTML independently and previews the selected one; saves `slides[]`
 - `is_pro` is now enforced: Pro-gated templates show a PRO badge, raise the upgrade modal on click instead of opening the editor, and are blocked at all four export paths as a backstop
 - `toRegistryTemplate` now derives picker `category` from the canvas aspect, so 1080x1920 runtime templates group under "TikTok / Threads" instead of "Instagram 1:1"
+
+## 2026-09-03 — Social template sizing & document history
+
+- `fix(social): revert template sizing to bold proportions & calibrate dynamic font scaling`
+  - Reverted aggressive shrinkage in `src/modules/social/social-templates.tsx` (templates 1 to 34) back to bold, spacious editorial dimensions.
+  - Calibrated `getDynamicFontSize` curve (`Math.pow(scale, 0.85)`): ≤5 characters stay at 100% bold size; 10 and 15+ characters scale smoothly without line clipping.
+  - Retained all custom field bindings (`titleItalic`, `projectText`, `prefix`, etc.) and `wordBreak: "break-word"`.
+  - Fixed `captureImage` in `src/modules/documents/utils.tsx` to target `.social-frame` directly, avoiding scale/transform distortion on export.
+- `feat(documents): add category filter tabs and count badges to document history`
+  - Added category filter pills with per-type count badges to DocumentHistory modal.
+  - Added `countsByCategory` and `refreshCounts` to `useDocumentStore`.
+

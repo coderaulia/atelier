@@ -316,7 +316,7 @@ const T_Stat = ({ data, brand }) => {
   const statText = data.stat || "91%";
   const statSize = getDynamicFontSize(statText, 380, 4, 48);
   const leadSize = getDynamicFontSize(data.italicLead || "Why do most posts fail?", 56, 25, 28);
-  const labelSize = getDynamicFontSize(data.statLabel || "of posts get zero meaningful engagement.", 38, 45, 22);
+  const labelSize = getDynamicFontSize(data.statLabel || "of posts get zero meaningful engagement.", 38, 85, 26, 920);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "grid", gridTemplateRows: "auto 1fr auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -330,7 +330,7 @@ const T_Stat = ({ data, brand }) => {
         <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: statSize, lineHeight: statSize > 250 ? 0.86 : 0.94, color: "var(--vc-red)", letterSpacing: "-0.04em", overflowWrap: "break-word", wordBreak: "normal" }}>
           {statText}
         </div>
-        <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: labelSize, color: "var(--vc-mute)", maxWidth: 720, overflowWrap: "break-word", wordBreak: "normal" }}>
+        <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: labelSize, color: "var(--vc-mute)", maxWidth: "100%", lineHeight: 1.35, overflowWrap: "break-word", wordBreak: "normal" }}>
           {renderSocialMd(data.statLabel || "of posts get zero meaningful engagement.")}
         </div>
       </div>
@@ -650,7 +650,7 @@ const T_Tips = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: italicSize, lineHeight: 1.02, color: "var(--vc-ink)", marginTop: 8, letterSpacing: "-0.02em", overflowWrap: "break-word", wordBreak: "normal" }}>
             {titleItalic}
           </div>
-          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", maxWidth: 720, lineHeight: 1.4, overflowWrap: "break-word", wordBreak: "normal" }}>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: 28, color: "var(--vc-mute)", maxWidth: "100%", lineHeight: 1.4, overflowWrap: "break-word", wordBreak: "normal" }}>
             {renderSocialMd(data.subtitle || "What I've learned shipping freelance work for the better part of a decade.")}
           </div>
         </div>
@@ -710,7 +710,7 @@ const T_Booking = ({ data, brand }) => {
   const project = data.projectText ?? data.project ?? "projects.";
   const leadFull = `${data.lead || "Two spots open for"} ${data.window || "Q3"} ${project}`;
   const leadSize = getDynamicFontSize(leadFull, 152, 20, 54);
-  const subtextSize = getDynamicFontSize(data.subtext || "", 36, 70, 24);
+  const subtextSize = getDynamicFontSize(data.subtext || "", 36, 80, 24, 920);
   return (
     <div className="social-frame" style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -723,7 +723,7 @@ const T_Booking = ({ data, brand }) => {
             {data.lead || "Two spots open for"} <HandCircle color="var(--vc-red)">{data.window || "Q3"}</HandCircle>{" "}
             <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-red)" }}>{project}</em>
           </div>
-          <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: subtextSize, color: "var(--vc-mute)", maxWidth: 740, lineHeight: 1.35, overflowWrap: "break-word", wordBreak: "normal" }}>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: subtextSize, color: "var(--vc-mute)", maxWidth: "100%", lineHeight: 1.35, overflowWrap: "break-word", wordBreak: "normal" }}>
             {renderSocialMd(data.subtext || "Brand and product work. Four-to-six-week engagements. Friendly intake, written deliverables, no agency overhead.")}
           </div>
         </div>
@@ -746,7 +746,7 @@ const T_LinkBio = ({ data, brand }) => {
   const headASize = getDynamicFontSize(data.headlineA || "Why your proposal is", 124, 18, 54);
   const headBSize = getDynamicFontSize(data.headlineB || "your portfolio.", 136, 15, 54);
   const urlSize = getDynamicFontSize(data.url || "northquill.studio/essays", 22, 28, 14);
-  const subSize = getDynamicFontSize(data.subtext || "", 28, 70, 20);
+  const subSize = getDynamicFontSize(data.subtext || "", 28, 80, 20, 920);
   return (
     <div className="social-frame" style={{ padding: 0, display: "grid", gridTemplateRows: "auto 1fr auto", background: "var(--vc-cream)" }}>
       <div style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: "44px 80px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -764,7 +764,7 @@ const T_LinkBio = ({ data, brand }) => {
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: headBSize, lineHeight: 1.02, color: "var(--vc-red)", letterSpacing: "-0.025em", marginTop: 4, overflowWrap: "break-word", wordBreak: "normal" }}>
             {data.headlineB || "your portfolio."}
           </div>
-          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: subSize, color: "var(--vc-mute)", maxWidth: 800, lineHeight: 1.4, overflowWrap: "break-word", wordBreak: "normal" }}>
+          <div style={{ marginTop: 28, fontFamily: "var(--font-helvetica)", fontSize: subSize, color: "var(--vc-mute)", maxWidth: "100%", lineHeight: 1.4, overflowWrap: "break-word", wordBreak: "normal" }}>
             {renderSocialMd(data.subtext || "A short piece on the small things that build trust before the work has even started.")}
           </div>
         </div>

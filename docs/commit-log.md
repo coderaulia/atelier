@@ -1,5 +1,9 @@
 # Commit Log
 
+## 2026-09-03 — Social Media Textarea Wrapper Expansion & Multiline Scaling
+
+- `fix(social): expand textarea wrapper width and calibrate multiline font scaling` — expanded the container wrapper for multiline textarea statements from artificial `maxWidth: 720` down to `maxWidth: 100%` (920px available width) across templates (`T_Stat`, `T_Booking`, `T_LinkBio`, `T_Tips`), keeping Hero stat scaling unchanged while calibrating textarea font scaling so multiline content retains a readable, prominent font size without prematurely shrinking into tiny footnotes.
+
 ## 2026-09-03 — Social Media Dynamic Font Scaling & Word Boundary Protection
 
 - `fix(social): prevent mid-word breaking and constrain dynamic font sizes to frame width` — overhauled `getDynamicFontSize` in `src/modules/social/social-templates.tsx` to compute physical width bounds based on the longest single word and frame width. Replaced all occurrences of `wordBreak: "break-word"` with `overflowWrap: "break-word"` and `wordBreak: "normal"` across all 30 social templates, guaranteeing clean line breaks between words (e.g. preventing words like "Badminton" or "CONSULTING" from breaking mid-word across lines).

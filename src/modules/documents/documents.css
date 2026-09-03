@@ -504,11 +504,16 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .paper-wrap {
   transform-origin: top center;
   transition: transform 0.2s;
+  flex-shrink: 0;
 }
 
 .paper {
   width: var(--paper-w);
+  min-width: var(--paper-w);
+  max-width: var(--paper-w);
   min-height: var(--paper-h);
+  box-sizing: border-box;
+  flex-shrink: 0;
   overflow: visible;
   background: var(--paper);
   color: var(--paper-ink);
@@ -797,14 +802,28 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .inv-table { margin-top: 8px; }
 .inv-totals {
   margin-left: auto;
-  width: 60%;
+  width: 55%;
+  min-width: 280px;
+  max-width: 400px;
   margin-top: 16px;
   font-size: 10.5pt;
 }
 .inv-totals-row {
-  display: flex; justify-content: space-between;
-  padding: 5px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 6px 0;
   border-bottom: 1px solid var(--paper-rule);
+}
+.inv-totals-row span:first-child {
+  flex-shrink: 0;
+}
+.inv-totals-row span:last-child {
+  white-space: nowrap;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 .inv-totals-row--final {
   border-bottom: 0;

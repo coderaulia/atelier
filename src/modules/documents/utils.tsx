@@ -59,10 +59,10 @@ export const fmt = {
   money: (n: any, currency = "USD") => {
     const num = Number(n) || 0;
     try {
-      if (currency === "IDR") return "Rp " + new Intl.NumberFormat("id-ID").format(Math.round(num));
-      return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(num);
+      if (currency === "IDR") return "Rp\u00A0" + new Intl.NumberFormat("id-ID").format(Math.round(num));
+      return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(num).replace(/\s/g, '\u00A0');
     } catch (e) {
-      return "$" + num.toFixed(2);
+      return "$\u00A0" + num.toFixed(2);
     }
   },
   date: (s: string) => {

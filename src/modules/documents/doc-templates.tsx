@@ -200,8 +200,8 @@ function InvoiceTable({ data }) {
           <tr key={i}>
             <td><InlineMd md={it.desc} /></td>
             <td style={{ textAlign: "right" }}>{it.qty}</td>
-            <td style={{ textAlign: "right" }}>{fmt.money(it.rate, data.currency)}</td>
-            <td style={{ textAlign: "right" }}>{fmt.money((Number(it.qty)||0)*(Number(it.rate)||0), data.currency)}</td>
+            <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>{fmt.money(it.rate, data.currency)}</td>
+            <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>{fmt.money((Number(it.qty)||0)*(Number(it.rate)||0), data.currency)}</td>
           </tr>
         ))}
       </tbody>
@@ -221,15 +221,26 @@ function InvoiceTotals({ data }) {
 
   return (
     <div className="inv-totals">
-      <div className="inv-totals-row"><span>Subtotal</span><span>{fmt.money(subtotal, data.currency)}</span></div>
-      {discountAmount > 0 && <div className="inv-totals-row"><span>Discount ({data.discountPct}%)</span><span>−{fmt.money(discountAmount, data.currency)}</span></div>}
+      <div className="inv-totals-row">
+        <span>Subtotal</span>
+        <span style={{ whiteSpace: "nowrap", textAlign: "right" }}>{fmt.money(subtotal, data.currency)}</span>
+      </div>
+      {discountAmount > 0 && (
+        <div className="inv-totals-row">
+          <span>Discount ({data.discountPct}%)</span>
+          <span style={{ whiteSpace: "nowrap", textAlign: "right" }}>−{fmt.money(discountAmount, data.currency)}</span>
+        </div>
+      )}
       {taxAmount > 0 && (
         <div className="inv-totals-row">
           <span>{taxLabel}</span>
-          <span>{taxEffect === 'deduct' ? '−' : '+'}{fmt.money(taxAmount, data.currency)}</span>
+          <span style={{ whiteSpace: "nowrap", textAlign: "right" }}>{taxEffect === 'deduct' ? '−' : '+'}{fmt.money(taxAmount, data.currency)}</span>
         </div>
       )}
-      <div className="inv-totals-row inv-totals-row--final"><span>Total due</span><span>{fmt.money(grandTotal, data.currency)}</span></div>
+      <div className="inv-totals-row inv-totals-row--final">
+        <span>Total due</span>
+        <span style={{ whiteSpace: "nowrap", textAlign: "right" }}>{fmt.money(grandTotal, data.currency)}</span>
+      </div>
       {words && (
         <div className="inv-totals-words" style={{ fontStyle: 'italic', fontSize: '8.5pt', color: 'var(--paper-muted)', marginTop: 8, textAlign: 'right' }}>
           Terbilang: {words}
@@ -696,12 +707,12 @@ function ReceiptClassic({ data, brand }) {
         <tbody>
           <tr>
             <td style={{ paddingTop: 12, fontSize: "11pt", fontFamily: "var(--font-serif)", lineHeight: 1.5 }}>{data.itemDescription || "—"}</td>
-            <td style={{ paddingTop: 12, fontSize: "11pt", fontFamily: "var(--font-serif)", textAlign: "right", fontWeight: 600 }}>{fmt.money(data.amount, data.currency)}</td>
+            <td style={{ paddingTop: 12, fontSize: "11pt", fontFamily: "var(--font-serif)", textAlign: "right", fontWeight: 600, whiteSpace: "nowrap" }}>{fmt.money(data.amount, data.currency)}</td>
           </tr>
         </tbody>
       </table>
       <div className="inv-totals">
-        <div className="inv-totals-row inv-totals-row--final"><span>Amount received</span><span>{fmt.money(data.amount, data.currency)}</span></div>
+        <div className="inv-totals-row inv-totals-row--final"><span>Amount received</span><span style={{ whiteSpace: "nowrap", textAlign: "right" }}>{fmt.money(data.amount, data.currency)}</span></div>
       </div>
       {data.notes && (<><h2>Notes</h2><DocBody md={data.notes} /></>)}
       <div style={{ marginTop: 40, fontSize: "9pt", color: "var(--paper-muted)", textAlign: "center", borderTop: "1px solid var(--paper-rule)", paddingTop: 12, fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.1em" }}>

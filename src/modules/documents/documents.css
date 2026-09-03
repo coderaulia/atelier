@@ -525,6 +525,11 @@ input, textarea, select { font-family: inherit; color: inherit; }
 .print-export-root {
   display: none;
 }
+@media print {
+  body.is-printing .print-export-root {
+    display: block !important;
+  }
+}
 
 /* (carousel set styles deprecated — slides are now rendered individually by SocialPreview) */
 

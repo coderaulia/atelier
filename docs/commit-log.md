@@ -1,5 +1,9 @@
 # Commit Log
 
+## 2026-09-03 — Direct PDF Export for Document Generator
+
+- `fix(documents): direct client-side PDF download` — replaced `window.print()` browser dialog with direct client-side PDF export using `pdf-lib` and `html-to-image`. The "Export PDF" button now renders the document at native 100% paper resolution (unscaling parent preview transforms during capture), automatically segments multi-page content into standard A4 or Letter PDF pages, and directly downloads `${filename}.pdf` to the user's downloads folder. Added a loading indicator (`Generating PDF…`) and direct PNG export button.
+
 ## 2026-09-03 — Social Media Textarea Wrapper Expansion & Multiline Scaling
 
 - `fix(social): expand textarea wrapper width and calibrate multiline font scaling` — expanded the container wrapper for multiline textarea statements from artificial `maxWidth: 720` down to `maxWidth: 100%` (920px available width) across templates (`T_Stat`, `T_Booking`, `T_LinkBio`, `T_Tips`), keeping Hero stat scaling unchanged while calibrating textarea font scaling so multiline content retains a readable, prominent font size without prematurely shrinking into tiny footnotes.

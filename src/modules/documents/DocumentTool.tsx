@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
-  Icon, useLocalStorage, exportPrint, exportImage, copyImage,
+  Icon, useLocalStorage, exportImage, exportPDF, copyImage,
 } from './utils';
 import {
   AgreementEditor, InvoiceEditor, ProposalEditor, PRDEditor,
@@ -396,14 +396,24 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
     return `${docType}-${slug}`;
   }, [docType, data, socialTemplateId]);
 
-  const handlePrint = () => {
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPDF = async () => {
     if (activeSocialLocked) { setShowUpgrade(true); return; }
     if (!canUse) { setShowUpgrade(true); return; }
     if (docType !== 'social' && !isToolMode) {
       handleSaveDocument('final').catch(() => {});
     }
-    exportPrint(exportTarget);
-    increment();
+    setExportingPdf(true);
+    try {
+      await exportPDF(exportTarget, filename, (t.paper as any) || 'a4');
+      increment();
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setExportingPdf(false);
+    }
   };
 
   const handleImage = async (fmt: string) => {
@@ -783,7 +793,34 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
               >
                 {saveSuccess ? '✓ Saved' : saving ? 'Saving…' : '💾 Save'}
               </button>
-              <button className="export-btn" onClick={handlePrint}>{Icon.print} Export PDF</button>
+              <button
+                type="button"
+                className="export-btn export-btn--ghost"
+                onClick={() => handleImage("png")}
+                style={{ fontSize: 12, padding: '7px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                title="Download high-resolution PNG image"
+              >
+                {Icon.image} PNG
+              </button>
+              <button
+                type="button"
+                className="export-btn"
+                onClick={handleExportPDF}
+                disabled={exportingPdf}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                title="Download PDF directly to your device"
+              >
+                {exportingPdf ? (
+                  <>
+                    <span style={{ display: 'inline-block' }}>⏳</span>
+                    <span>Generating PDF…</span>
+                  </>
+                ) : (
+                  <>
+                    {Icon.download} Export PDF
+                  </>
+                )}
+              </button>
             </div>
           ) : socialSlides.length > 1 ? (
             <>

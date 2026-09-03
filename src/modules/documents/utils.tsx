@@ -142,6 +142,15 @@ export async function captureImage(targetSelector: string, format = "png"): Prom
     try { await document.fonts.ready; } catch (e) {}
   }
 
+  const wrap = (node.closest('.paper-wrap') || node.parentElement) as HTMLElement | null;
+  const isPaperWrap = wrap?.classList.contains('paper-wrap');
+  const oldWrapTransform = isPaperWrap && wrap ? wrap.style.transform : '';
+  const oldWrapOrigin = isPaperWrap && wrap ? wrap.style.transformOrigin : '';
+  if (isPaperWrap && wrap) {
+    wrap.style.transform = 'none';
+    wrap.style.transformOrigin = 'initial';
+  }
+
   const oldTransform = node.style.transform;
   const oldBoxShadow = node.style.boxShadow;
   node.style.transform = "none";
@@ -166,6 +175,10 @@ export async function captureImage(targetSelector: string, format = "png"): Prom
   } finally {
     node.style.transform = oldTransform;
     node.style.boxShadow = oldBoxShadow;
+    if (isPaperWrap && wrap) {
+      wrap.style.transform = oldWrapTransform;
+      wrap.style.transformOrigin = oldWrapOrigin;
+    }
   }
 }
 
@@ -176,6 +189,93 @@ export async function exportImage(targetSelector: string, filename = "export", f
   link.download = `${filename}.${format === "jpeg" ? "jpg" : format}`;
   link.href = dataUrl;
   link.click();
+}
+
+export async function exportPDF(targetSelector: string, filename = "document", paperSize: 'letter' | 'a4' = 'a4') {
+  const dataUrl = await captureImage(targetSelector, "png");
+  if (!dataUrl) throw new Error("Could not capture document image.");
+
+  const { PDFDocument } = await import('pdf-lib');
+  const pdfDoc = await PDFDocument.create();
+
+  const response = await fetch(dataUrl);
+  const imageBytes = await response.arrayBuffer();
+  const pngImage = await pdfDoc.embedPng(imageBytes);
+
+  // A4: 595.28 x 841.89 pt, Letter: 612 x 792 pt
+  const pageWidth = paperSize === 'a4' ? 595.28 : 612;
+  const pageHeight = paperSize === 'a4' ? 841.89 : 792;
+
+  const imgWidth = pngImage.width;
+  const imgHeight = pngImage.height;
+
+  const pageAspect = pageHeight / pageWidth;
+  const imgAspect = imgHeight / imgWidth;
+
+  // Single page document (with 6% margin tolerance)
+  if (imgAspect <= pageAspect * 1.06) {
+    const page = pdfDoc.addPage([pageWidth, pageHeight]);
+    page.drawImage(pngImage, {
+      x: 0,
+      y: pageHeight - (pageWidth * imgAspect),
+      width: pageWidth,
+      height: pageWidth * imgAspect,
+    });
+  } else {
+    // Multi-page document: slice into sequential A4/Letter pages
+    const img = new Image();
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = dataUrl!;
+    });
+
+    const pageHeightPx = Math.round(imgWidth * pageAspect);
+    const totalPages = Math.ceil(imgHeight / pageHeightPx);
+
+    for (let i = 0; i < totalPages; i++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = imgWidth;
+      canvas.height = pageHeightPx;
+      const sliceHeight = Math.min(pageHeightPx, imgHeight - (i * pageHeightPx));
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(
+          img,
+          0, i * pageHeightPx, imgWidth, sliceHeight,
+          0, 0, imgWidth, sliceHeight
+        );
+      }
+
+      const sliceDataUrl = canvas.toDataURL('image/png');
+      const sliceRes = await fetch(sliceDataUrl);
+      const sliceBytes = await sliceRes.arrayBuffer();
+      const slicePng = await pdfDoc.embedPng(sliceBytes);
+
+      const page = pdfDoc.addPage([pageWidth, pageHeight]);
+      page.drawImage(slicePng, {
+        x: 0,
+        y: 0,
+        width: pageWidth,
+        height: pageHeight,
+      });
+    }
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes.buffer as any], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 export async function copyImage(targetSelector: string): Promise<boolean> {

@@ -1,5 +1,144 @@
-import { useState, Fragment } from 'react';
-import { Field, TextInput, Textarea, SectionTitle, ImageField } from '../utils';
+import React, { useState, useRef, Fragment } from 'react';
+import { Field, TextInput, SectionTitle, ImageField } from '../utils';
+
+function SocialMarkdownTextarea({ value, onChange, placeholder, rows }: any) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const wrapText = (prefix: string, suffix: string = prefix, defaultPlaceholder = "text") => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentVal = value || "";
+    const selectedText = currentVal.substring(start, end);
+    const textToWrap = selectedText || defaultPlaceholder;
+    const replacement = `${prefix}${textToWrap}${suffix}`;
+    const nextVal = currentVal.substring(0, start) + replacement + currentVal.substring(end);
+    onChange(nextVal);
+
+    setTimeout(() => {
+      textarea.focus();
+      if (selectedText) {
+        textarea.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+      } else {
+        textarea.setSelectionRange(start + prefix.length, start + prefix.length + defaultPlaceholder.length);
+      }
+    }, 0);
+  };
+
+  const insertNewline = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentVal = value || "";
+    const nextVal = currentVal.substring(0, start) + "\n" + currentVal.substring(end);
+    onChange(nextVal);
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + 1, start + 1);
+    }, 0);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+      e.preventDefault();
+      wrapText('**', '**', 'bold text');
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+      e.preventDefault();
+      wrapText('*', '*', 'italic text');
+    }
+  };
+
+  return (
+    <div className="social-md-textarea-wrap" style={{ position: 'relative' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          marginBottom: 6,
+          padding: '4px 8px',
+          background: 'var(--shell-bg)',
+          borderRadius: 6,
+          border: '1px solid var(--shell-rule)',
+        }}
+      >
+        <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--shell-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Markdown:
+        </span>
+        <button
+          type="button"
+          onClick={() => wrapText('**', '**', 'bold text')}
+          style={{
+            background: 'var(--shell-bg-2)',
+            color: 'var(--shell-ink)',
+            border: '1px solid var(--shell-rule)',
+            borderRadius: 4,
+            padding: '2px 8px',
+            fontSize: 11,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+          title="Bold text (**text**) - Ctrl+B"
+        >
+          B
+        </button>
+        <button
+          type="button"
+          onClick={() => wrapText('*', '*', 'italic text')}
+          style={{
+            background: 'var(--shell-bg-2)',
+            color: 'var(--shell-ink)',
+            border: '1px solid var(--shell-rule)',
+            borderRadius: 4,
+            padding: '2px 8px',
+            fontSize: 11,
+            fontStyle: 'italic',
+            cursor: 'pointer',
+          }}
+          title="Italic text (*text*) - Ctrl+I"
+        >
+          I
+        </button>
+        <button
+          type="button"
+          onClick={insertNewline}
+          style={{
+            background: 'var(--shell-bg-2)',
+            color: 'var(--shell-muted)',
+            border: '1px solid var(--shell-rule)',
+            borderRadius: 4,
+            padding: '2px 8px',
+            fontSize: 11,
+            fontFamily: 'var(--font-mono)',
+            cursor: 'pointer',
+          }}
+          title="Insert new line (↵)"
+        >
+          ↵ line
+        </button>
+        <span style={{ marginLeft: 'auto', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--shell-muted)' }}>
+          **bold** &amp; new lines
+        </span>
+      </div>
+
+      <textarea
+        ref={textareaRef}
+        className="field__textarea"
+        value={value || ""}
+        placeholder={placeholder}
+        rows={rows || 4}
+        onChange={(e: any) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        style={{
+          fontFamily: 'var(--font-sans)',
+          lineHeight: 1.5,
+        }}
+      />
+    </div>
+  );
+}
 
 export function SocialEditor({
   data,
@@ -176,7 +315,7 @@ export function SocialEditor({
               ) : (
                 <Field label={f.label} hint={f.hint}>
                   {f.type === "textarea"
-                    ? <Textarea value={activeData[f.key]} onChange={(v: any) => set(f.key, v)} placeholder={f.placeholder} />
+                    ? <SocialMarkdownTextarea value={activeData[f.key]} onChange={(v: any) => set(f.key, v)} placeholder={f.placeholder} />
                     : <TextInput value={activeData[f.key]} onChange={(v: any) => set(f.key, v)} placeholder={f.placeholder} />}
                 </Field>
               )}

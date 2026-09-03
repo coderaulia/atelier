@@ -108,4 +108,7 @@ Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pa
 - `feat(documents): add category filter tabs and count badges to document history`
   - Added category filter pills with per-type count badges to DocumentHistory modal.
   - Added `countsByCategory` and `refreshCounts` to `useDocumentStore`.
+- `feat(social): add markdown formatting toolbar and inline parser`
+  - Added `SocialMarkdownTextarea` with bold/italic toolbar buttons and shortcuts to `SocialEditor.tsx`.
+  - Added `renderSocialMd.tsx` inline markdown formatting parser.
 

@@ -58,6 +58,7 @@ function resolveTokens(
   tpl: string,
   data: Record<string, unknown>,
   brand: Record<string, unknown>,
+  def?: RuntimeTemplateDef,
 ): string {
   let out = tpl || '';
 
@@ -66,11 +67,14 @@ function resolveTokens(
     const raw = data[key];
     const lines = String(raw ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
     return lines
-      .map((line, i) =>
-        String(inner)
-          .replace(/\{\{\s*(?:this|\.)\s*\}\}/g, escapeHtml(line))
-          .replace(/\{\{\s*@index\s*\}\}/g, String(i + 1)),
-      )
+      .map((line, i) => {
+        const formattedLine = escapeHtml(line)
+          .replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>')
+          .replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+        return String(inner)
+          .replace(/\{\{\s*(?:this|\.)\s*\}\}/g, formattedLine)
+          .replace(/\{\{\s*@index\s*\}\}/g, String(i + 1));
+      })
       .join('');
   });
 
@@ -83,7 +87,16 @@ function resolveTokens(
   // {{key}}
   out = out.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key) => {
     const v = data[key];
-    return isImageValue(v) ? String(v) : escapeHtml(v);
+    if (isImageValue(v)) return String(v);
+    const fieldDef = def?.fields?.find((f) => f.key === key);
+    if (fieldDef?.type === 'textarea') {
+      const escaped = escapeHtml(v);
+      const withBold = escaped
+        .replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>')
+        .replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+      return withBold.replace(/\n/g, '<br/>');
+    }
+    return escapeHtml(v);
   });
 
   return out;
@@ -148,12 +161,12 @@ export function RuntimeTemplate({
 
   const { html, css } = useMemo(() => {
     const source = slideHtml ?? template.html;
-    const resolved = resolveTokens(source, data || {}, brand || {});
+    const resolved = resolveTokens(source, data || {}, brand || {}, template);
     return {
       html: sanitize(resolved),
       css: scopeCss(template.css, scopeId),
     };
-  }, [slideHtml, template.html, template.css, data, brand, scopeId]);
+  }, [slideHtml, template.html, template.css, template.fields, data, brand, scopeId]);
 
   const vertical = template.height > template.width;
 

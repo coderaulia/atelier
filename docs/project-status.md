@@ -24,8 +24,8 @@ Implemented routes:
 
 Implemented tools:
 
-- Document Generator, including CSV bulk generation and ZIP export
-- Social Generator
+- Document Generator, including per-category history tabs, editor maximize/shrink toggle, CSV bulk generation, and ZIP export
+- Social Generator, including markdown bold and linebreaks on textarea inputs, editorial/vertical carousels, and quick formatting toolbar
 - CV Builder
 - PDF to Image
 - PDF Merge

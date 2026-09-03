@@ -136,6 +136,7 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   const [activeDraftId, setActiveDraftId] = useLocalStorage("dg.activeDraftId.v3", "");
   const [pinnedDocTypes, setPinnedDocTypes] = useLocalStorage("dg.pinnedDocTypes.v1", ["agreement", "invoice", "proposal"]);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isEditorMaximized, setIsEditorMaximized] = useLocalStorage("dg.editorMaximized.v2", false);
 
   const togglePin = (id: string) => {
     setPinnedDocTypes((prev: string[]) => {
@@ -444,7 +445,7 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
   };
 
   return (
-    <div className={`app app--mode-${mode} app--mobile-${mobileTab} ${docType === "social" && socialStep === "pick" ? "app--social-pick" : "app--social-edit"}`}>
+    <div className={`app app--mode-${mode} app--mobile-${mobileTab} ${docType === "social" && socialStep === "pick" ? "app--social-pick" : "app--social-edit"} ${isEditorMaximized ? "app--editor-maximized" : ""}`}>
       {/* ===== Sidebar ===== */}
       <DocumentSidebar
         docTypes={DOC_TYPES}
@@ -465,20 +466,46 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
       {/* ===== Editor ===== */}
       <section className="editor">
         <div className="editor__head">
-          <div className="editor__crumb">
-            {docType === "social"
-              ? (socialStep === "pick" ? "Social · Browse" : `Social · ${(ActiveSocial as any)?.kind || "Single"}`)
-              : cfg.isTool
-              ? "Tools"
-              : `${cfg.name} · ${VARIANTS.find(v => v.id === variant)?.name}`}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div className="editor__crumb">
+                {docType === "social"
+                  ? (socialStep === "pick" ? "Social · Browse" : `Social · ${(ActiveSocial as any)?.kind || "Single"}`)
+                  : cfg.isTool
+                  ? "Tools"
+                  : `${cfg.name} · ${VARIANTS.find(v => v.id === variant)?.name}`}
+              </div>
+              <h1 className="editor__title">
+                {docType === "social"
+                  ? (socialStep === "pick" ? "Choose a template" : ((ActiveSocial as any)?.name || "Template"))
+                  : cfg.isTool
+                  ? cfg.name
+                  : ((data as any).title || (data as any).projectName || (data as any).clientName || cfg.name)}
+              </h1>
+            </div>
+            <button
+              type="button"
+              className={`editor-maximize-btn ${isEditorMaximized ? 'editor-maximize-btn--active' : ''}`}
+              onClick={() => {
+                setIsEditorMaximized((prev: boolean) => !prev);
+                setTimeout(fitPreview, 80);
+              }}
+              title={isEditorMaximized ? "Restore preview size" : "Maximize editor (shrink preview)"}
+              aria-label={isEditorMaximized ? "Restore preview" : "Maximize editor"}
+            >
+              {isEditorMaximized ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>
+                  <span>Restore</span>
+                </>
+              ) : (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+                  <span>Maximize</span>
+                </>
+              )}
+            </button>
           </div>
-          <h1 className="editor__title">
-            {docType === "social"
-              ? (socialStep === "pick" ? "Choose a template" : ((ActiveSocial as any)?.name || "Template"))
-              : cfg.isTool
-              ? cfg.name
-              : ((data as any).title || (data as any).projectName || (data as any).clientName || cfg.name)}
-          </h1>
           {/* Mobile View Switcher (Visible on mobile when editing) */}
           {(docType !== "social" || socialStep === "edit") && !cfg.isTool && (
             <div className="mobile-tab-switch">
@@ -574,7 +601,10 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
                 <button
                   type="button"
                   className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('history')}
+                  onClick={() => {
+                    setActiveTab('history');
+                    docStore.refreshCounts();
+                  }}
                 >
                   📋 History ({docStore.totalCount})
                 </button>
@@ -615,10 +645,19 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
             <DocumentHistory
               docType={docType}
               items={docStore.items}
+              countsByCategory={docStore.countsByCategory}
+              onCategoryChange={(cat) => {
+                docStore.fetchItems(cat);
+              }}
               isLoading={docStore.isLoading}
-              onEdit={async (id) => {
+              onEdit={async (id, targetDocType) => {
                 try {
                   const doc = await docStore.load(id);
+                  if (targetDocType && targetDocType !== docType) {
+                    setDocType(targetDocType);
+                  } else if (doc.doc_type && doc.doc_type !== docType) {
+                    setDocType(doc.doc_type);
+                  }
                   setData(doc.data);
                   if (doc.variant) setVariant(doc.variant);
                   setActiveTab('editor');
@@ -626,22 +665,22 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
                   alert("Failed to load document");
                 }
               }}
-              onDuplicate={async (id) => {
+              onDuplicate={async (id, targetDocType) => {
                 try {
-                  await docStore.duplicate(id);
+                  await docStore.duplicate(id, targetDocType || docType);
                 } catch {
                   alert("Failed to duplicate document");
                 }
               }}
-              onDelete={async (id) => {
+              onDelete={async (id, targetDocType) => {
                 try {
-                  await docStore.remove(id);
+                  await docStore.remove(id, targetDocType || docType);
                 } catch {
                   alert("Failed to delete document");
                 }
               }}
-              onSearchChange={(q) => docStore.fetchItems(docType, undefined, q)}
-              onStatusChange={(s) => docStore.fetchItems(docType, s, undefined)}
+              onSearchChange={(q, cat) => docStore.fetchItems(cat || docType, undefined, q)}
+              onStatusChange={(s, cat) => docStore.fetchItems(cat || docType, s === 'all' ? undefined : s, undefined)}
             />
           ) : activeTab === 'bulk' && !cfg.isTool && docType !== 'social' ? (
             <BulkCSVPanel
@@ -709,6 +748,19 @@ export default function DocumentTool({ mode = 'full' }: { mode?: DocumentToolMod
               : `${t.paper === "a4" ? "A4" : "Letter"} · 8.5×11 in`}
           </span>
           <div className="preview__bar-spacer"></div>
+
+          <button
+            type="button"
+            className={`preview-shrink-btn ${isEditorMaximized ? 'preview-shrink-btn--active' : ''}`}
+            onClick={() => {
+              setIsEditorMaximized((prev: boolean) => !prev);
+              setTimeout(fitPreview, 80);
+            }}
+            title={isEditorMaximized ? "Expand preview size" : "Shrink preview (maximize editor)"}
+            aria-label={isEditorMaximized ? "Expand preview" : "Shrink preview"}
+          >
+            {isEditorMaximized ? "⇥ Expand Preview" : "⇤ Shrink Preview"}
+          </button>
 
           {!isToolMode && (
             <div className="zoom-group">

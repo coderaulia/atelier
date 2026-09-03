@@ -5,6 +5,7 @@ import {
   VLabel, VFooter, Wordmark, getDynamicFontSize,
   THEME_OPTIONS, getThemeColors,
 } from './social-templates';
+import { renderSocialMd } from './renderSocialMd';
 
 
 const VFRAME = { className: "social-frame social-frame--vertical" };
@@ -78,7 +79,7 @@ const V_TopList = ({ data, brand }) => {
               {String(i + 1).padStart(2, "0")}
             </span>
             <span style={{ fontFamily: "var(--font-helvetica)", fontWeight: 500, fontSize: 44, lineHeight: 1.18, letterSpacing: "-0.005em" }}>
-              {it}
+              {renderSocialMd(it)}
             </span>
           </div>
         ))}
@@ -110,7 +111,7 @@ const V_Question = ({ data, brand }) => {
           {accText}
         </div>
         <div style={{ marginTop: 56, fontFamily: "var(--font-helvetica)", fontSize: 36, lineHeight: 1.4, maxWidth: 820, opacity: 0.85 }}>
-          {data.answer || "The difference is not how good you are. It's whether someone is paying you to be that good before next Tuesday."}
+          {renderSocialMd(data.answer || "The difference is not how good you are. It's whether someone is paying you to be that good before next Tuesday.")}
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
@@ -143,7 +144,7 @@ const V_StatVertical = ({ data, brand }) => {
           {stat}
         </div>
         <div style={{ marginTop: 48, fontFamily: "var(--font-helvetica)", fontSize: 52, lineHeight: 1.15, color: "var(--vc-ink)", maxWidth: 880, letterSpacing: "-0.005em" }}>
-          {data.statLabel || "of solo freelancers undercharge by at least 30%."}
+          {renderSocialMd(data.statLabel || "of solo freelancers undercharge by at least 30%.")}
         </div>
         <div style={{ marginTop: 24, fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--vc-mute)" }}>
           {data.source || "Survey of 1,200 — 2026"}
@@ -183,7 +184,7 @@ const V_ThreadsPost = ({ data, brand }) => {
             <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 36, color: "var(--vc-mute)", letterSpacing: "0.2em" }}>···</span>
           </div>
           <div style={{ marginTop: 36, fontFamily: "var(--font-helvetica)", fontSize: 44, lineHeight: 1.32, color: "var(--vc-ink)", letterSpacing: "-0.005em" }}>
-            {data.body || "the hardest part of freelancing isn't the work. it's deciding the work is finished and sending the invoice."}
+            {renderSocialMd(data.body || "the hardest part of freelancing isn't the work. it's deciding the work is finished and sending the invoice.")}
           </div>
           {data.italicLine && (
             <div style={{ marginTop: 20, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: "var(--vc-red)" }}>
@@ -247,7 +248,7 @@ const V_Tutorial = ({ data, brand }) => {
                 0{i + 1}
               </span>
               <span style={{ fontFamily: "var(--font-helvetica)", fontSize: 34, lineHeight: 1.25, opacity: 0.9, flex: 1 }}>
-                {s}
+                {renderSocialMd(s)}
               </span>
             </div>
           ))}
@@ -471,7 +472,7 @@ const V_CaseStudyCarousel = ({ data, brand }) => {
                   {data.clientName || "Client"}
                 </div>
                 <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 600, fontSize: 68, lineHeight: 1.08, letterSpacing: "-0.01em" }}>
-                  {s.content}
+                  {renderSocialMd(s.content)}
                 </div>
               </div>
               <VFooter brand={brand} color={fg} borderColor={border} />
@@ -484,7 +485,7 @@ const V_CaseStudyCarousel = ({ data, brand }) => {
                 {data.clientName || "Client"}
               </div>
               <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 110, lineHeight: 1.04, letterSpacing: "-0.015em" }}>
-                {s.content}
+                {renderSocialMd(s.content)}
               </div>
             </div>
             <div style={{ padding: "0 80px 64px" }}>
@@ -545,7 +546,7 @@ const V_StoryCarousel = ({ data, brand }) => {
         </div>
         <div>
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(body, 92, 45, 54), lineHeight: 1.08, letterSpacing: "-0.015em" }}>
-            {body}
+            {renderSocialMd(body)}
           </div>
         </div>
         <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
@@ -578,7 +579,7 @@ const V_StoryCarousel = ({ data, brand }) => {
 };
 
 /* ============================================== */
-/* 11. VERTICAL TIPS FRAMEWORK CAROUSEL            */
+/* 11. VERTICAL TIPS CAROUSEL                      */
 /* ============================================== */
 const V_TipsCarousel = ({ data, brand }) => {
   const c = getThemeColors(data.bg);
@@ -592,11 +593,11 @@ const V_TipsCarousel = ({ data, brand }) => {
         <Asterisk size={64} color={c.accent} />
       </div>
       <div>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 800, fontSize: getDynamicFontSize(data.title || "5 Rules for High-Converting Proposals", 112, 34, 64), lineHeight: 0.98, letterSpacing: "-0.03em" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(data.title || "5 Rules for High-Converting Proposals", 110, 36, 64), lineHeight: 1.0, letterSpacing: "-0.025em" }}>
           {data.title || "5 Rules for High-Converting Proposals"}
         </div>
-        <div style={{ marginTop: 24, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 36, color: c.muted, lineHeight: 1.25 }}>
-          {data.subtitle || "Field notes from shipping freelance documents that win deals."}
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 44, color: c.muted, marginTop: 24 }}>
+          {data.subtitle || "Field-tested principles that win."}
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1.5px solid ${c.borderColor}`, paddingTop: 32 }}>
@@ -625,11 +626,11 @@ const V_TipsCarousel = ({ data, brand }) => {
         </div>
         <div>
           <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(tipTitle, 76, 26, 44), lineHeight: 1.06, letterSpacing: "-0.02em", marginBottom: 24 }}>
-            {tipTitle}
+            {renderSocialMd(tipTitle)}
           </div>
           {tipBody && (
             <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 44, lineHeight: 1.25, color: c.muted }}>
-              "{tipBody}"
+              "{renderSocialMd(tipBody)}"
             </div>
           )}
         </div>
@@ -675,7 +676,7 @@ const V_ThreadCarousel = ({ data, brand }) => {
         {/* Post Content */}
         <div style={{ padding: "40px 0" }}>
           <div style={{ fontFamily: "var(--font-helvetica)", fontSize: getDynamicFontSize(post.trim(), 56, 120, 36), lineHeight: 1.3, letterSpacing: "-0.01em", whiteSpace: "pre-line" }}>
-            {post.trim()}
+            {renderSocialMd(post.trim())}
           </div>
         </div>
 

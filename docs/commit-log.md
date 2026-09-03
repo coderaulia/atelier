@@ -1,5 +1,11 @@
 # Commit Log
 
+## 2026-09-03 — Document History Categories, Editor Maximize/Shrink, & Social Markdown
+
+- `feat(documents): strictly per-category history tabs` — redesigned document history panel to organize documents under dedicated category tabs (Agreement, Invoice, Proposal, PRD, Retainer, Receipt, Onboarding, Scope Guard, Handover) with count badges and category financial aggregates.
+- `feat(documents): editor maximize and preview shrink toggle` — added one-click toggle button on both editor header and preview toolbar allowing the editor to expand flexibly to full width while preview shrinks to 360px with automatic zoom re-fitting.
+- `feat(social): markdown bold and linebreaks for textarea inputs` — added markdown bold (`**bold**`), italics (`*italic*`), and line break parsing for textarea inputs across standard, vertical/TikTok, and runtime social templates while keeping single-line inputs plain.
+
 ## 2026-07-12 — Tool marketing + registry sync
 
 Branch `feat/complete-tool-marketing-registry`. Synced public marketing, tool pages, and dashboard registry consumers after PDF Organize/Split/Watermark, Image Compress/Resize/Background, and CSV bulk generation shipped.

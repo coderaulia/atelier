@@ -1,5 +1,9 @@
 # Commit Log
 
+## 2026-09-03 — Social Media Dynamic Font Scaling & Word Boundary Protection
+
+- `fix(social): prevent mid-word breaking and constrain dynamic font sizes to frame width` — overhauled `getDynamicFontSize` in `src/modules/social/social-templates.tsx` to compute physical width bounds based on the longest single word and frame width. Replaced all occurrences of `wordBreak: "break-word"` with `overflowWrap: "break-word"` and `wordBreak: "normal"` across all 30 social templates, guaranteeing clean line breaks between words (e.g. preventing words like "Badminton" or "CONSULTING" from breaking mid-word across lines).
+
 ## 2026-09-03 — Document History Categories, Editor Maximize/Shrink, & Social Markdown
 
 - `feat(documents): strictly per-category history tabs` — redesigned document history panel to organize documents under dedicated category tabs (Agreement, Invoice, Proposal, PRD, Retainer, Receipt, Onboarding, Scope Guard, Handover) with count badges and category financial aggregates.

@@ -114,6 +114,7 @@ export default function CVTool() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showImportMenu, setShowImportMenu] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importSource, setImportSource] = useState<'cv' | 'linkedin'>('cv');
   const [showLibrary, setShowLibrary] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
   const [coverLetter, setCoverLetter] = useLocalStorage<CoverLetterData>('cv_cover_letter_v1', DEFAULT_COVER_LETTER);
@@ -223,11 +224,16 @@ export default function CVTool() {
   // ---------- Import handlers ----------
   const handleImportLinkedIn = () => {
     setShowImportMenu(false);
-    setToast({ message: "LinkedIn import via OAuth is on the roadmap. Paste your LinkedIn profile URL and we'll guide you through export.", type: 'info' });
+    // LinkedIn does not allow unauthorised browser scraping. Their exported PDF
+    // is processed by the same local parser and safely fills the CV form.
+    setImportSource('linkedin');
+    setToast({ message: 'Export your LinkedIn profile as a PDF, then upload it here. Your file stays on this device.', type: 'info' });
+    setShowImportModal(true);
   };
 
   const handleImportCV = () => {
     setShowImportMenu(false);
+    setImportSource('cv');
     setShowImportModal(true);
   };
 
@@ -250,7 +256,12 @@ export default function CVTool() {
     setCvData((prev: CVData) => ({
       ...prev,
       ...parsedData,
-      personal: { ...prev.personal, ...parsedData.personal },
+      personal: {
+        ...prev.personal,
+        ...Object.fromEntries(
+          Object.entries(parsedData.personal || {}).filter(([, value]) => Boolean(value))
+        ),
+      },
       experience: parsedData.experience?.length ? parsedData.experience : prev.experience,
       education: parsedData.education?.length ? parsedData.education : prev.education,
       skills: parsedData.skills?.length ? parsedData.skills : prev.skills,
@@ -445,6 +456,7 @@ export default function CVTool() {
         <CVImportModal
           onClose={() => setShowImportModal(false)}
           onApply={handleApplyImport}
+          source={importSource}
         />
       )}
 

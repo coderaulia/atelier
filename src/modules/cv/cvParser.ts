@@ -42,7 +42,7 @@ const GITHUB_RE = /github\.com\/[\w-]+/i;
 const WEBSITE_RE = /(?:https?:\/\/)?(?:www\.)?[\w-]+\.(?:com|dev|io|org|net|id|co)[\/\w.-]*/i;
 
 // ---- Work experience parsing ----
-const DATE_RE = /(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*[\s.]*(?:\d{4})?|\d{1,2}\/\d{4}|\d{4})/gi;
+const DATE_RE = /(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*[\s.,-]*(?:\d{4})?|\d{1,2}[/-]\d{4}|\d{4}[/-]\d{1,2}|\d{4})/gi;
 
 // ---- Detect section for a line ----
 function detectSection(line: string): string | null {
@@ -398,9 +398,27 @@ export async function extractPDFText(
 
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .map((item: any) => item.str)
-      .join(' ')
+    // Preserve visual lines. Joining every PDF text item with spaces makes
+    // section headers and job entries impossible for the structured parser to
+    // recognise (especially in LinkedIn exports).
+    const items = (textContent.items as any[])
+      .filter((item) => item.str?.trim())
+      .map((item) => ({
+        text: String(item.str).trim(),
+        x: item.transform?.[4] ?? 0,
+        y: item.transform?.[5] ?? 0,
+      }))
+      .sort((a, b) => b.y - a.y || a.x - b.x);
+    const rows: { y: number; parts: typeof items }[] = [];
+    for (const item of items) {
+      const row = rows.find((candidate) => Math.abs(candidate.y - item.y) < 3);
+      if (row) row.parts.push(item);
+      else rows.push({ y: item.y, parts: [item] });
+    }
+    const pageText = rows
+      .sort((a, b) => b.y - a.y)
+      .map((row) => row.parts.sort((a, b) => a.x - b.x).map((item) => item.text).join(' '))
+      .join('\n')
       .trim();
 
     if (pageText) {

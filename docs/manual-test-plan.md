@@ -172,6 +172,8 @@ npx lighthouse https://studio.vanaila.com/pdf-to-image --only-categories=seo --o
 | Midtrans payment (3, 6) | `MIDTRANS_CLIENT_KEY_SANDBOX`, `MIDTRANS_SERVER_KEY` |
 | Webhook flow (6) | `MIDTRANS_SERVER_KEY` |
 | Admin cron (6) | `ADMIN_EMAIL`, `ADMIN_PASSWORD` |
-| AI rewrite (4) | `GROQ_API_KEY` + pro plan |
+| CV import (4) | Local PDF/DOCX/image fixture; verify preview then Apply fills personal, summary, experience, education, skills, and certifications without overwriting existing non-empty contact fields |
+| LinkedIn import (4) | Exported LinkedIn PDF fixture; open Import → From LinkedIn, verify local extraction and Apply fills the same CV fields |
+| AI rewrite (4) | `GROQ_API_KEY` or configured OpenAI-compatible `AI_API_KEY`/`AI_BASE_URL`/`AI_MODEL` + pro plan |
 | Email verification (2) | `BREVO_API_KEY` + real inbox |
 | Prerender SEO (8) | Production deploy (`npm run prerender`) |

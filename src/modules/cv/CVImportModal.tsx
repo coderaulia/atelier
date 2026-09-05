@@ -5,11 +5,12 @@ import { parseCVText, parseDOCX, extractPDFText } from './cvParser';
 interface Props {
   onClose: () => void;
   onApply: (data: Partial<CVData>) => void;
+  source?: 'cv' | 'linkedin';
 }
 
 type FileType = 'pdf' | 'docx' | 'image' | null;
 
-export default function CVImportModal({ onClose, onApply }: Props) {
+export default function CVImportModal({ onClose, onApply, source = 'cv' }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [fileType, setFileType] = useState<FileType>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -140,7 +141,7 @@ export default function CVImportModal({ onClose, onApply }: Props) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="cv-import-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal__head">
-          <span className="modal__title">Import from Existing CV</span>
+          <span className="modal__title">{source === 'linkedin' ? 'Import LinkedIn profile' : 'Import from Existing CV'}</span>
           <button className="modal__close" onClick={onClose}>×</button>
         </div>
 
@@ -148,8 +149,10 @@ export default function CVImportModal({ onClose, onApply }: Props) {
           {!file && (
             <>
               <p className="cv-import-desc">
-                Upload your existing CV — we support <strong>PDF</strong>, <strong>DOCX</strong>, and image files (PNG/JPG).
-                Text is extracted locally and parsed into structured CV fields.
+                {source === 'linkedin'
+                  ? <>LinkedIn profile pages cannot be scraped safely from the browser. Export your profile as a PDF from LinkedIn, then upload it here.</>
+                  : <>Upload your existing CV — we support <strong>PDF</strong>, <strong>DOCX</strong>, and image files (PNG/JPG).</>}
+                {' '}Text is extracted locally and parsed into structured CV fields.
               </p>
 
               <div className="cv-import-privacy">
@@ -161,7 +164,7 @@ export default function CVImportModal({ onClose, onApply }: Props) {
                 className="cv-import-upload-btn"
                 onClick={() => fileInputRef.current?.click()}
               >
-                📁 Choose PDF, DOCX, or Image
+                📁 Choose {source === 'linkedin' ? 'LinkedIn PDF' : 'PDF, DOCX, or Image'}
               </button>
               <input
                 ref={fileInputRef}

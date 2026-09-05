@@ -353,6 +353,7 @@ function UsageTab({ user: _user }: { user: User }) {
 
 function SecurityTab() {
   const [currentPassword, setCurrentPassword] = useState('')
+  const [currentPasswordEditable, setCurrentPasswordEditable] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
@@ -411,17 +412,38 @@ function SecurityTab() {
   return (
     <div className="account-panel">
       <h2>Change password</h2>
+      <form autoComplete="off" onSubmit={(event) => event.preventDefault()}>
       <div className="account-field">
         <label>Current password</label>
-        <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+        <input
+          type="password"
+          name="security-current-password"
+          autoComplete="off"
+          readOnly={!currentPasswordEditable}
+          value={currentPassword}
+          onFocus={() => setCurrentPasswordEditable(true)}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+        />
       </div>
       <div className="account-field">
         <label>New password</label>
-        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+        <input
+          type="password"
+          name="new-password"
+          autoComplete="new-password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
       </div>
       <div className="account-field">
         <label>Confirm new password</label>
-        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+        <input
+          type="password"
+          name="confirm-password"
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
       </div>
       {message && <div className="account-message">{message}</div>}
       <button onClick={handleChangePassword} className="btn btn--accent">Change password</button>
@@ -443,6 +465,7 @@ function SecurityTab() {
           <button onClick={handleDeleteAccount} className="btn" style={{ background: '#b52a2a', color: '#fff' }}>Delete my account</button>
         </div>
       )}
+      </form>
     </div>
   )
 }

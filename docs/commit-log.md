@@ -1,5 +1,11 @@
 # Commit Log
 
+## 2026-09-05 — Document account and usage-history behavior
+
+- Documented the Security-tab autofill protections and stable account sidebar behavior.
+- Documented that `/usage/me` includes unmetered activity while preserving unlimited access.
+- Added the account navigation, autofill isolation, and usage-history checks to the manual and launch verification plans.
+
 ## 2026-09-05 — Account navigation and usage history
 
 - Kept account content isolated from the app-shell layout so Security tab controls cannot affect sidebar navigation.

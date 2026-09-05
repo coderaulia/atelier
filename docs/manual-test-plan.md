@@ -77,7 +77,22 @@ Browser check:
 
 ---
 
-## 6. Cancel subscription → keeps Pro until expiry → cron downgrades after grace
+## 6. Account navigation, autofill isolation, and usage history
+
+1. Log in and open `/app/account`.
+2. Confirm the full app sidebar remains visible.
+3. Open the Security tab.
+4. Confirm the Tools search field remains empty and contains no saved email.
+5. Confirm the Current password field is empty and contains no saved password.
+6. Enter a password manually and verify only the intended field changes.
+7. Open Usage and confirm the last 30 days of activity loads.
+8. Use a metered tool and an unmetered tool, then reload Usage.
+9. Confirm both activities appear; the unmetered row shows `unlimited` and does not consume the daily quota.
+10. If the API is unavailable, confirm Usage shows an error rather than incorrectly reporting `No usage yet`.
+
+**Pass condition:** Security autofill does not affect sidebar navigation or fields, and usage history reports recorded activity accurately.
+
+## 7. Cancel subscription → keeps Pro until expiry → cron downgrades after grace
 
 API layer partially verified; full lifecycle check:
 
@@ -97,7 +112,7 @@ API layer partially verified; full lifecycle check:
 
 ---
 
-## 7. Real mid-range Android: OCR, AVIF convert, 20-page PDF merge (Phase 12 memory guards)
+## 8. Real mid-range Android: OCR, AVIF convert, 20-page PDF merge (Phase 12 memory guards)
 
 **Device:** Mid-range Android (e.g. Redmi Note 11, 4–6 GB RAM).
 **Browser:** Chrome mobile, latest.
@@ -125,7 +140,7 @@ API layer partially verified; full lifecycle check:
 
 ---
 
-## 8. Prerendered tool page with JS disabled — real HTML present (SEO)
+## 9. Prerendered tool page with JS disabled — real HTML present (SEO)
 
 **Method A — curl:**
 ```bash

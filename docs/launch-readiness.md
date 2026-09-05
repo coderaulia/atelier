@@ -144,6 +144,7 @@ Replace `database_id` with actual Cloudflare D1 database ID from dashboard.
 - [ ] Test 6: Cancel subscription → grace period → cron downgrade
 - [ ] Test 7: Android device: OCR, AVIF, 20-page PDF merge
 - [ ] Test 8: SEO prerender with JS disabled
+- [ ] Test 9: Account sidebar, Security autofill isolation, and 30-day usage history
 
 ### 7. SEO Prerendering ✅ COMPLETED
 **Location:** `package.json:10`

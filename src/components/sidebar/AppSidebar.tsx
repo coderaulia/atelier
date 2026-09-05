@@ -64,6 +64,11 @@ export default function AppSidebar() {
             <input
               id="app-sidebar-search"
               type="search"
+              name="tool-search"
+              autoComplete="new-password"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={handleKeyDown}

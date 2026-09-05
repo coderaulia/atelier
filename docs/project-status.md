@@ -50,6 +50,8 @@ Implemented:
 - Unmetered tools are defined in `api/src/routes/usage.ts`; currently PDF Merge, PDF Compress, PDF Organize, Image Converter, Image Compress, Image Resize, PDF Split, PDF Watermark, PDF Markdown, PDF Word, PDF PowerPoint, PDF Edit, and Image Background & Metadata.
 - Credit-pack checkout and debit logic exist for CV and Social packs.
 - Midtrans checkout, signed webhook processing, subscription cancellation/reactivation, grace periods, receipts, and transactions are implemented.
+- Account Usage history covers the last 30 days of successful metered and unmetered activity; usage remains keyed by UTC date and tool.
+- Account Security uses explicit password autocomplete semantics, while the sidebar tool search is excluded from password-manager autofill.
 
 The backend is the source of truth for limits and entitlements. Product copy must not describe metered tools as unlimited or credit packs as disabled.
 
@@ -80,7 +82,7 @@ Remaining work is operational rather than a planned feature build:
 - Run API flow tests, browser payment/email tests, mobile processing tests, and SEO checks.
 - Configure external uptime/error monitoring if required by the operator.
 
-Local typecheck commands were attempted during this documentation pass but could not run because installed `node_modules/.bin/tsc` files are not executable in the current environment. Reinstall dependencies or fix permissions before treating local verification as current.
+Frontend build and backend typecheck pass after the latest account and usage-history changes. Production browser verification remains required after Hostinger's GitHub auto-deployment.
 
 ## Intentional launch boundaries
 

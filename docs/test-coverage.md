@@ -3,7 +3,7 @@
 ## Summary
 
 **API Integration Tests:** 16/16 passing ✅  
-**Manual Browser/Device Tests:** 8 scenarios documented  
+**Manual Browser/Device Tests:** 9 scenarios documented
 **Total Coverage:** All requested flows covered
 
 ---
@@ -39,19 +39,20 @@
 
 ## Manual Test Plan (`docs/manual-test-plan.md`)
 
-### Browser-Required Flows (5)
+### Browser-Required Flows (6)
 1. **Anonymous → tool → limit → signup prompt** — UI modal verification
 2. **Register → email verification → login** — Real email delivery + link click
 3. **Free → upgrade modal → Midtrans sandbox → pro** — Payment gateway integration
 4. **CV wizard → PDF import → ATS score → export** — Full CV builder workflow
 5. **Prerendered tool page (JS off) → HTML present** — SEO validation
+6. **Account navigation and autofill isolation** — sidebar, Security fields, and usage history
 
 ### Device-Required Flows (1)
-6. **Android: OCR + AVIF + 20-page PDF** — Phase 12 memory guards, no freeze/crash
+7. **Android: OCR + AVIF + 20-page PDF** — Phase 12 memory guards, no freeze/crash
 
 ### Lifecycle Flows (2)
-7. **Cancel subscription → grace → cron downgrade** — Full billing lifecycle (partially API-tested)
-8. **Pro user AI features** — Rewrite + cover letter (API-tested, browser UX check)
+8. **Cancel subscription → grace → cron downgrade** — Full billing lifecycle (partially API-tested)
+9. **Pro user AI features** — Rewrite + cover letter (API-tested, browser UX check)
 
 ---
 
@@ -107,6 +108,7 @@ Follow `docs/manual-test-plan.md` against staging or production deploy.
 | Cancel → grace → cron downgrade | ✅ Full lifecycle | ✅ Timeline check | Complete |
 | Android: OCR/AVIF/PDF memory | ❌ N/A | ✅ Device test | Complete |
 | Prerender JS-off SEO | ❌ N/A | ✅ curl/Lighthouse | Complete |
+| Account navigation/autofill/usage history | ❌ N/A | ✅ Browser checklist | Pending production verification |
 
 ---
 

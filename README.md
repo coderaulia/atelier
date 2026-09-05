@@ -55,6 +55,7 @@ All file processing happens **client-side** — your files never leave your brow
 - 3 daily uses for metered document/social/CV/OCR/PDF-to-image tools
 - PDF Merge, PDF Compress, PDF Organize, PDF Split, PDF Watermark, PDF Markdown, PDF Word, PDF PowerPoint, Edit PDF, Image Converter, Image Compress, Image Resize, and Image Background & Metadata are currently unmetered
 - Anonymous users get 1 daily use via backend anonymous usage tracking
+- Account → Usage shows the last 30 days of both metered and unmetered tool activity; unmetered activity remains unlimited
 - All templates and formats available
 - Watermark applies to free/anonymous metered output where supported
 
@@ -69,8 +70,10 @@ All file processing happens **client-side** — your files never leave your brow
 - **Client-side processing** — pdf.js, Tesseract.js, Canvas API, JSZip, pdf-lib, @jsquash/webp, @jsquash/avif
 - **Dual routing** — Public marketing pages + authenticated app shell
 - **Responsive design** — Mobile-friendly across all tools
+- **Usage history** — Successful tool activity is recorded per user, tool, and UTC date for the account history view
 - **i18n support** — English and Indonesian (Bahasa Indonesia)
 - **Admin dashboard** — User management, analytics, revenue tracking, refund handling
+- **Account controls** — Profile, subscription, usage history, security, and support tabs; password-manager-safe search and password fields
 
 ---
 

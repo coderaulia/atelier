@@ -34,7 +34,7 @@ Better Auth handlers are exposed at `GET|POST /api/auth/*`. The application midd
 
 - `GET /usage/:toolId`
 - `POST /usage/:toolId` — accepts `Idempotency-Key`
-- `GET /usage/me` — last 30 days
+- `GET /usage/me` — last 30 days, including successful metered and unmetered activity
 - `GET /anon-usage/:toolId`
 - `POST /anon-usage/:toolId`
 
@@ -43,8 +43,10 @@ Current policy:
 - Anonymous users: 1/day per tool.
 - Authenticated free users: 3/day for metered tools, watermark where supported.
 - Pro tiers: Starter 30/day, Pro 100/day, Business 300/day.
-- Unmetered tools are defined by `FREE_TOOLS` in `api/src/routes/usage.ts`.
+- Unmetered tools are defined by `FREE_TOOLS` in `api/src/routes/usage.ts`; they remain unlimited but are recorded in `usage_log` for account history.
+- Usage is keyed by user, tool, and UTC date; metered limits reset automatically when a new UTC date is first used.
 - CV and Social credit packs are consumed before daily limits.
+- The account Security tab uses explicit autocomplete attributes and ignores password-manager autofill on the tool search field.
 
 ## Billing (`/billing`)
 

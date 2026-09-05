@@ -41,6 +41,7 @@ Implemented:
 9. Client-side PDF and DOCX export
 10. LocalStorage persistence and preview blob cleanup
 11. Template picker moved to the left rail, with a shrink-preview toggle that gives the editor more space
+12. AI CV route supports configurable OpenAI-compatible providers (Groq default; Vikey.ai-ready via Worker vars/secrets)
 
 ## Stage 4 — Accounts, usage, and billing ✅ (code complete)
 

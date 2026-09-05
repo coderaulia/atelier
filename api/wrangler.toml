@@ -17,6 +17,10 @@ ENVIRONMENT = "production"
 APP_URL = "https://studio.vanaila.com"
 BETTER_AUTH_URL = "https://vanaila-studio-api.atelier-591.workers.dev"
 ALLOWED_ORIGINS = "https://studio.vanaila.com"
+# AI provider is OpenAI-compatible. Keep AI_API_KEY/GROQ_API_KEY as secrets.
+# AI_PROVIDER = "vikey"
+# AI_BASE_URL = "https://api.vikey.ai/v1"
+# AI_MODEL = "qwen2.5-72b-instruct"
 # MIDTRANS_BASE_URL = "https://api.midtrans.com"
 
 [triggers]

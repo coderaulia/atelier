@@ -14,5 +14,9 @@ export interface Bindings {
   MIDTRANS_SERVER_KEY?: string
   MIDTRANS_BASE_URL?: string
   GROQ_API_KEY?: string
+  AI_PROVIDER?: string
+  AI_BASE_URL?: string
+  AI_API_KEY?: string
+  AI_MODEL?: string
   ENVIRONMENT?: string
 }

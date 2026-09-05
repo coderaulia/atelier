@@ -7,6 +7,12 @@
 - Added a shrink-preview toggle to make editing credentials and CV content more comfortable.
 - Verified with `npm run typecheck` and `npm run build`.
 
+## 2026-09-05 — CV controls and configurable AI provider
+
+- Reworked Guide/Steps/Full form controls into a clear segmented editor-mode control with responsive wrapping.
+- Added OpenAI-compatible AI provider configuration to the CV AI Worker route; Groq remains the backward-compatible default and Vikey.ai can be selected via Cloudflare vars/secrets.
+- Planned AI cost rework around provider abstraction, model/task routing, budget limits, observability, and fallback testing.
+
 ## 2026-09-05 — Document account and usage-history behavior
 
 - Documented the Security-tab autofill protections and stable account sidebar behavior.

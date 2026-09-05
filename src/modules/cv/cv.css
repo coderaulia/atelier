@@ -380,9 +380,38 @@
 
 .cv-sidebar__title-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cv-sidebar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 280px;
+}
+
+.cv-editor-mode {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--shell-bg-3);
+  border: 1px solid var(--shell-rule);
+  border-radius: 8px;
+}
+
+.cv-editor-mode .cv-btn {
+  border-color: transparent;
+  background: transparent;
+}
+
+.cv-editor-mode .cv-btn--selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .cv-sidebar__title {
@@ -645,6 +674,10 @@
 
 .cv-btn--ghost:hover:not(:disabled) {
   border-color: var(--accent);
+}
+
+.cv-btn--selected {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .cv-btn--sm {
@@ -1752,6 +1785,16 @@
 }
 
 @media (max-width: 1100px) {
+  .cv-sidebar__title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cv-sidebar__actions {
+    justify-content: flex-start;
+    max-width: none;
+  }
+
   .cv-tool {
     grid-template-columns: 210px minmax(360px, 1fr) 360px;
   }

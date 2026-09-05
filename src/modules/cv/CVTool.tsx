@@ -321,20 +321,31 @@ export default function CVTool() {
           <div className="cv-sidebar__title-row">
             <span className="cv-sidebar__title">CV Builder</span>
             <div className="cv-sidebar__actions">
-              <button
-                className="cv-btn cv-btn--ghost cv-btn--sm"
-                onClick={() => setHasCompletedWizard(false)}
-                title="Restart guided setup"
-              >
-                Guide
-              </button>
-              <button
-                className="cv-btn cv-btn--ghost cv-btn--sm"
-                onClick={() => setUseStepEditor((prev: boolean) => !prev)}
-                title={useStepEditor ? 'Show full form' : 'Show guided steps'}
-              >
-                {useStepEditor ? 'Full' : 'Steps'}
-              </button>
+              <div className="cv-editor-mode" role="group" aria-label="Editor mode">
+                <button
+                  className="cv-btn cv-btn--ghost cv-btn--sm"
+                  onClick={() => setHasCompletedWizard(false)}
+                  title="Restart guided setup"
+                >
+                  ✦ Guide
+                </button>
+                <button
+                  className={`cv-btn cv-btn--ghost cv-btn--sm ${useStepEditor ? 'cv-btn--selected' : ''}`}
+                  onClick={() => setUseStepEditor(true)}
+                  title="Show guided steps"
+                  aria-pressed={useStepEditor}
+                >
+                  Steps
+                </button>
+                <button
+                  className={`cv-btn cv-btn--ghost cv-btn--sm ${!useStepEditor ? 'cv-btn--selected' : ''}`}
+                  onClick={() => setUseStepEditor(false)}
+                  title="Show full form"
+                  aria-pressed={!useStepEditor}
+                >
+                  Full form
+                </button>
+              </div>
               {/* Import menu */}
               <div className="cv-import-wrap">
                 <button

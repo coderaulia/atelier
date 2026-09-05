@@ -22,8 +22,14 @@ app.post('/cv/ai', async (c) => {
       return c.json({ error: 'Upgrade to Pro to use AI features' }, 403)
     }
 
-    const groqKey = c.env.GROQ_API_KEY
-    if (!groqKey) {
+    // OpenAI-compatible provider configuration. Keep keys in Worker secrets;
+    // the client only ever calls this authenticated route.
+    const provider = (c.env.AI_PROVIDER || 'groq').toLowerCase()
+    const apiKey = c.env.AI_API_KEY || (provider === 'groq' ? c.env.GROQ_API_KEY : undefined)
+    const baseUrl = (c.env.AI_BASE_URL || (provider === 'groq' ? 'https://api.groq.com/openai/v1' : '')).replace(/\/$/, '')
+    const model = c.env.AI_MODEL || (provider === 'groq' ? 'llama-3.3-70b-versatile' : '')
+
+    if (!apiKey || !baseUrl || !model) {
       return c.json({ error: 'AI service not configured' }, 500)
     }
 
@@ -44,7 +50,7 @@ app.post('/cv/ai', async (c) => {
     const systemPrompt = prompts[action] || prompts.rewrite_bullet
 
     const body = {
-      model: 'llama-3.3-70b-versatile',
+      model,
       messages: [
         {
           role: 'system',
@@ -65,10 +71,10 @@ app.post('/cv/ai', async (c) => {
     const timeout = setTimeout(() => controller.abort(), 20_000)
     let res: Response
     try {
-      res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      res = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${groqKey}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
@@ -81,7 +87,7 @@ app.post('/cv/ai', async (c) => {
     }
 
     if (!res.ok) {
-      console.error('Groq API request failed with status:', res.status)
+      console.error(`${provider} API request failed with status:`, res.status)
       return c.json({ error: 'AI service error' }, 502)
     }
 

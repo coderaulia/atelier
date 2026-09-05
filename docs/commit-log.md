@@ -1,5 +1,12 @@
 # Commit Log
 
+## 2026-09-05 — Account navigation and usage history
+
+- Kept account content isolated from the app-shell layout so Security tab controls cannot affect sidebar navigation.
+- Made sidebar navigation an explicit block/flex layout with stable overflow behavior.
+- Recorded unmetered tool activity in usage history while preserving unlimited limits.
+- Displayed usage-history API errors instead of incorrectly reporting an empty history.
+
 ## 2026-09-05 — Consolidate frontend CSS deployment
 
 - Disabled Vite CSS code splitting so lazy routes do not preload separate hashed CSS files.

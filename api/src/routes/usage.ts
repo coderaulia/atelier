@@ -33,6 +33,12 @@ function resetAt(): number {
 
 // ─── Daily limit logic (shared between POST and credit-fallback) ──────
 
+async function recordUnmeteredUsage(db: D1Database, userId: string, toolId: string, date: string): Promise<void> {
+  await db.prepare(
+    'INSERT INTO usage_log (user_id, tool_id, date, count, limit_hits) VALUES (?, ?, ?, 1, 0) ON CONFLICT(user_id, tool_id, date) DO UPDATE SET count = count + 1'
+  ).bind(userId, toolId, date).run()
+}
+
 async function applyDailyLimit(
   db: D1Database,
   userId: string,
@@ -119,14 +125,14 @@ usage.get('/me', async (c) => {
     .bind(plan, proDailyLimit(proTier), FREE_DAILY_LIMIT, userId, sinceStr)
     .all()
 
-  return c.json({
-    usage: (rows.results ?? []).map((r: any) => ({
-      date: r.date,
-      tool_id: r.tool_id,
-      count: r.count,
-      limit: r.limit_val,
-    })),
-  })
+  const usage = (rows.results ?? []).map((r: any) => ({
+    date: r.date,
+    tool_id: r.tool_id,
+    count: r.count,
+    limit: r.limit_val,
+  }))
+
+  return c.json({ usage })
 })
 
 // GET /usage/:toolId — check current usage and limits
@@ -214,8 +220,10 @@ usage.post('/:toolId', async (c) => {
   const proTier = c.get('proTier')
   const date = todayUTC()
 
-  // Free tools: always allow
+  // Free tools remain unmetered, but record successful activity so the
+  // account's usage history reflects all tools used by the user.
   if (FREE_TOOLS.has(toolId)) {
+    await recordUnmeteredUsage(c.env.DB, userId, toolId, date)
     return c.json({
       used: 0,
       limit: null,

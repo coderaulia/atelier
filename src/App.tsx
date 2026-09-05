@@ -47,8 +47,9 @@ const Receipt = lazy(() => import('./pages/Receipt'))
 
 export default function App() {
   return (
-    <Suspense fallback={null}>
-      <Routes>
+    <ErrorBoundary title="Vanaila Studio could not load">
+      <Suspense fallback={<div className="app-loading" role="status">Loading Vanaila Studio…</div>}>
+        <Routes>
       {/* ── Public marketing ─────────────────────── */}
       <Route path="/" element={<Landing />} />
       <Route path="/pricing" element={<Pricing />} />
@@ -298,7 +299,8 @@ export default function App() {
           </main>
         }
       />
-      </Routes>
-    </Suspense>
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   )
 }

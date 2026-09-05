@@ -1,7 +1,7 @@
 import { getAuthToken } from './auth'
 import type { GlobalMetadata } from './globalMetadata'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8787'
+const API_URL = import.meta.env.VITE_API_URL ?? 'https://vanaila-studio-api.atelier-591.workers.dev'
 
 export interface User {
   id: string

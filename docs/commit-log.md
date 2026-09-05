@@ -1,5 +1,10 @@
 # Commit Log
 
+## 2026-09-05 — Frontend deployment resilience
+
+- Added a visible initial loading shell and top-level error boundary so failed lazy chunks no longer produce a blank page.
+- Set the production Worker URL as the frontend API fallback for Hostinger builds without injected Vite environment variables.
+
 ## 2026-09-05 — Marketing navigation and subscription entitlement fixes
 
 - Added shared responsive marketing footer/navigation across public, legal, manual, and authentication pages.

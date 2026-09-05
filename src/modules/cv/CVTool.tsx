@@ -121,6 +121,7 @@ export default function CVTool() {
   const [regionalMode, setRegionalMode] = useLocalStorage<CVRegionalMode>('cv_regional_mode_v1', 'international');
   const [jdKeywordInput, setJdKeywordInput] = useLocalStorage<string>('cv_jd_keywords_v1', '');
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'info' } | null>(null);
+  const [isPreviewShrunk, setIsPreviewShrunk] = useState(false);
   const prevBlobRef = useRef<string | null>(null);
 
   const { canUse, used, limit, increment } = useToolLimit('cv-builder');
@@ -277,8 +278,44 @@ export default function CVTool() {
   }
 
   return (
-    <div className="cv-tool">
-      {/* ---- Sidebar: editor ---- */}
+    <div className={`cv-tool ${isPreviewShrunk ? 'cv-tool--preview-shrunk' : ''}`}>
+      {/* ---- Left rail: template picker + actions ---- */}
+      <div className="cv-center">
+        <div className="cv-center__top">
+          <div className="cv-center__heading">
+            <p className="cv-center__sub">Choose template</p>
+            <span className="cv-center__hint">Pick a style for your CV</span>
+          </div>
+          <TemplatePicker
+            current={template}
+            onSelect={handleSelectTemplate}
+            isPro={isPro}
+          />
+          <div className="cv-center__btns">
+            <button
+              className="cv-btn cv-btn--ghost"
+              onClick={refreshPreview}
+              disabled={isRendering}
+            >
+              {isRendering ? 'Rendering…' : '↺ Refresh Preview'}
+            </button>
+            <button className="cv-btn cv-btn--ghost" onClick={handleExportDocx} title="Download Word document">
+              ↓ Export DOCX
+            </button>
+            <button
+              className={`cv-btn cv-btn--primary ${!canUse ? 'cv-btn--locked' : ''}`}
+              onClick={handleExport}
+              disabled={isRendering}
+              title={!canUse ? `Daily limit reached (${used}/${limit})` : 'Download PDF'}
+            >
+              {isRendering ? 'Exporting…' : !canUse ? '🔒 Limit Reached' : '↓ Export PDF'}
+            </button>
+          </div>
+          {renderError && <div className="cv-error">{renderError}</div>}
+        </div>
+      </div>
+
+      {/* ---- Main editor ---- */}
       <div className="cv-sidebar">
         <div className="cv-sidebar__header">
           <div className="cv-sidebar__title-row">
@@ -353,65 +390,39 @@ export default function CVTool() {
           ) : (
             <CVEditor data={cvData} onChange={setCvData} regionalMode={regionalMode} />
           )}
-        </div>
-      </div>
-
-      {/* ---- Center: template picker + preview actions ---- */}
-      <div className="cv-center">
-        <div className="cv-center__top">
-          <p className="cv-center__sub">Choose Template</p>
-          <TemplatePicker
-            current={template}
-            onSelect={handleSelectTemplate}
-            isPro={isPro}
-          />
-          <div className="cv-center__btns">
-            <button
-              className="cv-btn cv-btn--ghost"
-              onClick={refreshPreview}
-              disabled={isRendering}
-            >
-              {isRendering ? 'Rendering…' : '↺ Refresh Preview'}
-            </button>
-            <button
-              className="cv-btn cv-btn--ghost"
-              onClick={handleExportDocx}
-              title="Download Word document"
-            >
-              ↓ Export DOCX
-            </button>
-            <button
-              className={`cv-btn cv-btn--primary ${!canUse ? 'cv-btn--locked' : ''}`}
-              onClick={handleExport}
-              disabled={isRendering}
-              title={!canUse ? `Daily limit reached (${used}/${limit})` : 'Download PDF'}
-            >
-              {isRendering ? 'Exporting…' : !canUse ? '🔒 Limit Reached' : '↓ Export PDF'}
-            </button>
+          <div className="cv-editor-tools">
+            <CVRegionalToggle value={regionalMode} onChange={setRegionalMode} />
+            <div className="cv-jd-keywords">
+              <label className="cv-jd-keywords__label">Job description keywords</label>
+              <textarea
+                className="cv-jd-keywords__input"
+                value={jdKeywordInput}
+                onChange={(e) => setJdKeywordInput(e.target.value)}
+                placeholder="React, TypeScript, product strategy…"
+                rows={3}
+              />
+            </div>
+            <CVATSPanel data={cvData} jdKeywords={jdKeywords} />
           </div>
-          {renderError && (
-            <div className="cv-error">{renderError}</div>
-          )}
-
-          <CVRegionalToggle value={regionalMode} onChange={setRegionalMode} />
-
-          <div className="cv-jd-keywords">
-            <label className="cv-jd-keywords__label">Job description keywords</label>
-            <textarea
-              className="cv-jd-keywords__input"
-              value={jdKeywordInput}
-              onChange={(e) => setJdKeywordInput(e.target.value)}
-              placeholder="Paste target keywords, comma-separated or one per line: React, TypeScript, product strategy..."
-              rows={3}
-            />
-          </div>
-
-          <CVATSPanel data={cvData} jdKeywords={jdKeywords} />
         </div>
       </div>
 
       {/* ---- Right: PDF preview ---- */}
       <div className="cv-preview">
+        <div className="cv-preview__toolbar">
+          <div>
+            <span className="cv-preview__title">Live preview</span>
+            <span className="cv-preview__status">{blobUrl ? 'Ready to review' : 'Refresh after editing'}</span>
+          </div>
+          <button
+            className="cv-btn cv-btn--ghost cv-btn--sm"
+            onClick={() => setIsPreviewShrunk((prev) => !prev)}
+            aria-pressed={isPreviewShrunk}
+            title={isPreviewShrunk ? 'Show larger preview' : 'Shrink preview and enlarge editor'}
+          >
+            {isPreviewShrunk ? '↗ Expand preview' : '↙ Shrink preview'}
+          </button>
+        </div>
         <PDFPreview blobUrl={blobUrl} />
       </div>
 

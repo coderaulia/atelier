@@ -30,7 +30,7 @@ The registry is authoritative. Marketing metadata, dashboard cards, manual tool 
 
 Implemented:
 
-1. Guided wizard and step/full editors
+1. Guided wizard and step/full editors with a wider, dedicated editing column
 2. International/Indonesia regional mode
 3. PDF/DOCX import with PDF text extraction and OCR fallback
 4. ATS scoring, linting, and job-description keywords
@@ -40,6 +40,7 @@ Implemented:
 8. Cover-letter editor
 9. Client-side PDF and DOCX export
 10. LocalStorage persistence and preview blob cleanup
+11. Template picker moved to the left rail, with a shrink-preview toggle that gives the editor more space
 
 ## Stage 4 — Accounts, usage, and billing ✅ (code complete)
 

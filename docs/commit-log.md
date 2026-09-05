@@ -1,5 +1,12 @@
 # Commit Log
 
+## 2026-09-05 — CV builder editing layout
+
+- Moved template selection and export actions to the left rail so the editor is the primary workspace.
+- Increased editor width, grouped regional settings/ATS tools below the form, and added responsive mobile ordering.
+- Added a shrink-preview toggle to make editing credentials and CV content more comfortable.
+- Verified with `npm run typecheck` and `npm run build`.
+
 ## 2026-09-05 — Document account and usage-history behavior
 
 - Documented the Security-tab autofill protections and stable account sidebar behavior.

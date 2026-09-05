@@ -14,6 +14,8 @@
 
 export type ProTier = 'starter' | 'pro' | 'business'
 
+export const FREE_DAILY_LIMIT = 3
+
 export const TIER_LIMITS: Record<ProTier, number> = {
   starter: 30,
   pro: 100,

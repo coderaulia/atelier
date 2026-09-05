@@ -4,6 +4,8 @@ import { login } from '../lib/api'
 import { setAuthToken, setStoredUser } from '../lib/auth'
 import { authClient } from '../lib/auth-client'
 import { useAuth } from '../hooks/useAuth'
+import MarketingNav from '@/components/navigation/MarketingNav'
+import MarketingFooter from '@/components/navigation/MarketingFooter'
 
 const OAUTH_ENABLED = import.meta.env.VITE_ENABLE_OAUTH === 'true'
 
@@ -55,14 +57,7 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
-      <nav className="nav">
-        <div className="container nav__inner">
-          <Link to="/" className="nav__brand">
-            <span className="nav__mark" />
-            <span>Vanaila Studio</span>
-          </Link>
-        </div>
-      </nav>
+      <MarketingNav />
 
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: 420 }}>
@@ -159,6 +154,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <MarketingFooter />
     </div>
   )
 }

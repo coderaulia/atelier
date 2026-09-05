@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
+import MarketingNav from '@/components/navigation/MarketingNav'
+import MarketingFooter from '@/components/navigation/MarketingFooter'
 import { TOOLS } from '../lib/tools'
 
 const sections = [
@@ -104,31 +107,6 @@ const toolTips: Record<string, string[]> = {
   ],
 }
 
-function ManualNav() {
-  return (
-    <nav className="nav">
-      <div className="container nav__inner">
-        <Link to="/" className="nav__brand">
-          <span className="nav__mark" />
-          <span>Vanaila Studio</span>
-          <span className="nav__brand-sub">Manual</span>
-        </Link>
-        <div className="nav__links">
-          {sections.slice(0, 4).map((section) => (
-            <a key={section.id} className="nav__link" href={`#${section.id}`}>
-              {section.label}
-            </a>
-          ))}
-        </div>
-        <div className="nav__actions">
-          <Link className="nav__link" to="/pricing">Pricing</Link>
-          <Link className="btn btn--primary" to="/app/dashboard">Open app</Link>
-        </div>
-      </div>
-    </nav>
-  )
-}
-
 function ManualCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <article className="manual-card">
@@ -139,6 +117,8 @@ function ManualCard({ title, children }: { title: string; children: React.ReactN
 }
 
 export default function Manual() {
+  const { isAuthenticated } = useAuth()
+
   useEffect(() => {
     document.title = 'Vanaila Studio Manual — Help, tools, billing, and privacy'
     const meta = document.querySelector('meta[name="description"]')
@@ -152,7 +132,7 @@ export default function Manual() {
 
   return (
     <>
-      <ManualNav />
+      <MarketingNav />
       <main className="manual-page">
         <section className="manual-hero">
           <div className="container manual-hero__grid">
@@ -164,7 +144,7 @@ export default function Manual() {
                 and understanding how files stay private in your browser.
               </p>
               <div className="hero__ctas">
-                <Link className="btn btn--accent btn--lg" to="/app/dashboard">Open dashboard</Link>
+                <Link className="btn btn--accent btn--lg" to={isAuthenticated ? '/app/dashboard' : '/register'}>{isAuthenticated ? 'Open dashboard' : 'Start free'}</Link>
                 <a className="btn btn--ghost btn--lg" href="#tools">Browse tool guides</a>
               </div>
             </div>
@@ -295,6 +275,7 @@ export default function Manual() {
           </div>
         </section>
       </main>
+      <MarketingFooter />
     </>
   )
 }

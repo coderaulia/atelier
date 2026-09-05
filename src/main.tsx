@@ -15,6 +15,7 @@ import './tool-landing.css'
 import './pages/manual.css'
 import './lib/i18n'
 import './marketing-demo.css'
+import './components/navigation/marketing-footer.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

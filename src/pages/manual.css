@@ -26,6 +26,17 @@
   letter-spacing: -0.02em;
 }
 
+.manual-hero .btn--ghost {
+  background: #fff;
+  color: #0a0f1e;
+  border-color: #fff;
+}
+
+.manual-hero .btn--ghost:hover {
+  background: #f1f5f9;
+  border-color: #f1f5f9;
+}
+
 .manual-hero p {
   font-size: 1.15rem;
   line-height: 1.6;

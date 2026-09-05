@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getAuthToken } from '../lib/auth'
 import { getMe, createCheckout, createPackCheckout, getPricing, type Pricing as PricingData } from '../lib/api'
 import MarketingNav from '../components/navigation/MarketingNav'
+import MarketingFooter from '../components/navigation/MarketingFooter'
 import './Pricing.css'
 
 declare global {
@@ -356,11 +357,7 @@ export default function Pricing() {
         </div>
       </section>
 
-      <footer className="pricing-footer">
-        <Link to="/privacy">Privacy</Link>
-        <Link to="/terms">Terms</Link>
-        <Link to="/refund">Refund</Link>
-      </footer>
+      <MarketingFooter />
     </main>
   )
 }

@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+
 import { resendVerificationEmail } from '../lib/api'
+import MarketingNav from '@/components/navigation/MarketingNav'
+import MarketingFooter from '@/components/navigation/MarketingFooter'
 
 export default function VerifyEmailNotice() {
   const [loading, setLoading] = useState(false)
@@ -21,14 +23,7 @@ export default function VerifyEmailNotice() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
-      <nav className="nav">
-        <div className="container nav__inner">
-          <Link to="/" className="nav__brand">
-            <span className="nav__mark" />
-            <span>Vanaila Studio</span>
-          </Link>
-        </div>
-      </nav>
+      <MarketingNav />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ textAlign: 'center', maxWidth: 420 }}>
           <h1 style={{ fontFamily: 'var(--sans)', fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Verify your email</h1>
@@ -42,6 +37,7 @@ export default function VerifyEmailNotice() {
           </button>
         </div>
       </div>
+      <MarketingFooter />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import MarketingNav from '@/components/navigation/MarketingNav'
+import MarketingFooter from '@/components/navigation/MarketingFooter'
 import { type ToolPage } from './toolPages'
 
 export default function ToolLanding({ tool, children }: { tool: ToolPage; children: ReactNode }) {
@@ -85,9 +86,7 @@ export default function ToolLanding({ tool, children }: { tool: ToolPage; childr
         </div>
       </section>
 
-      <footer className="tool-footer">
-        <strong>Privacy note:</strong> files never leave your browser.
-      </footer>
+      <MarketingFooter />
     </main>
   )
 }

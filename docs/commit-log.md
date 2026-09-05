@@ -1,5 +1,13 @@
 # Commit Log
 
+## 2026-09-05 — Marketing navigation and subscription entitlement fixes
+
+- Added shared responsive marketing footer/navigation across public, legal, manual, and authentication pages.
+- Added About, Changelog, Roadmap, FAQ, and Contact routes and synchronized public links.
+- Enforced Pro expiration during authenticated requests and aligned checkout customer fields with the users schema.
+- Centralized the free daily usage limit in the pricing configuration.
+- Verified frontend build and API typecheck.
+
 ## 2026-09-05 — Documentation stages, production domain, and Wrangler profile
 
 - Updated README and operational docs to reflect the current 18-tool registry, tiered usage, implemented billing/admin/runtime-template stages, and launch boundaries.

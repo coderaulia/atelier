@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { forgotPassword, resetPassword } from '../lib/api'
+import MarketingNav from '@/components/navigation/MarketingNav'
+import MarketingFooter from '@/components/navigation/MarketingFooter'
 
 export default function ForgotPassword() {
   const [searchParams] = useSearchParams()
@@ -45,14 +47,7 @@ export default function ForgotPassword() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
-      <nav className="nav">
-        <div className="container nav__inner">
-          <Link to="/" className="nav__brand">
-            <span className="nav__mark" />
-            <span>Vanaila Studio</span>
-          </Link>
-        </div>
-      </nav>
+      <MarketingNav />
 
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: 420 }}>
@@ -109,6 +104,7 @@ export default function ForgotPassword() {
           )}
         </div>
       </div>
+      <MarketingFooter />
     </div>
   )
 }

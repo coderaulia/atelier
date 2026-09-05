@@ -1,12 +1,10 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { checkRateLimit, getClientIP } from '../lib/rate-limit'
-import { TIER_LIMITS, type ProTier } from '../lib/pricing'
+import { FREE_DAILY_LIMIT, TIER_LIMITS, type ProTier } from '../lib/pricing'
 import type { Bindings } from '../types'
 
-// Usage limits per user type
-const FREE_DAILY_LIMIT = 3 // Registered free: tight limit to create upgrade pressure
-
+// Registered free users receive a daily limit; see the canonical pricing config.
 // Pro daily limit depends on subscription tier; legacy pro users with no
 // tier set (pre-tiers) default to the mid 'pro' tier limit.
 function proDailyLimit(proTier: ProTier | null): number {

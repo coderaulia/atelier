@@ -217,9 +217,9 @@ billing.post('/checkout', authMiddleware, async (c) => {
   if (!tier || !TIERS.has(tier)) return c.json({ error: 'Invalid plan' }, 400)
 
   const user = await c.env.DB
-    .prepare('SELECT email, first_name, last_name FROM users WHERE id = ?')
+    .prepare('SELECT email, name FROM users WHERE id = ?')
     .bind(c.var.userId)
-    .first<{ email: string; first_name: string; last_name: string }>()
+    .first<{ email: string; name: string | null }>()
 
   if (!user) return c.json({ error: 'User not found' }, 404)
 
@@ -238,7 +238,7 @@ billing.post('/checkout', authMiddleware, async (c) => {
       c,
       checkout.order_id,
       grossAmount,
-      { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
+      { first_name: user.name || 'User', last_name: '', email: user.email },
     )
   } catch {
     await markCheckoutFailed(c, checkout.order_id)
@@ -260,9 +260,9 @@ billing.post('/checkout-pack', authMiddleware, async (c) => {
   if (!packId || !PACK_IDS.has(packId)) return c.json({ error: 'Invalid pack' }, 400)
 
   const user = await c.env.DB
-    .prepare('SELECT email, first_name, last_name FROM users WHERE id = ?')
+    .prepare('SELECT email, name FROM users WHERE id = ?')
     .bind(c.var.userId)
-    .first<{ email: string; first_name: string; last_name: string }>()
+    .first<{ email: string; name: string | null }>()
 
   if (!user) return c.json({ error: 'User not found' }, 404)
 
@@ -281,7 +281,7 @@ billing.post('/checkout-pack', authMiddleware, async (c) => {
       c,
       checkout.order_id,
       grossAmount,
-      { first_name: user.first_name || 'User', last_name: user.last_name || '', email: user.email },
+      { first_name: user.name || 'User', last_name: '', email: user.email },
     )
   } catch {
     await markCheckoutFailed(c, checkout.order_id)

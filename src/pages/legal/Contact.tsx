@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
+import MarketingNav from '@/components/navigation/MarketingNav'
+import MarketingFooter from '@/components/navigation/MarketingFooter'
 import { Link } from 'react-router-dom'
 
 interface ContactChannel {
@@ -17,7 +19,9 @@ export default function Contact() {
   }, [])
 
   return (
-    <main style={{ maxWidth: 740, margin: '0 auto', padding: '60px 24px 100px' }}>
+    <div className="public-page">
+      <MarketingNav />
+      <main className="public-page__content">
       <Link to="/" style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24, display: 'inline-block' }}>← Back to Vanaila Studio</Link>
       <h1 style={{ fontFamily: 'var(--serif)', fontSize: 40, fontWeight: 400, fontStyle: 'italic', letterSpacing: '-0.02em', marginBottom: 8 }}>{t('contact.title')}</h1>
       <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 32 }}>{t('contact.lastUpdated')}</p>
@@ -48,6 +52,8 @@ export default function Contact() {
         <h2 style={{ fontFamily: 'var(--sans)', fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em', marginBottom: 12 }}>{t('contact.office.title')}</h2>
         <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--ink-2)' }}>{t('contact.office.body')}</p>
       </section>
-    </main>
+      </main>
+      <MarketingFooter />
+    </div>
   )
 }

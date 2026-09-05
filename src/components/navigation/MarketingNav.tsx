@@ -66,6 +66,8 @@ export default function MarketingNav({ showGoToApp = true }: MarketingNavProps) 
             )}
           </div>
           <Link className="nav__link" to="/pricing">Pricing</Link>
+          <Link className="nav__link" to="/about">About</Link>
+          <Link className="nav__link" to="/faq">FAQ</Link>
         </div>
 
         <div className="nav__actions">

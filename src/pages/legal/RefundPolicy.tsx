@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
+import MarketingNav from '@/components/navigation/MarketingNav'
+import MarketingFooter from '@/components/navigation/MarketingFooter'
 import { Link } from 'react-router-dom'
 
 export default function RefundPolicy() {
@@ -11,7 +13,9 @@ export default function RefundPolicy() {
   }, [])
 
   return (
-    <main style={{ maxWidth: 740, margin: '0 auto', padding: '60px 24px 100px' }}>
+    <div className="public-page">
+      <MarketingNav />
+      <main className="public-page__content">
       <Link to="/" style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24, display: 'inline-block' }}>← Back to Vanaila Studio</Link>
       <h1 style={{ fontFamily: 'var(--serif)', fontSize: 40, fontWeight: 400, fontStyle: 'italic', letterSpacing: '-0.02em', marginBottom: 8 }}>{t('refund.title')}</h1>
       <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 32 }}>{t('refund.lastUpdated')}</p>
@@ -29,6 +33,8 @@ export default function RefundPolicy() {
           )}
         </section>
       ))}
-    </main>
+      </main>
+      <MarketingFooter />
+    </div>
   )
 }

@@ -21,6 +21,7 @@ const Dashboard = lazy(() => import('./pages/app/Dashboard'))
 const Pricing = lazy(() => import('./pages/Pricing'))
 const Account = lazy(() => import('./pages/Account'))
 const Manual = lazy(() => import('./pages/Manual'))
+const Company = lazy(() => import('./pages/Company'))
 
 // Admin pages (per-page AdminLayout, no shared shell)
 const AdminOverview = lazy(() => import('./pages/Admin/Overview'))
@@ -62,6 +63,9 @@ export default function App() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/faq" element={<FAQ />} />
       <Route path="/manual" element={<Manual />} />
+      <Route path="/about" element={<Company />} />
+      <Route path="/changelog" element={<Company />} />
+      <Route path="/roadmap" element={<Company />} />
       <Route
         path="/receipt"
         element={

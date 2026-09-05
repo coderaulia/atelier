@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MarketingNav from '../components/navigation/MarketingNav'
+import MarketingFooter from '../components/navigation/MarketingFooter'
 import { TOOLS } from '../lib/tools'
 
 /* ---- Inline icons ---- */
@@ -983,46 +984,7 @@ function Newsletter() {
 
 /* ===================== FOOTER ===================== */
 function Footer() {
-  return (
-    <footer className="footer">
-      <div className="container">
-        <div className="footer__grid">
-          <div>
-            <a className="nav__brand" href="/">
-              <span className="nav__mark" />
-              <span>Vanaila Studio</span>
-            </a>
-            <p className="footer__brand-text">A small suite of free tools for the documents that surround the work — and the formats that surround the documents.</p>
-          </div>
-          <div>
-            <div className="footer__col-title">Tools</div>
-            {TOOLS.map((tool) => (
-              <Link key={tool.id} className="footer__col-link" to={tool.publicPath}>{tool.name}</Link>
-            ))}
-          </div>
-          <div>
-            <div className="footer__col-title">Company</div>
-            <Link className="footer__col-link" to="/manual">Manual</Link>
-            <Link className="footer__col-link" to="/faq">FAQ</Link>
-            <Link className="footer__col-link" to="/contact">Contact</Link>
-            <a className="footer__col-link" href="#">About</a>
-            <a className="footer__col-link" href="#">Changelog</a>
-            <a className="footer__col-link" href="#">Roadmap</a>
-          </div>
-          <div>
-            <div className="footer__col-title">Legal</div>
-            <Link className="footer__col-link" to="/privacy">Privacy</Link>
-            <Link className="footer__col-link" to="/terms">Terms</Link>
-            <Link className="footer__col-link" to="/refund">Refund</Link>
-          </div>
-        </div>
-        <div className="footer__bottom">
-          <span>© 2026 Vanaila Digital</span>
-          <a href="https://studio.vanaila.com" style={{ color: 'inherit', textDecoration: 'none' }}>studio.vanaila.com</a>
-        </div>
-      </div>
-    </footer>
-  )
+  return <MarketingFooter />
 }
 
 /* ===================== PAGE ===================== */

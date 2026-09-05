@@ -1,5 +1,10 @@
 # Commit Log
 
+## 2026-09-05 — Consolidate frontend CSS deployment
+
+- Disabled Vite CSS code splitting so lazy routes do not preload separate hashed CSS files.
+- This avoids blank-page failures when Hostinger briefly serves HTML and lazy bundles from different deployment generations.
+
 ## 2026-09-05 — Frontend deployment resilience
 
 - Added a visible initial loading shell and top-level error boundary so failed lazy chunks no longer produce a blank page.

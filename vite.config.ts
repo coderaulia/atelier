@@ -28,6 +28,10 @@ export default defineConfig(({ isSsrBuild }) => ({
   },
   build: {
     sourcemap: false,
+    // Keep route styles in the entry stylesheet. Hostinger deployments can
+    // briefly serve index.html and hashed chunks from different generations;
+    // route-level CSS preloads then fail and prevent lazy routes from loading.
+    cssCodeSplit: false,
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {

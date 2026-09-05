@@ -1,6 +1,6 @@
 import type { Bindings } from '../types'
 
-const DEFAULT_ORIGINS = ['https://atelier.vanailadigital.com']
+const DEFAULT_ORIGINS = ['https://studio.vanaila.com']
 const STATE_CHANGING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
 export function getAllowedOrigins(env: Pick<Bindings, 'ALLOWED_ORIGINS' | 'ENVIRONMENT'>): string[] {

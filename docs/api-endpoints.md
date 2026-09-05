@@ -1,122 +1,124 @@
 # API Endpoints
 
-Base local URL: `http://localhost:8787`
+Base local URL: `http://localhost:8787`. Routes are mounted by `api/src/index.ts`; authenticated routes require the bearer token returned by legacy auth or a valid Better Auth session where noted.
+
+## Platform middleware
+
+All API requests pass through CORS validation, CSRF protection for mutating requests, global IP rate limiting, a 1 MiB body limit, and security headers. Validation is performed with Zod in route handlers.
 
 ## Health
 
-- `GET /health` → `{ ok, ts }`
+- `GET /health` — returns `{ ok, ts }`.
 
-## Auth
+## Authentication (`/auth` and `/api/auth/*`)
+
+Legacy application routes:
 
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/me`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- `GET /auth/verify-email?token=...`
+- `POST /auth/verify-email`
+- `POST /auth/logout`
+- `PATCH /auth/profile`
+- `POST /auth/change-password`
+- `GET /auth/sessions`
+- `DELETE /auth/sessions/all`
+- `DELETE /auth/account`
 
-Auth responses include user role/status when present.
+Better Auth handlers are exposed at `GET|POST /api/auth/*`. The application middleware accepts Better Auth sessions first and legacy JWT sessions second.
 
 ## Usage
 
 - `GET /usage/:toolId`
-- `POST /usage/:toolId`
-- `GET /usage/me` — last 30 days usage for current user
-
-Free authenticated limit: 3/day for metered tools. Pro: 100/day. Some tools (pdf-merge, pdf-compress, image-converter) are unmetered.
-
-## Anonymous Usage
-
+- `POST /usage/:toolId` — accepts `Idempotency-Key`
+- `GET /usage/me` — last 30 days
 - `GET /anon-usage/:toolId`
 - `POST /anon-usage/:toolId`
 
-Anonymous IP-based limit: 1/day per tool.
+Current policy:
 
-## Admin
+- Anonymous users: 1/day per tool.
+- Authenticated free users: 3/day for metered tools, watermark where supported.
+- Pro tiers: Starter 30/day, Pro 100/day, Business 300/day.
+- Unmetered tools are defined by `FREE_TOOLS` in `api/src/routes/usage.ts`.
+- CV and Social credit packs are consumed before daily limits.
 
-All `/admin/*` routes require `Authorization: Bearer <token>` and `role = admin`.
+## Billing (`/billing`)
 
-### Core Admin Routes
-- `GET /admin/stats`
-- `GET /admin/users?page=1&limit=50&search=&plan=`
-- `GET /admin/users/:id`
-- `PATCH /admin/users/:id`
-- `GET /admin/transactions?page=1&limit=50&sort=created_at|amount&direction=asc|desc`
-- `GET /admin/errors`
-
-### Admin Subroutes
-- `GET /admin/analytics/*` — usage analytics, geo data, tool metrics
-- `GET /admin/audit-logs` — audit log viewer
-- `GET /admin/bug-reports`, `GET /admin/bug-reports/:id`, `PATCH /admin/bug-reports/:id` — bug report management
-- `GET /admin/content/announcements`, `POST /admin/content/announcements`, etc. — content management
-- `GET /admin/refunds`, `POST /admin/refunds/:id/approve`, `POST /admin/refunds/:id/reject` — refund management
-- `GET /admin/subscriptions`, `POST /admin/subscriptions/:id/cancel`, etc. — subscription management
-- `GET /admin/system/config`, `GET /admin/system/features`, `GET /admin/system/health` — system management
-- `POST /admin/cron/run` — trigger scheduled cleanup (for testing)
-
-## Error logging
-
-- `POST /api/log-error`
-
-Payload:
-
-```json
-{
-  "tool_id": "ocr",
-  "error_type": "worker_failed",
-  "user_agent": "optional",
-  "plan": "free"
-}
-```
-
-Do not send PII, file names, file content, or source documents.
-
-## Account management
-
-- `PATCH /auth/profile` — update `{ name }`
-- `POST /auth/change-password` — update password after verifying current password
-- `GET /auth/sessions` — list active sessions
-- `DELETE /auth/sessions/all` — sign out all other devices
-- `DELETE /auth/account` — soft delete account with `deleted_at`
-
-## Billing
-
+- `GET /billing/pricing` — public canonical pricing.
 - `GET /billing/status`
+- `POST /billing/checkout` — subscription tier `starter|pro|business`.
+- `POST /billing/checkout-pack` — pack `cv-10|social-50`.
 - `POST /billing/cancel`
 - `POST /billing/reactivate`
-- `POST /billing/webhook` — Midtrans webhook (signature validated)
-- `GET /billing/transactions`
+- `GET|POST /billing/transactions`
 - `GET /billing/receipt/:id`
+- `POST /billing/webhook` — Midtrans signature, amount, currency, ownership, and idempotency checks.
 
-## Bug Reports
+## Documents (`/documents`)
 
-- `POST /bug-reports` — submit bug report
-- `GET /bug-reports` — list user's bug reports (authenticated)
+Authenticated CRUD for stored document metadata/data:
 
-## Content (Public)
+- `GET /documents`
+- `POST /documents`
+- `GET /documents/:id`
+- `PUT /documents/:id`
+- `DELETE /documents/:id`
+- `POST /documents/:id/duplicate`
 
-- `GET /content/announcements` — public announcements
-- `GET /content/email-templates/:type/preview` — preview email templates
+This API is separate from local browser file processing and does not upload source PDF/image files.
 
-## CV AI (Pro-gated)
+## Bug reports and errors
 
-- `POST /api/cv/ai`
+- `POST /bug-reports`
+- `GET /bug-reports`
+- `POST /api/log-error`
 
-Requires `Authorization: Bearer <token>` and `plan === 'pro'`.
+Error payloads must not contain PII, filenames, file content, or source documents.
 
-Payload:
+## Public content
+
+- `GET /content/announcements`
+- `GET /social-templates` — published runtime social templates only.
+
+## CV AI (`/api/cv/ai`)
+
+`POST /api/cv/ai` requires authentication and `plan === 'pro'`.
 
 ```json
 {
-  "action": "rewrite_bullet" | "generate_summary" | "improve_tone" | "tailor_cv" | "cover_letter",
-  "text": "optional text to rewrite",
-  "context": "optional context (CV data, job description, etc.)"
+  "action": "rewrite_bullet | generate_summary | improve_tone | tailor_cv | cover_letter",
+  "text": "optional text",
+  "context": "optional CV or job-description context"
 }
 ```
 
-Response:
+The Worker calls Groq with Llama 3.3 70B. Free users receive `403`.
 
-```json
-{
-  "result": "AI-generated text"
-}
-```
+## Admin (`/admin`)
 
-Backend uses Groq API with Llama 3.3 70B model. Free users receive 403 error.
+All admin routes require authentication and `role = admin`.
+
+- `GET /admin/stats`
+- `GET /admin/users`, `GET /admin/users/:id`, `PATCH /admin/users/:id`
+- `GET /admin/transactions`
+- `GET /admin/errors`
+- `GET /admin/analytics/*`
+- `GET /admin/audit`, `GET /admin/audit/actions`
+- `GET /admin/bug-reports`, `GET /admin/bug-reports/:id`, `PATCH /admin/bug-reports/:id`, `POST /admin/bug-reports/:id/comments`
+- `GET /admin/refunds`, `POST /admin/refunds`, `PATCH /admin/refunds/:id`
+- `GET /admin/subscriptions`, `GET /admin/subscriptions/summary`, `PATCH /admin/subscriptions/:userId`
+- `GET /admin/system/config`, `PATCH /admin/system/config/:key`
+- `GET /admin/system/features`, `PATCH /admin/system/features/:key`
+- `GET /admin/system/health`
+- `GET|POST|PATCH|DELETE /admin/content/announcements...`
+- `GET /admin/content/email-templates`, `PUT /admin/content/email-templates/:key`
+- `GET|POST|PUT|DELETE /admin/social-templates...`
+- `POST /admin/social-templates/:id/publish`
+- `POST /admin/social-templates/:id/disable`
+- `POST /admin/social-templates/import`
+- `GET /admin/notifications`, notification read endpoints
+- `POST /admin/cron/run` — test-only scheduled maintenance trigger.

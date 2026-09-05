@@ -2,7 +2,7 @@
 
 A freemium browser-based toolkit for documents, CVs, PDF/image conversions, OCR, and social media content. Built for freelancers, small teams, and job seekers.
 
-**Live at:** [app.vanaila.com](https://app.vanaila.com)
+**Production:** [studio.vanaila.com](https://studio.vanaila.com)
 
 Built by **[Vanaila Digital](https://vanaila.com)**.
 
@@ -10,7 +10,7 @@ Built by **[Vanaila Digital](https://vanaila.com)**.
 
 ## What it does
 
-Atelier provides 16 professional-grade tools that run entirely in your browser:
+Atelier provides 18 professional-grade tools that run entirely in your browser:
 
 ### Documents & Content
 - **Document Generator** — Agreements, invoices, proposals, PRDs, retainers, receipts, onboarding sheets, and handover documents with 3 style variants each (Classic, Modern, Editorial)
@@ -48,22 +48,22 @@ All file processing happens **client-side** — your files never leave your brow
 - **Cover letter generator** — Pro-gated AI generation from CV data, editable preview, copy-to-clipboard
 - **Regional mode** — Toggle between International (ATS-safe) and Indonesia (photo, DOB, marital, religion)
 - **Export** — PDF (6 templates) + DOCX (structured Word document)
-- **Free tier:** 5 PDF exports/day
+- **Free tier:** 3 daily uses for metered tools (CV Builder has 3 PDF exports/day)
 - **Pro tier:** Unlimited exports, premium templates, AI features
 
 ### Free Tier
 - 3 daily uses for metered document/social/CV/OCR/PDF-to-image tools
-- PDF Merge, PDF Compress, and Image Converter are currently unmetered
+- PDF Merge, PDF Compress, PDF Organize, PDF Split, PDF Watermark, PDF Markdown, PDF Word, PDF PowerPoint, Edit PDF, Image Converter, Image Compress, Image Resize, and Image Background & Metadata are currently unmetered
 - Anonymous users get 1 daily use via backend anonymous usage tracking
 - All templates and formats available
 - Watermark applies to free/anonymous metered output where supported
 
 ### Pro Tier
-- Unlimited daily usage
+- Tiered daily limits: Starter 30, Pro 100, Business 300 uses/day
 - Premium templates
 - Bulk export
 - Priority support
-- IDR 99,000/month or USD $9/month via Midtrans
+- IDR/USD pricing is configured centrally in `api/src/lib/pricing.ts` and checkout is handled by Midtrans
 
 ### Technical Highlights
 - **Client-side processing** — pdf.js, Tesseract.js, Canvas API, JSZip, pdf-lib, @jsquash/webp, @jsquash/avif
@@ -387,7 +387,7 @@ Pull requests are welcome. For significant changes, open an issue first to discu
 ## Security
 
 - All passwords hashed with bcrypt
-- JWT tokens with httpOnly cookies
+- JWT tokens are returned for legacy bearer sessions; Better Auth also supports cookie sessions
 - CORS configured for frontend domain only
 - Rate limiting on auth endpoints
 - Input validation with Zod on all API routes

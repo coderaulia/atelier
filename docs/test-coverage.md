@@ -122,6 +122,6 @@ Follow `docs/manual-test-plan.md` against staging or production deploy.
 ## Next Steps
 
 1. **CI Integration:** Add `npm run test:flows` to GitHub Actions (requires D1 local setup)
-2. **Staging Deploy:** Run manual tests against `https://staging.atelier.vanailadigital.com`
+2. **Staging/production deploy:** Run manual tests against the configured staging URL, then verify production at `https://studio.vanaila.com`
 3. **Monitoring:** Set up Sentry/LogDNA to catch production errors flagged by error_log table
 4. **Load Testing:** Use k6 or Artillery to verify rate limits hold under burst traffic

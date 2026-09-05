@@ -1,5 +1,8 @@
 # Environment and Secrets Setup
 
+Production deployment: `https://studio.vanaila.com`  
+Wrangler auth profile for this repository: `atelier` (bound to the repository directory).
+
 Use **Cloudflare Worker secrets** for sensitive values. Do **not** put API keys, JWT secrets, passwords, or payment keys in Git, `wrangler.toml`, `.env`, or frontend code.
 
 ## Production Worker secrets
@@ -58,8 +61,8 @@ These are not secrets, so keep them in `api/wrangler.toml` under `[vars]` **afte
 ```toml
 [vars]
 ENVIRONMENT = "production"
-APP_URL = "https://atelier.vanailadigital.com"
-ALLOWED_ORIGINS = "https://atelier.vanailadigital.com"
+APP_URL = "https://studio.vanaila.com"
+ALLOWED_ORIGINS = "https://studio.vanaila.com"
 MIDTRANS_BASE_URL = "https://api.midtrans.com"
 ```
 
@@ -130,8 +133,8 @@ openssl rand -base64 32
 | Var | Required | Example |
 |-----|----------|---------|
 | `ENVIRONMENT` | ✅ | `production` |
-| `APP_URL` | ✅ | `https://atelier.vanailadigital.com` |
-| `ALLOWED_ORIGINS` | ✅ | `https://atelier.vanailadigital.com` |
+| `APP_URL` | ✅ | `https://studio.vanaila.com` |
+| `ALLOWED_ORIGINS` | ✅ | `https://studio.vanaila.com` |
 | `MIDTRANS_BASE_URL` | ✅ | `https://api.midtrans.com` |
 
 ## Safety rules

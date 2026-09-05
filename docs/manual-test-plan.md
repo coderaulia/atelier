@@ -103,7 +103,7 @@ API layer partially verified; full lifecycle check:
 **Browser:** Chrome mobile, latest.
 
 ### OCR (Image Text Extractor)
-1. Open `/image-to-text` on device
+1. Open `/ocr` on device
 2. Photograph a printed document in decent light
 3. Tap "Extract Text" — confirm Tesseract.js runs and returns text
 4. **Memory guard check:** Open DevTools remote debug → Memory tab; confirm heap stays under 512 MB
@@ -129,9 +129,9 @@ API layer partially verified; full lifecycle check:
 
 **Method A — curl:**
 ```bash
-curl -s https://atelier.vanailadigital.com/pdf-to-image | grep -c '<h1>'
+curl -s https://studio.vanaila.com/pdf-to-image | grep -c '<h1>'
 # Should return 1+
-curl -s https://atelier.vanailadigital.com/pdf-to-image | grep 'meta name="description"'
+curl -s https://studio.vanaila.com/pdf-to-image | grep 'meta name="description"'
 # Should return populated content
 ```
 
@@ -142,7 +142,7 @@ curl -s https://atelier.vanailadigital.com/pdf-to-image | grep 'meta name="descr
 
 **Method C — Lighthouse:**
 ```bash
-npx lighthouse https://atelier.vanailadigital.com/pdf-to-image --only-categories=seo --output=json | jq '.categories.seo.score'
+npx lighthouse https://studio.vanaila.com/pdf-to-image --only-categories=seo --output=json | jq '.categories.seo.score'
 # Expect >= 0.9
 ```
 

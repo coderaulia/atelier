@@ -1,5 +1,13 @@
 # Commit Log
 
+## 2026-09-05 — Documentation stages, production domain, and Wrangler profile
+
+- Updated README and operational docs to reflect the current 18-tool registry, tiered usage, implemented billing/admin/runtime-template stages, and launch boundaries.
+- Reconciled production references to `https://studio.vanaila.com`.
+- Configured Wrangler profile `atelier` for this repository and updated API package scripts to use it for Worker, D1, and migration commands.
+- Updated the default CSRF allowed origin to the production domain.
+
+
 ## 2026-09-03 — Direct PDF Export for Document Generator
 
 - `fix(documents): direct client-side PDF download` — replaced `window.print()` browser dialog with direct client-side PDF export using `pdf-lib` and `html-to-image`. The "Export PDF" button now renders the document at native 100% paper resolution (unscaling parent preview transforms during capture), automatically segments multi-page content into standard A4 or Letter PDF pages, and directly downloads `${filename}.pdf` to the user's downloads folder. Added a loading indicator (`Generating PDF…`) and direct PNG export button.

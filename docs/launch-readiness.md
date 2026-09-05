@@ -30,7 +30,7 @@
 - ✅ No hardcoded secrets in source (only in docs/examples)
 
 ### Features
-- ✅ 8 tools implemented and functional
+- ✅ 18 tools implemented and registered in `src/lib/tools.tsx`
 - ✅ CV Builder with 9 templates (6 existing + 3 new ATS-safe)
 - ✅ Admin dashboard complete
 - ✅ Usage limits and tracking (authenticated + anonymous)
@@ -97,8 +97,8 @@ wrangler secret put BREVO_API_KEY
 wrangler secret put MIDTRANS_SERVER_KEY  # Production key, not SB-Mid-*
 wrangler secret put MIDTRANS_CLIENT_KEY  # Production key
 wrangler secret put GROQ_API_KEY
-wrangler secret put APP_URL              # https://app.vanaila.com
-wrangler secret put ALLOWED_ORIGINS      # https://app.vanaila.com
+# APP_URL and ALLOWED_ORIGINS are non-secret [vars] in api/wrangler.toml
+# Production values: https://studio.vanaila.com
 ```
 
 ### 4. Database Not Seeded in Production
@@ -186,7 +186,7 @@ Replace `database_id` with actual Cloudflare D1 database ID from dashboard.
 
 **Impact:** CV tool now loads its heavy dependencies only when needed, improving initial page load.
 
-### 10. R2 Cloud Save Removed
+### 10. R2 Cloud Save Not Part of Launch
 **Status:** Intentionally disabled for launch (per `docs/project-status.md:99`)
 
 ### 11. Credit Pack Checkout Disabled
@@ -223,7 +223,7 @@ Replace `database_id` with actual Cloudflare D1 database ID from dashboard.
 
 ## 🎯 RECOMMENDATION
 
-**Ready to proceed** with production deployment once remaining config tasks (items #3-#5) are completed.
+**Production is `https://studio.vanaila.com`.** The codebase is a launch candidate; complete the remaining operational checks and run the manual plan against the production domain after staging verification.
 
 Critical code blockers (#1 payment flow, #2 webhook) are now implemented and typechecked.
 

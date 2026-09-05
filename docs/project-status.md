@@ -1,122 +1,100 @@
-# Project Status
+# Project Status & Development Stages
 
-## Current state
+**Product:** Atelier by Vanaila
+**Production:** `https://studio.vanaila.com`
+**Repository state:** Feature-complete launch candidate; production configuration and acceptance testing remain.
 
-Vanaila Studio is a Vite + React 19 frontend with a Cloudflare Workers API built on Hono. Frontend and backend are launch-oriented with dual public/app routing, admin operations, Midtrans billing, Groq-powered Pro CV AI, anonymous/authenticated usage controls, and documented API/manual test coverage.
+## Stage 1 — Core product ✅
 
-## Frontend
+- Vite + React 19 frontend with public marketing routes and authenticated `/app/*` routes.
+- Cloudflare Workers + Hono API.
+- Cloudflare D1 schema and migrations through `014_documents.sql`.
+- Client-side document, PDF, image, OCR, CV, and social processing.
+- Shared tool registry at `src/lib/tools.tsx` generates public and app routes.
+- Responsive app shell, marketing wrapper, dashboard, account, legal pages, and manual.
 
-Implemented routes:
+## Stage 2 — Tools ✅
 
-- `/` landing page
-- `/pricing`
-- `/manual`
-- `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`
-- `/app/dashboard`
-- `/app/*` authenticated tool routes generated from `src/lib/tools.tsx`
-- Public tool routes generated from `src/lib/tools.tsx`
-- `/app/account`
-- `/privacy`, `/terms`, `/refund`
-- `/receipt`
-- `/admin` and admin subroutes for users, transactions, subscriptions, refunds, bug reports, revenue, analytics, system config, feature flags, health, announcements, email templates, audit logs, and errors
+The registry currently defines **19 tools**:
 
-## Tools
-
-Implemented tools:
-
-- Document Generator, including direct client-side PDF and PNG export, per-category history tabs, editor maximize/shrink toggle, CSV bulk generation, and ZIP export
-- Social Generator, including word-boundary dynamic font scaling (single-word overflow prevention), markdown bold and linebreaks on textarea inputs, editorial/vertical carousels, and quick formatting toolbar
+- Document Generator
+- Social Generator
 - CV Builder
-- PDF to Image
-- PDF Merge
-- PDF Compress
-- PDF Organize
-- PDF Split
-- PDF Watermark
-- Image Converter
-- Image Compress
-- Image Resize & Crop
-- Image Background & Metadata
+- PDF to Image, Merge, Compress, Organize, Split, Watermark, Markdown, Word, PowerPoint, and Edit PDF
+- Image Converter, Compress, Resize & Crop, and Background & Metadata
 - OCR
 
-Tool discovery and support surfaces now stay aligned with `src/lib/tools.tsx`: landing cards and footer links use registry data, dashboard quick access groups tools by category, manual guides cover all tools, and bug reports use registry-backed tool options. Public marketing metadata and static prerender routes cover all 14 tools.
+The registry is authoritative. Marketing metadata, dashboard cards, manual tool guidance, bug-report tool choices, and prerender routes should be checked against it whenever a tool changes.
 
-## CV Builder
+## Stage 3 — CV Builder ✅
 
-Implemented CV/resume builder phases:
+Implemented:
 
-1. Guided wizard
-2. Step-by-step editor
-3. PDF/DOCX import with OCR fallback
-4. ATS checker
-5. Pro-gated AI suggestions via Groq/Llama 3.3
-6. International/Indonesia regional mode
+1. Guided wizard and step/full editors
+2. International/Indonesia regional mode
+3. PDF/DOCX import with PDF text extraction and OCR fallback
+4. ATS scoring, linting, and job-description keywords
+5. Nine templates, including Pro-gated templates
+6. Pro-gated Groq AI rewrite, summary, tailoring, tone, and cover-letter actions
 7. Content library
-8. Cover letter generator
-9. PDF and DOCX export
+8. Cover-letter editor
+9. Client-side PDF and DOCX export
+10. LocalStorage persistence and preview blob cleanup
 
-## Backend
+## Stage 4 — Accounts, usage, and billing ✅ (code complete)
 
-Implemented API areas:
+- Registration, login, Better Auth session fallback, legacy JWT sessions, logout, password reset, email verification, profile, password change, session management, and soft deletion.
+- Anonymous usage: one use/day per tool, tracked by the API.
+- Authenticated free usage: three uses/day for metered tools.
+- Pro tiers: Starter 30/day, Pro 100/day, Business 300/day.
+- Unmetered tools are defined in `api/src/routes/usage.ts`; currently PDF Merge, PDF Compress, PDF Organize, Image Converter, Image Compress, Image Resize, PDF Split, PDF Watermark, PDF Markdown, PDF Word, PDF PowerPoint, PDF Edit, and Image Background & Metadata.
+- Credit-pack checkout and debit logic exist for CV and Social packs.
+- Midtrans checkout, signed webhook processing, subscription cancellation/reactivation, grace periods, receipts, and transactions are implemented.
 
-- Health: `GET /health`
-- Auth: register, login, `/me`, forgot/reset password, verify email, logout, sessions, profile, change password, soft delete
-- Usage: authenticated usage limits and 30-day usage history
-- Anonymous usage: anonymous daily limits
-- Billing: status, cancel, reactivate, webhook lifecycle, transactions, receipt
-- Admin: stats, users, transactions, subscriptions, refunds, analytics, errors, system config, feature flags, health, announcements, email templates, audit logs, cron test trigger
-- Public content: announcements and email-template preview endpoints
-- Bug reports
-- Error logging
-- CV AI: Pro-gated rewrite, summary, tone, tailoring, cover letter
+The backend is the source of truth for limits and entitlements. Product copy must not describe metered tools as unlimited or credit packs as disabled.
 
-## Database
+## Stage 5 — Admin and operations ✅ (code complete)
 
-D1 schema includes:
+Admin routes and UI cover users, transactions, subscriptions, refunds, bug reports, analytics, geo analytics, errors, audit logs, system config, feature flags, health, announcements, email templates, and runtime social templates.
 
-- `users`
-- `sessions`
-- `usage_log`
-- `anonymous_usage`
-- `transactions`
-- `error_log`
-- password reset and email verification tables
-- rate-limit, failed-login, and security tables
-- admin dashboard/support tables
-- announcements, email templates, audit logs, and content-management tables
-- credit pack and credit usage tables are present for future public checkout work
+Runtime social templates are implemented end-to-end:
 
-## Deployment readiness
+- D1 storage and migrations
+- Worker-safe write sanitization and client render sanitization
+- Published-only public feed
+- Admin CRUD, import, publish/disable, versioning, and live preview
+- Runtime renderer merged with built-in templates
+- Multi-slide support, starter presets, and Pro gating
 
-Build checks passing:
+See `docs/plan-runtime-social-templates.md` for the completed phases and remaining optional work.
 
-- Frontend typecheck: pass (`npm run typecheck`, 2026-07-18)
-- Frontend production build: pass (`npm run build`, 2026-07-18)
-- Frontend prerender: pass (`npm run prerender`, 16 pages, 2026-07-12)
-- Backend typecheck: pass
+## Stage 6 — Verification and launch ⏳
 
-Deployment prerequisites still requiring operator action:
+Remaining work is operational rather than a planned feature build:
 
-- Replace `api/wrangler.toml` D1 `database_id` with real Cloudflare D1 ID
-- Configure production secrets via `wrangler secret put`
-- Apply production D1 schema/migrations
-- Seed production admin user
-- Run manual browser/payment/device test plan on staging
+- Confirm the production D1 binding in `api/wrangler.toml` matches the deployed database.
+- Wrangler profile `atelier` is configured and bound to this repository; authentication is now active.
+- Configure production Worker secrets and non-secret variables; see `docs/secrets-setup.md`.
+- Apply the canonical schema to production and verify migrations are compatible.
+- Create/verify the production admin account.
+- Run API flow tests, browser payment/email tests, mobile processing tests, and SEO checks.
+- Configure external uptime/error monitoring if required by the operator.
 
-## In progress
+Local typecheck commands were attempted during this documentation pass but could not run because installed `node_modules/.bin/tsc` files are not executable in the current environment. Reinstall dependencies or fix permissions before treating local verification as current.
 
-- **Social template sizing & dynamic scaling** — restored bold editorial proportions across templates 1–34 in `src/modules/social/social-templates.tsx`, calibrated dynamic scaling curves for 5, 10, and 15+ characters, and improved image capture targeting in `src/modules/documents/utils.tsx`.
-- **Social markdown formatting** — inline markdown parsing and formatting toolbar in `SocialEditor.tsx` and `renderSocialMd.tsx`.
-- **Document history enhancements** — category filter tabs, per-type count badges, and category-aware document filtering in `DocumentHistory.tsx` and `useDocumentStore.ts`.
-- **Runtime social templates** (feat/runtime-social-templates) — admin-authored, data-driven templates for the social generator, addable without a redeploy. All core phases complete:
-  - Phase 1 — `social_templates` table (migration `010`), Workers-safe sanitizer (26-case XSS suite), admin CRUD + import API, public published-only feed.
-  - Phase 2 — `RuntimeTemplate.tsx` render boundary (token/brand/`{{#each}}` resolution, HTML-escaped values, DOMPurify, scoped CSS), merged into the social registry; export parity with built-ins.
-  - Phase 3 — admin list + split editor with live preview (`/admin/content/social-templates`).
-  - Phase 4/5 — HTML file upload (extracts `<style>`, sanitizes, detects tokens), 3 clone-able starter presets incl. a `{{#each}}` carousel list, Pro gating via `is_pro`.
-  - See `docs/plan-runtime-social-templates.md`. Remaining: optional CodeMirror editor upgrade; remote D1 migration on deploy.
+## Intentional launch boundaries
 
-## Known limitations for launch
+- User-facing cloud/R2 document save is not part of the launch surface.
+- Files processed by tools remain in the browser; they are not uploaded for conversion/OCR/export.
+- CodeMirror, sandboxed iframe rendering, and advanced runtime-template authoring are optional follow-ups, not launch blockers.
 
-- R2 cloud save is not part of the launch surface and has been removed from user-facing copy.
-- One-time credit pack checkout is disabled for launch; credit tables remain for future implementation.
-- Admin charts use lightweight CSS bars instead of Recharts.
+## Source-of-truth files
+
+- Routes and tool inventory: `src/App.tsx`, `src/lib/tools.tsx`
+- Frontend API contract: `src/lib/api.ts`
+- API composition: `api/src/index.ts`
+- Auth: `api/src/auth/routes.ts`, `api/src/middleware/auth.ts`
+- Usage: `src/hooks/useToolLimit.ts`, `api/src/routes/usage.ts`, `api/src/routes/anon-usage.ts`
+- Pricing: `api/src/lib/pricing.ts`, `api/src/routes/billing.ts`
+- Database: `api/src/db/schema.sql` and `api/src/db/migrations/`
+- Validation: `docs/manual-test-plan.md`, `docs/test-coverage.md`, `docs/launch-readiness.md`

@@ -7,10 +7,21 @@ let _uid = 0;
 const uid = () => `cv_${++_uid}_${Date.now()}`;
 
 // ---- generic field helpers ----
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  action,
+  children,
+}: {
+  label: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="cv-field">
-      <label className="cv-field__label">{label}</label>
+      <div className="cv-field__header">
+        <label className="cv-field__label">{label}</label>
+        {action && <div className="cv-field__action">{action}</div>}
+      </div>
       {children}
     </div>
   );
@@ -223,9 +234,9 @@ function ExperienceSection({
     <div className="cv-section">
       <SectionHead label="Work Experience" onAdd={add} />
       {items.map((exp) => (
-        <div key={exp.id} className="cv-card">
-          <div className="cv-card__header">
-            <span className="cv-card__title">{exp.role || 'New Position'}</span>
+        <div key={exp.id} className="cv-editor-card">
+          <div className="cv-editor-card__header">
+            <span className="cv-editor-card__title">{exp.role || 'New Position'}</span>
             <RemoveBtn onClick={() => remove(exp.id)} />
           </div>
           <div className="cv-row-2">
@@ -259,8 +270,9 @@ function ExperienceSection({
             />
             <span>Currently working here</span>
           </label>
-          <Field label="Description (use - for bullet points)">
-            <div className="cv-section__ai-row cv-section__ai-row--right">
+          <Field
+            label="Description (use - for bullet points)"
+            action={
               <AIButton
                 action="rewrite_bullet"
                 text={exp.description}
@@ -269,12 +281,13 @@ function ExperienceSection({
                 label="✨ Rewrite"
                 small
               />
-            </div>
+            }
+          >
             <Textarea
               value={exp.description}
               onChange={(v) => update(exp.id, { description: v })}
               placeholder="- Led redesign of onboarding funnel&#10;- Built design system for 12 teams"
-              rows={4}
+              rows={6}
             />
           </Field>
         </div>
@@ -316,9 +329,9 @@ function EducationSection({
     <div className="cv-section">
       <SectionHead label="Education" onAdd={add} />
       {items.map((edu) => (
-        <div key={edu.id} className="cv-card">
-          <div className="cv-card__header">
-            <span className="cv-card__title">{edu.institution || 'New Education'}</span>
+        <div key={edu.id} className="cv-editor-card">
+          <div className="cv-editor-card__header">
+            <span className="cv-editor-card__title">{edu.institution || 'New Education'}</span>
             <RemoveBtn onClick={() => remove(edu.id)} />
           </div>
           <div className="cv-row-2">
@@ -438,9 +451,9 @@ function CertificationsSection({
     <div className="cv-section">
       <SectionHead label="Certifications" onAdd={add} />
       {items.map((cert) => (
-        <div key={cert.id} className="cv-card">
-          <div className="cv-card__header">
-            <span className="cv-card__title">{cert.name || 'New Certification'}</span>
+        <div key={cert.id} className="cv-editor-card">
+          <div className="cv-editor-card__header">
+            <span className="cv-editor-card__title">{cert.name || 'New Certification'}</span>
             <RemoveBtn onClick={() => remove(cert.id)} />
           </div>
           <Field label="Certificate Name">

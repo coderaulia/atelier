@@ -1,13 +1,15 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { pdf } from '@react-pdf/renderer';
-import { CVData, CVTemplate, CV_TEMPLATES, DEFAULT_CV, generateCVFromStartupConfig, type CVStartupConfig, type CVRegionalMode } from './types';
+import { CVData, CVTemplate, CV_TEMPLATES, generateCVFromStartupConfig, type CVStartupConfig } from './types';
 import { CVEditor } from './CVEditor';
 import CVStepEditor from './CVStepEditor';
 import CVATSPanel from './CVATSPanel';
 import CVRegionalToggle from './CVRegionalToggle';
 import CVContentLibrary from './CVContentLibrary';
 import CoverLetterEditor from './CoverLetterEditor';
-import { DEFAULT_COVER_LETTER, type CoverLetterData } from './coverLetterTypes';
+import { DEFAULT_COVER_LETTER } from './coverLetterTypes';
+import { CVSwitcher } from './CVSwitcher';
+import { useCVDocuments } from './useCVDocuments';
 import CVWizard from './CVWizard';
 import {
   ClassicTemplate,
@@ -105,8 +107,28 @@ function TemplatePicker({
 
 // ---------- Main CVTool Component ----------
 export default function CVTool() {
-  const [cvData, setCvData] = useLocalStorage<CVData>('cv_data_v1', DEFAULT_CV);
-  const [template, setTemplate] = useLocalStorage<CVTemplate>('cv_template_v1', 'classic');
+  const {
+    resumes,
+    activeId,
+    activeCV,
+    switchCV,
+    createCV,
+    duplicateCV,
+    renameCV,
+    deleteCV,
+    updateActiveData: setCvData,
+    updateActiveTemplate: setTemplate,
+    updateActiveRegionalMode: setRegionalMode,
+    updateActiveCoverLetter: setCoverLetter,
+    updateActiveJdKeywords: setJdKeywordInput,
+  } = useCVDocuments();
+
+  const cvData = activeCV.data;
+  const template = activeCV.template;
+  const regionalMode = activeCV.regionalMode;
+  const coverLetter = activeCV.coverLetter || DEFAULT_COVER_LETTER;
+  const jdKeywordInput = activeCV.jdKeywords || '';
+
   const [hasCompletedWizard, setHasCompletedWizard] = useLocalStorage<boolean>('cv_wizard_done_v1', false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
@@ -117,13 +139,15 @@ export default function CVTool() {
   const [importSource, setImportSource] = useState<'cv' | 'linkedin'>('cv');
   const [showLibrary, setShowLibrary] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
-  const [coverLetter, setCoverLetter] = useLocalStorage<CoverLetterData>('cv_cover_letter_v1', DEFAULT_COVER_LETTER);
   const [useStepEditor, setUseStepEditor] = useLocalStorage<boolean>('cv_step_editor_v1', true);
-  const [regionalMode, setRegionalMode] = useLocalStorage<CVRegionalMode>('cv_regional_mode_v1', 'international');
-  const [jdKeywordInput, setJdKeywordInput] = useLocalStorage<string>('cv_jd_keywords_v1', '');
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'info' } | null>(null);
   const [isPreviewShrunk, setIsPreviewShrunk] = useState(false);
   const prevBlobRef = useRef<string | null>(null);
+
+  // Invalidate rendered preview whenever active CV changes
+  useEffect(() => {
+    setBlobUrl(null);
+  }, [activeId]);
 
   const { canUse, used, limit, increment } = useToolLimit('cv-builder');
   const { isPro } = usePlan();
@@ -330,7 +354,35 @@ export default function CVTool() {
       <div className="cv-sidebar">
         <div className="cv-sidebar__header">
           <div className="cv-sidebar__title-row">
-            <span className="cv-sidebar__title">CV Builder</span>
+            <div className="cv-sidebar__heading-group">
+              <span className="cv-sidebar__title">CV Builder</span>
+              <CVSwitcher
+                resumes={resumes}
+                activeCV={activeCV}
+                onSwitch={(id) => {
+                  switchCV(id);
+                  setBlobUrl(null);
+                }}
+                onCreateNew={(title) => {
+                  createCV(title);
+                  setBlobUrl(null);
+                  setToast({ message: 'Created new resume. You can rename it anytime.', type: 'info' });
+                }}
+                onDuplicate={(id) => {
+                  const dup = duplicateCV(id);
+                  setBlobUrl(null);
+                  if (dup) {
+                    setToast({ message: `Duplicated as "${dup.title}"`, type: 'info' });
+                  }
+                }}
+                onRename={renameCV}
+                onDelete={(id) => {
+                  deleteCV(id);
+                  setBlobUrl(null);
+                  setToast({ message: 'Resume deleted', type: 'info' });
+                }}
+              />
+            </div>
             <div className="cv-sidebar__actions">
               <div className="cv-editor-mode" role="group" aria-label="Editor mode">
                 <button

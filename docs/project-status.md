@@ -18,7 +18,7 @@
 The registry currently defines **19 tools**:
 
 - Document Generator
-- Social Generator
+- Social Generator (with high-fidelity 1:1 isolated sandbox export and inlined base64 font embedding)
 - CV Builder
 - PDF to Image, Merge, Compress, Organize, Split, Watermark, Markdown, Word, PowerPoint, and Edit PDF
 - Image Converter, Compress, Resize & Crop, and Background & Metadata
@@ -42,6 +42,7 @@ Implemented:
 10. LocalStorage persistence and preview blob cleanup
 11. Template picker moved to the left rail, with a shrink-preview toggle that gives the editor more space
 12. AI CV route supports configurable OpenAI-compatible providers (Groq default; Vikey.ai-ready via Worker vars/secrets)
+13. Multi-CV local management: allows saving multiple CVs locally, instant switching, duplicating tailored copies, inline renaming, safe deletion, and backward-compatible migration from legacy single-CV storage
 
 ## Stage 4 — Accounts, usage, and billing ✅ (code complete)
 

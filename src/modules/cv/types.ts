@@ -1,3 +1,5 @@
+import type { CoverLetterData } from './coverLetterTypes';
+
 export interface PersonalInfo {
   fullName: string;
   title: string;
@@ -141,6 +143,18 @@ export interface CVTemplateConfig {
   description: string;
   pro: boolean;
   accent: string;
+}
+
+export interface StoredCVRecord {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  data: CVData;
+  template: CVTemplate;
+  regionalMode: CVRegionalMode;
+  coverLetter?: CoverLetterData;
+  jdKeywords?: string;
 }
 
 export const CV_TEMPLATES: CVTemplateConfig[] = [

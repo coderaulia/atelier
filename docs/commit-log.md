@@ -1,5 +1,23 @@
 # Commit Log
 
+## 2026-09-12 — High-fidelity social JPG/PNG export & font embedding
+
+- Added `font-embed.ts` utility to extract and convert web fonts (`Instrument Serif`, `JetBrains Mono`, `Manrope`, `Source Serif 4`) into base64 data URIs inside `@font-face` rules for `html-to-image`'s `fontEmbedCSS`.
+- Added `crossorigin="anonymous"` to Google Fonts stylesheet link in `index.html` allowing direct stylesheet rule inspection without browser security errors.
+- Refactored `captureImage` in `src/modules/documents/utils.tsx` to render in an isolated, off-screen 1:1 sandbox container (`1080x1080` or `1080x1920`) attached directly to `document.body`. This eliminates live preview transform mutation, prevents layout compression from viewport/sidebar constraints, and eliminates preview screen flickering during export.
+- Resolved template line-height and layout safeguards:
+  - Adjusted `T_Team1` name line-height to `1.08` and top margin to prevent job title overlap.
+  - Added `flexShrink: 0`, `justifyContent: "space-between"`, and `minHeight: 0` safeguards to `V_HotTake` so vertical statement footers are never pushed outside the 1920px canvas boundary.
+- Verified with `npm run typecheck` and `npm run build`.
+
+## 2026-09-12 — Multi-CV local storage and switcher
+
+- Added `StoredCVRecord` and `useCVDocuments` hook managing local CV persistence in `localStorage`.
+- Automatic backward compatibility and migration from legacy `cv_data_v1`, `cv_template_v1`, `cv_regional_mode_v1`, `cv_cover_letter_v1`, and `cv_jd_keywords_v1`.
+- Built `CVSwitcher` component in the editor header: lets users switch between saved CVs, create new ones, duplicate tailored copies for specific jobs, inline rename, and safely delete.
+- Invalidate rendered PDF preview when switching CVs to ensure the preview always reflects the active CV.
+- Verified with `npm run typecheck` and `npm run build`.
+
 ## 2026-09-05 — CV builder editing layout
 
 - Moved template selection and export actions to the left rail so the editor is the primary workspace.

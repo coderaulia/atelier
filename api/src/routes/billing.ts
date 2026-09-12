@@ -297,6 +297,121 @@ billing.post('/checkout-pack', authMiddleware, async (c) => {
 })
 
 // Midtrans recurring lifecycle webhook.
+async function processPackCheckout(
+  db: D1Database,
+  order: CheckoutOrder,
+  processingToken: string,
+  now: number
+) {
+  const packId = order.product_id as PackId
+  if (!PACK_IDS.has(packId)) throw new Error('Invalid stored pack')
+  const pack = PRICING.packs[packId]
+
+  await db.batch([
+    db.prepare(
+      `INSERT INTO credit_packs (user_id, pack_type, credits_total)
+       SELECT user_id, ?, ? FROM checkout_orders
+       WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
+    ).bind(packId, pack.credits, order.order_id, processingToken),
+    db.prepare(
+      `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
+       SELECT user_id, amount, currency, ?, 'success', order_id FROM checkout_orders
+       WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
+    ).bind(`pack:${packId}`, order.order_id, processingToken),
+    db.prepare("UPDATE checkout_orders SET status = 'processed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
+      .bind(now, order.order_id, processingToken),
+  ])
+}
+
+async function processSubscriptionCheckout(
+  db: D1Database,
+  order: CheckoutOrder,
+  processingToken: string,
+  now: number,
+  brevoApiKey?: string
+) {
+  const tier = order.product_id as ProTier
+  if (order.purchase_type !== 'subscription' || !TIERS.has(tier)) throw new Error('Invalid stored subscription')
+
+  const user = await db.prepare('SELECT email, pro_expires_at FROM users WHERE id = ?')
+    .bind(order.user_id)
+    .first<{ email: string; pro_expires_at: number | null }>()
+  if (!user) throw new Error('Checkout user not found')
+
+  const thirtyDays = 30 * 24 * 60 * 60
+  const base = user.pro_expires_at && user.pro_expires_at > now ? user.pro_expires_at : now
+  const nextRenewal = base + thirtyDays
+
+  await db.batch([
+    db.prepare(
+      `UPDATE users SET plan = ?, pro_tier = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0, version = version + 1
+       WHERE id = ? AND EXISTS (
+         SELECT 1 FROM checkout_orders WHERE order_id = ? AND status = 'processing' AND processing_token = ?
+       )`
+    ).bind('pro', tier, nextRenewal, order.user_id, order.order_id, processingToken),
+    db.prepare(
+      `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
+       SELECT user_id, amount, currency, ?, 'success', order_id FROM checkout_orders
+       WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
+    ).bind(tier, order.order_id, processingToken),
+    db.prepare("UPDATE checkout_orders SET status = 'processed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
+      .bind(now, order.order_id, processingToken),
+  ])
+
+  if (brevoApiKey) {
+    const t = emailTemplates('en')
+    sendEmail({
+      to: user.email,
+      subject: t.subscriptionConfirmedSubject,
+      html: t.subscriptionConfirmedBody(order.amount, order.currency, fmt(nextRenewal)),
+    }, brevoApiKey).catch(() => {})
+  }
+}
+
+async function processFailedPayment(
+  db: D1Database,
+  order: CheckoutOrder,
+  processingToken: string,
+  now: number,
+  env: { APP_URL?: string; BREVO_API_KEY?: string }
+) {
+  const planType = order.purchase_type === 'pack' ? `pack:${order.product_id}` : order.product_id
+  const statements = [
+    db.prepare(
+      `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
+       SELECT user_id, amount, currency, ?, 'failed', order_id FROM checkout_orders
+       WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
+    ).bind(planType, order.order_id, processingToken),
+  ]
+
+  let failureEmail: string | undefined
+  if (order.purchase_type === 'subscription') {
+    const user = await db.prepare('SELECT email FROM users WHERE id = ?')
+      .bind(order.user_id)
+      .first<{ email: string }>()
+    failureEmail = user?.email
+    statements.push(
+      db.prepare(
+        `UPDATE users SET grace_until = ?, version = version + 1 WHERE id = ? AND EXISTS (
+          SELECT 1 FROM checkout_orders WHERE order_id = ? AND status = 'processing' AND processing_token = ?
+        )`
+      ).bind(now + 3 * 24 * 60 * 60, order.user_id, order.order_id, processingToken)
+    )
+  }
+
+  statements.push(
+    db.prepare("UPDATE checkout_orders SET status = 'failed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
+      .bind(now, order.order_id, processingToken)
+  )
+  await db.batch(statements)
+
+  if (failureEmail && env.BREVO_API_KEY) {
+    const t = emailTemplates('en')
+    const retryUrl = `${getAppUrl(env.APP_URL)}/pricing`
+    sendEmail({ to: failureEmail, subject: t.paymentFailedSubject, html: t.paymentFailedBody(retryUrl) }, env.BREVO_API_KEY).catch(() => {})
+  }
+}
+
 // Recurring should use Midtrans Core API token-based recurring charges.
 // Snap is for initial checkout; saved card token then powers recurring Core API charges.
 billing.post('/webhook', async (c) => {
@@ -320,7 +435,6 @@ billing.post('/webhook', async (c) => {
   }
 
   const now = Math.floor(Date.now() / 1000)
-  const thirtyDays = 30 * 24 * 60 * 60
   const isSuccess = event.transaction_status === 'settlement' || event.transaction_status === 'capture'
   const isFailure = event.transaction_status === 'deny' || event.transaction_status === 'expire'
   if (!isSuccess && !isFailure) return c.json({ ok: true })
@@ -352,99 +466,16 @@ billing.post('/webhook', async (c) => {
 
   try {
     if (isSuccess && order.purchase_type === 'pack') {
-      const packId = order.product_id as PackId
-      if (!PACK_IDS.has(packId)) throw new Error('Invalid stored pack')
-      const pack = PRICING.packs[packId]
-
-      await c.env.DB.batch([
-        c.env.DB.prepare(
-          `INSERT INTO credit_packs (user_id, pack_type, credits_total)
-           SELECT user_id, ?, ? FROM checkout_orders
-           WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
-        ).bind(packId, pack.credits, order.order_id, processingToken),
-        c.env.DB.prepare(
-          `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
-           SELECT user_id, amount, currency, ?, 'success', order_id FROM checkout_orders
-           WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
-        ).bind(`pack:${packId}`, order.order_id, processingToken),
-        c.env.DB.prepare("UPDATE checkout_orders SET status = 'processed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
-          .bind(now, order.order_id, processingToken),
-      ])
+      await processPackCheckout(c.env.DB, order, processingToken, now)
       return c.json({ ok: true })
     }
 
     if (isSuccess) {
-      const tier = order.product_id as ProTier
-      if (order.purchase_type !== 'subscription' || !TIERS.has(tier)) throw new Error('Invalid stored subscription')
-
-      const user = await c.env.DB.prepare('SELECT email, pro_expires_at FROM users WHERE id = ?')
-        .bind(order.user_id)
-        .first<{ email: string; pro_expires_at: number | null }>()
-      if (!user) throw new Error('Checkout user not found')
-
-      const base = user.pro_expires_at && user.pro_expires_at > now ? user.pro_expires_at : now
-      const nextRenewal = base + thirtyDays
-
-      await c.env.DB.batch([
-        c.env.DB.prepare(
-          `UPDATE users SET plan = ?, pro_tier = ?, pro_expires_at = ?, grace_until = NULL, cancel_at_period_end = 0, version = version + 1
-           WHERE id = ? AND EXISTS (
-             SELECT 1 FROM checkout_orders WHERE order_id = ? AND status = 'processing' AND processing_token = ?
-           )`
-        ).bind('pro', tier, nextRenewal, order.user_id, order.order_id, processingToken),
-        c.env.DB.prepare(
-          `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
-           SELECT user_id, amount, currency, ?, 'success', order_id FROM checkout_orders
-           WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
-        ).bind(tier, order.order_id, processingToken),
-        c.env.DB.prepare("UPDATE checkout_orders SET status = 'processed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
-          .bind(now, order.order_id, processingToken),
-      ])
-
-      const t = emailTemplates('en')
-      sendEmail({
-        to: user.email,
-        subject: t.subscriptionConfirmedSubject,
-        html: t.subscriptionConfirmedBody(order.amount, order.currency, fmt(nextRenewal)),
-      }, c.env.BREVO_API_KEY).catch(() => {})
+      await processSubscriptionCheckout(c.env.DB, order, processingToken, now, c.env.BREVO_API_KEY)
       return c.json({ ok: true })
     }
 
-    const planType = order.purchase_type === 'pack' ? `pack:${order.product_id}` : order.product_id
-    const statements = [
-      c.env.DB.prepare(
-        `INSERT INTO transactions (user_id, amount, currency, plan_type, status, midtrans_order_id)
-         SELECT user_id, amount, currency, ?, 'failed', order_id FROM checkout_orders
-         WHERE order_id = ? AND status = 'processing' AND processing_token = ?`
-      ).bind(planType, order.order_id, processingToken),
-    ]
-
-    let failureEmail: string | undefined
-    if (order.purchase_type === 'subscription') {
-      const user = await c.env.DB.prepare('SELECT email FROM users WHERE id = ?')
-        .bind(order.user_id)
-        .first<{ email: string }>()
-      failureEmail = user?.email
-      statements.push(
-        c.env.DB.prepare(
-          `UPDATE users SET grace_until = ?, version = version + 1 WHERE id = ? AND EXISTS (
-            SELECT 1 FROM checkout_orders WHERE order_id = ? AND status = 'processing' AND processing_token = ?
-          )`
-        ).bind(now + 3 * 24 * 60 * 60, order.user_id, order.order_id, processingToken)
-      )
-    }
-
-    statements.push(
-      c.env.DB.prepare("UPDATE checkout_orders SET status = 'failed', processing_token = NULL, updated_at = ? WHERE order_id = ? AND status = 'processing' AND processing_token = ?")
-        .bind(now, order.order_id, processingToken)
-    )
-    await c.env.DB.batch(statements)
-
-    if (failureEmail) {
-      const t = emailTemplates('en')
-      const retryUrl = `${getAppUrl(c.env.APP_URL)}/pricing`
-      sendEmail({ to: failureEmail, subject: t.paymentFailedSubject, html: t.paymentFailedBody(retryUrl) }, c.env.BREVO_API_KEY).catch(() => {})
-    }
+    await processFailedPayment(c.env.DB, order, processingToken, now, c.env)
     return c.json({ ok: true })
   } catch {
     await c.env.DB.prepare(

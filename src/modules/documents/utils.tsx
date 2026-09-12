@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { getFontEmbedCSS } from './font-embed';
 
 /* ---------- Icons (line, 18px) ---------- */
 const I = ({ d, vb = "0 0 24 24", size = 18, stroke = "currentColor", fill = "none", sw = 1.5 }: any) => (
@@ -26,18 +27,7 @@ export const Icon: Record<string, React.JSX.Element> = {
 };
 
 /* ---------- localStorage hook ---------- */
-export function useLocalStorage<T>(key: string, initial: T): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [v, setV] = useState<T>(() => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : initial;
-    } catch (e) { return initial; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) {}
-  }, [key, v]);
-  return [v, setV];
-}
+export { useLocalStorage } from '../../hooks/useLocalStorage';
 
 /* ---------- Markdown ---------- */
 marked.use({ breaks: true, gfm: true });
@@ -138,47 +128,130 @@ export async function captureImage(targetSelector: string, format = "png"): Prom
   const node = document.querySelector(targetSelector) as HTMLElement | null;
   if (!node) return null;
 
+  // 1. Ensure fonts are loaded
   if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
     try { await document.fonts.ready; } catch (e) {}
   }
 
-  const wrap = (node.closest('.paper-wrap') || node.parentElement) as HTMLElement | null;
-  const isPaperWrap = wrap?.classList.contains('paper-wrap');
-  const oldWrapTransform = isPaperWrap && wrap ? wrap.style.transform : '';
-  const oldWrapOrigin = isPaperWrap && wrap ? wrap.style.transformOrigin : '';
-  if (isPaperWrap && wrap) {
-    wrap.style.transform = 'none';
-    wrap.style.transformOrigin = 'initial';
+  // 2. Obtain inlined base64 web font CSS for SVG foreignObject
+  let fontEmbedCSS: string | undefined;
+  try {
+    const css = await getFontEmbedCSS();
+    if (css && css.trim().length > 0) {
+      fontEmbedCSS = css;
+    }
+  } catch (err) {
+    console.warn('[captureImage] Failed to obtain fontEmbedCSS:', err);
   }
 
-  const oldTransform = node.style.transform;
-  const oldBoxShadow = node.style.boxShadow;
-  node.style.transform = "none";
-  node.style.boxShadow = "none";
+  const htmlToImage = await loadHtmlToImage();
+
+  // 3. Determine frame and exact target dimensions
+  const frame = (node.classList.contains("social-frame") ? node : node.querySelector(".social-frame")) as HTMLElement | null;
+  const isSocial = Boolean(frame);
+  const targetEl = frame || node;
+
+  const isVertical = frame?.classList.contains("social-frame--vertical") || false;
+  const targetWidth = isSocial
+    ? (isVertical ? 1080 : 1080)
+    : (targetEl.offsetWidth || 816);
+  const targetHeight = isSocial
+    ? (isVertical ? 1920 : 1080)
+    : (targetEl.offsetHeight || 1056);
+
+  // 4. Create an isolated off-screen sandbox container attached directly to document.body.
+  // This guarantees:
+  // - The export is completely unconstrained by live sidebar or viewport widths
+  // - No layout compression or premature text wrapping occurs
+  // - Zero visual flicker or zoom jumping in the user's active preview
+  const sandbox = document.createElement("div");
+  sandbox.className = "atelier-export-sandbox";
+  sandbox.style.cssText = `
+    position: fixed !important;
+    left: -15000px !important;
+    top: 0 !important;
+    width: ${targetWidth}px !important;
+    height: ${targetHeight}px !important;
+    overflow: hidden !important;
+    z-index: -99999 !important;
+    pointer-events: none !important;
+    background: transparent !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  `;
+
+  // Deep clone the element to preserve full hierarchy and styles
+  const clone = targetEl.cloneNode(true) as HTMLElement;
+  clone.id = `export-clone-${Date.now()}`;
+  clone.style.transform = "none";
+  clone.style.transformOrigin = "initial";
+  clone.style.boxShadow = "none";
+  clone.style.margin = "0";
+  clone.style.width = `${targetWidth}px`;
+  clone.style.height = `${targetHeight}px`;
+
+  // Synchronize form inputs and textareas if any
+  const origInputs = targetEl.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea");
+  const cloneInputs = clone.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea");
+  for (let i = 0; i < origInputs.length; i++) {
+    cloneInputs[i].value = origInputs[i].value;
+  }
+
+  // Synchronize canvas drawings if any
+  const origCanvases = targetEl.querySelectorAll<HTMLCanvasElement>("canvas");
+  const cloneCanvases = clone.querySelectorAll<HTMLCanvasElement>("canvas");
+  for (let i = 0; i < origCanvases.length; i++) {
+    const destCtx = cloneCanvases[i].getContext("2d");
+    if (destCtx) {
+      cloneCanvases[i].width = origCanvases[i].width;
+      cloneCanvases[i].height = origCanvases[i].height;
+      destCtx.drawImage(origCanvases[i], 0, 0);
+    }
+  }
+
+  sandbox.appendChild(clone);
+  document.body.appendChild(sandbox);
+
   try {
-    const htmlToImage = await loadHtmlToImage();
-    const frame = (node.classList.contains("social-frame") ? node : node.querySelector(".social-frame")) as HTMLElement | null;
-    const width = frame ? (frame.offsetWidth || (frame.classList.contains("social-frame--vertical") ? 1080 : 1080)) : (node.offsetWidth || 1080);
-    const height = frame ? (frame.offsetHeight || (frame.classList.contains("social-frame--vertical") ? 1920 : 1080)) : (node.offsetHeight || 1080);
+    // Wait for all images inside clone to be loaded
+    const images = Array.from(clone.querySelectorAll("img"));
+    if (images.length > 0) {
+      await Promise.all(
+        images.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(res => {
+            img.onload = () => res(null);
+            img.onerror = () => res(null);
+          });
+        })
+      );
+    }
+
+    // Force browser layout flush so computed styles in sandbox are 100% stable
+    void sandbox.offsetHeight;
+
+    // Detect actual background color of the element for clean JPEG export
+    const computedBg = window.getComputedStyle(targetEl).backgroundColor;
+    const resolvedBg = (computedBg && computedBg !== "rgba(0, 0, 0, 0)" && computedBg !== "transparent")
+      ? computedBg
+      : "#ffffff";
 
     const opts: any = {
       pixelRatio: 2,
       cacheBust: true,
-      width,
-      height,
+      width: targetWidth,
+      height: targetHeight,
+      fontEmbedCSS,
     };
-    const targetEl = frame || node;
+
     if (format === "jpg" || format === "jpeg") {
-      return await htmlToImage.toJpeg(targetEl, { ...opts, quality: 0.95, backgroundColor: "#ffffff" });
+      return await htmlToImage.toJpeg(clone, { ...opts, quality: 0.95, backgroundColor: resolvedBg });
     }
-    return await htmlToImage.toPng(targetEl, opts);
+    return await htmlToImage.toPng(clone, opts);
   } finally {
-    node.style.transform = oldTransform;
-    node.style.boxShadow = oldBoxShadow;
-    if (isPaperWrap && wrap) {
-      wrap.style.transform = oldWrapTransform;
-      wrap.style.transformOrigin = oldWrapOrigin;
-    }
+    sandbox.remove();
   }
 }
 

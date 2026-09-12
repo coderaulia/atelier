@@ -1,5 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { pdf } from '@react-pdf/renderer';
+import { useState, useCallback, useEffect } from 'react';
 import { CVData, CVTemplate, CV_TEMPLATES, generateCVFromStartupConfig, type CVStartupConfig } from './types';
 import { CVEditor } from './CVEditor';
 import CVStepEditor from './CVStepEditor';
@@ -8,22 +7,8 @@ import CVRegionalToggle from './CVRegionalToggle';
 import CVContentLibrary from './CVContentLibrary';
 import CoverLetterEditor from './CoverLetterEditor';
 import { DEFAULT_COVER_LETTER } from './coverLetterTypes';
-import { CVSwitcher } from './CVSwitcher';
 import { useCVDocuments } from './useCVDocuments';
 import CVWizard from './CVWizard';
-import {
-  ClassicTemplate,
-  ModernTemplate,
-  MinimalTemplate,
-  AtsOptimizedTemplate,
-  ExecutiveTemplate,
-  CreativeTemplate,
-} from './templates';
-import {
-  SlateAtsTemplate,
-  CrimsonAtsTemplate,
-  CarbonAtsTemplate,
-} from './ats-templates';
 import { exportCVToDocx } from './cvDocxExport';
 import { useLocalStorage } from '../documents/utils';
 import { useToolLimit } from '../../hooks/useToolLimit';
@@ -31,81 +16,11 @@ import { usePlan } from '../../hooks/usePlan';
 import UpgradeModal from '../../components/UpgradeModal';
 import CVImportModal from './CVImportModal';
 import Toast from '../../components/Toast';
-import { validateCVData } from '../../lib/fileValidation';
-import { getFriendlyErrorMessage } from '../../lib/errorHandler';
+import { CVPdfViewer } from './components/CVPdfViewer';
+import { CVLeftRail } from './components/CVLeftRail';
+import { CVTopBar } from './components/CVTopBar';
+import { useCVPdfPreview } from './hooks/useCVPdfPreview';
 
-// ---------- Template renderer map ----------
-function renderTemplate(templateId: CVTemplate, data: CVData, accent: string) {
-  switch (templateId) {
-    case 'classic':    return <ClassicTemplate   data={data} accent={accent} />;
-    case 'modern':     return <ModernTemplate    data={data} accent={accent} />;
-    case 'minimal':    return <MinimalTemplate   data={data} accent={accent} />;
-    case 'ats':        return <AtsOptimizedTemplate data={data} accent={accent} />;
-    case 'executive':  return <ExecutiveTemplate data={data} accent={accent} />;
-    case 'creative':   return <CreativeTemplate  data={data} accent={accent} />;
-    case 'slate':      return <SlateAtsTemplate   data={data} accent={accent} />;
-    case 'crimson':    return <CrimsonAtsTemplate data={data} accent={accent} />;
-    case 'carbon':     return <CarbonAtsTemplate  data={data} accent={accent} />;
-    default:           return <ClassicTemplate   data={data} accent={accent} />;
-  }
-}
-
-// ---------- PDF preview via blob URL -> iframe ----------
-function PDFPreview({ blobUrl }: { blobUrl: string | null }) {
-  if (!blobUrl) {
-    return (
-      <div className="cv-preview__placeholder">
-        <div className="cv-preview__icon">📄</div>
-        <p>Click <strong>Refresh Preview</strong> to render PDF</p>
-      </div>
-    );
-  }
-  return (
-    <iframe
-      src={blobUrl}
-      className="cv-preview__iframe"
-      title="CV Preview"
-    />
-  );
-}
-
-// ---------- Template Picker ----------
-function TemplatePicker({
-  current,
-  onSelect,
-  isPro,
-}: {
-  current: CVTemplate;
-  onSelect: (id: CVTemplate) => void;
-  isPro: boolean;
-}) {
-  return (
-    <div className="cv-template-grid">
-      {CV_TEMPLATES.map((tpl) => {
-        const locked = tpl.pro && !isPro;
-        return (
-          <button
-            key={tpl.id}
-            className={`cv-template-card ${current === tpl.id ? 'cv-template-card--active' : ''} ${locked ? 'cv-template-card--locked' : ''}`}
-            onClick={() => onSelect(tpl.id)}
-            title={locked ? 'Upgrade to Pro to unlock' : tpl.description}
-            style={{ borderColor: current === tpl.id ? tpl.accent : undefined }}
-          >
-            <span className="cv-template-card__swatch" style={{ backgroundColor: tpl.accent }} />
-            <span className="cv-template-card__name">{tpl.name}</span>
-            {locked && (
-              <span className="cv-template-card__lock">
-                🔒 Pro
-              </span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ---------- Main CVTool Component ----------
 export default function CVTool() {
   const {
     resumes,
@@ -130,11 +45,7 @@ export default function CVTool() {
   const jdKeywordInput = activeCV.jdKeywords || '';
 
   const [hasCompletedWizard, setHasCompletedWizard] = useLocalStorage<boolean>('cv_wizard_done_v1', false);
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
-  const [isRendering, setIsRendering] = useState(false);
-  const [renderError, setRenderError] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const [showImportMenu, setShowImportMenu] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importSource, setImportSource] = useState<'cv' | 'linkedin'>('cv');
   const [showLibrary, setShowLibrary] = useState(false);
@@ -142,12 +53,6 @@ export default function CVTool() {
   const [useStepEditor, setUseStepEditor] = useLocalStorage<boolean>('cv_step_editor_v1', true);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'info' } | null>(null);
   const [isPreviewShrunk, setIsPreviewShrunk] = useState(false);
-  const prevBlobRef = useRef<string | null>(null);
-
-  // Invalidate rendered preview whenever active CV changes
-  useEffect(() => {
-    setBlobUrl(null);
-  }, [activeId]);
 
   const { canUse, used, limit, increment } = useToolLimit('cv-builder');
   const { isPro } = usePlan();
@@ -159,7 +64,30 @@ export default function CVTool() {
     .map((k) => k.trim())
     .filter(Boolean);
 
-  // ---------- Handle template selection (gate Pro) ----------
+  const {
+    blobUrl,
+    setBlobUrl,
+    isRendering,
+    renderError,
+    setRenderError,
+    refreshPreview,
+    handleExport,
+  } = useCVPdfPreview({
+    template,
+    cvData,
+    accent,
+    canUse,
+    increment,
+    setShowUpgrade,
+    setToast,
+  });
+
+  // Invalidate rendered preview whenever active CV changes
+  useEffect(() => {
+    setBlobUrl(null);
+  }, [activeId, setBlobUrl]);
+
+  // Handle template selection (gate Pro)
   const handleSelectTemplate = useCallback(
     (id: CVTemplate) => {
       const tpl = CV_TEMPLATES.find((t) => t.id === id)!;
@@ -168,95 +96,18 @@ export default function CVTool() {
         return;
       }
       setTemplate(id);
-      // Invalidate preview when template changes
       setBlobUrl(null);
     },
-    [isPro, setTemplate]
+    [isPro, setTemplate, setBlobUrl]
   );
 
-  // ---------- Render PDF blob ----------
-  const refreshPreview = useCallback(async () => {
-    const validation = validateCVData(cvData);
-    if (!validation.valid) {
-      setToast({ message: validation.error!, type: 'error' });
-      return;
-    }
-
-    setIsRendering(true);
-    setRenderError(null);
-    try {
-      const doc = renderTemplate(template, cvData, accent);
-      const blob = await pdf(doc).toBlob();
-      // Revoke previous URL to avoid memory leak
-      if (prevBlobRef.current) URL.revokeObjectURL(prevBlobRef.current);
-      const url = URL.createObjectURL(blob);
-      prevBlobRef.current = url;
-      setBlobUrl(url);
-    } catch (err: any) {
-      const message = getFriendlyErrorMessage(err);
-      setRenderError(message);
-      setToast({ message, type: 'error' });
-    } finally {
-      setIsRendering(false);
-    }
-  }, [template, cvData, accent]);
-
-  // ---------- Export PDF (gated by useToolLimit) ----------
-  const handleExport = useCallback(async () => {
-    if (!canUse) {
-      setShowUpgrade(true);
-      return;
-    }
-
-    const validation = validateCVData(cvData);
-    if (!validation.valid) {
-      setToast({ message: validation.error!, type: 'error' });
-      return;
-    }
-
-    setIsRendering(true);
-    setRenderError(null);
-    try {
-      const ok = await increment();
-      if (!ok) {
-        setShowUpgrade(true);
-        setIsRendering(false);
-        return;
-      }
-
-      const doc = renderTemplate(template, cvData, accent);
-      const blob = await pdf(doc).toBlob();
-      const name =
-        (cvData.personal.fullName || 'resume')
-          .toLowerCase()
-          .replace(/\s+/g, '-')
-          .replace(/[^a-z0-9-]/g, '') + '-cv.pdf';
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = name;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-    } catch (err: any) {
-      const message = getFriendlyErrorMessage(err);
-      setRenderError(message);
-      setToast({ message, type: 'error' });
-    } finally {
-      setIsRendering(false);
-    }
-  }, [canUse, increment, template, cvData, accent]);
-
-  // ---------- Import handlers ----------
   const handleImportLinkedIn = () => {
-    setShowImportMenu(false);
-    // LinkedIn does not allow unauthorised browser scraping. Their exported PDF
-    // is processed by the same local parser and safely fills the CV form.
     setImportSource('linkedin');
     setToast({ message: 'Export your LinkedIn profile as a PDF, then upload it here. Your file stays on this device.', type: 'info' });
     setShowImportModal(true);
   };
 
   const handleImportCV = () => {
-    setShowImportMenu(false);
     setImportSource('cv');
     setShowImportModal(true);
   };
@@ -292,8 +143,8 @@ export default function CVTool() {
       certifications: parsedData.certifications?.length ? parsedData.certifications : prev.certifications,
     }));
     setHasCompletedWizard(true);
-    setBlobUrl(null); // Invalidate preview
-  }, [setCvData, setHasCompletedWizard]);
+    setBlobUrl(null);
+  }, [setCvData, setHasCompletedWizard, setBlobUrl]);
 
   const handleWizardComplete = useCallback((config: CVStartupConfig) => {
     const tailoredCv = generateCVFromStartupConfig(config);
@@ -301,7 +152,7 @@ export default function CVTool() {
     setTemplate(config.experienceLevel === 'executive' && isPro ? 'executive' : 'classic');
     setHasCompletedWizard(true);
     setBlobUrl(null);
-  }, [isPro, setCvData, setHasCompletedWizard, setTemplate]);
+  }, [isPro, setCvData, setHasCompletedWizard, setTemplate, setBlobUrl]);
 
   if (!hasCompletedWizard) {
     return (
@@ -315,148 +166,57 @@ export default function CVTool() {
   return (
     <div className={`cv-tool ${isPreviewShrunk ? 'cv-tool--preview-shrunk' : ''}`}>
       {/* ---- Left rail: template picker + actions ---- */}
-      <div className="cv-center">
-        <div className="cv-center__top">
-          <div className="cv-center__heading">
-            <p className="cv-center__sub">Choose template</p>
-            <span className="cv-center__hint">Pick a style for your CV</span>
-          </div>
-          <TemplatePicker
-            current={template}
-            onSelect={handleSelectTemplate}
-            isPro={isPro}
-          />
-          <div className="cv-center__btns">
-            <button
-              className="cv-btn cv-btn--ghost"
-              onClick={refreshPreview}
-              disabled={isRendering}
-            >
-              {isRendering ? 'Rendering…' : '↺ Refresh Preview'}
-            </button>
-            <button className="cv-btn cv-btn--ghost" onClick={handleExportDocx} title="Download Word document">
-              ↓ Export DOCX
-            </button>
-            <button
-              className={`cv-btn cv-btn--primary ${!canUse ? 'cv-btn--locked' : ''}`}
-              onClick={handleExport}
-              disabled={isRendering}
-              title={!canUse ? `Daily limit reached (${used}/${limit})` : 'Download PDF'}
-            >
-              {isRendering ? 'Exporting…' : !canUse ? '🔒 Limit Reached' : '↓ Export PDF'}
-            </button>
-          </div>
-          {renderError && <div className="cv-error">{renderError}</div>}
-        </div>
-      </div>
+      <CVLeftRail
+        template={template}
+        onSelectTemplate={handleSelectTemplate}
+        isPro={isPro}
+        onRefreshPreview={refreshPreview}
+        onExportDocx={handleExportDocx}
+        onExportPdf={handleExport}
+        isRendering={isRendering}
+        canUse={canUse}
+        used={used}
+        limit={limit}
+        renderError={renderError}
+      />
 
       {/* ---- Main editor ---- */}
       <div className="cv-sidebar">
-        <div className="cv-sidebar__header">
-          <div className="cv-sidebar__title-row">
-            <div className="cv-sidebar__heading-group">
-              <span className="cv-sidebar__title">CV Builder</span>
-              <CVSwitcher
-                resumes={resumes}
-                activeCV={activeCV}
-                onSwitch={(id) => {
-                  switchCV(id);
-                  setBlobUrl(null);
-                }}
-                onCreateNew={(title) => {
-                  createCV(title);
-                  setBlobUrl(null);
-                  setToast({ message: 'Created new resume. You can rename it anytime.', type: 'info' });
-                }}
-                onDuplicate={(id) => {
-                  const dup = duplicateCV(id);
-                  setBlobUrl(null);
-                  if (dup) {
-                    setToast({ message: `Duplicated as "${dup.title}"`, type: 'info' });
-                  }
-                }}
-                onRename={renameCV}
-                onDelete={(id) => {
-                  deleteCV(id);
-                  setBlobUrl(null);
-                  setToast({ message: 'Resume deleted', type: 'info' });
-                }}
-              />
-            </div>
-            <div className="cv-sidebar__actions">
-              <div className="cv-editor-mode" role="group" aria-label="Editor mode">
-                <button
-                  className="cv-btn cv-btn--ghost cv-btn--sm"
-                  onClick={() => setHasCompletedWizard(false)}
-                  title="Restart guided setup"
-                >
-                  ✦ Guide
-                </button>
-                <button
-                  className={`cv-btn cv-btn--ghost cv-btn--sm ${useStepEditor ? 'cv-btn--selected' : ''}`}
-                  onClick={() => setUseStepEditor(true)}
-                  title="Show guided steps"
-                  aria-pressed={useStepEditor}
-                >
-                  Steps
-                </button>
-                <button
-                  className={`cv-btn cv-btn--ghost cv-btn--sm ${!useStepEditor ? 'cv-btn--selected' : ''}`}
-                  onClick={() => setUseStepEditor(false)}
-                  title="Show full form"
-                  aria-pressed={!useStepEditor}
-                >
-                  Full form
-                </button>
-              </div>
-              {/* Import menu */}
-              <div className="cv-import-wrap">
-                <button
-                  className="cv-btn cv-btn--ghost cv-btn--sm"
-                  onClick={() => setShowImportMenu(!showImportMenu)}
-                >
-                  Import ↓
-                </button>
-                {showImportMenu && (
-                  <div className="cv-import-menu">
-                    <button className="cv-import-menu__item" onClick={handleImportLinkedIn}>
-                      <span>🔗</span> From LinkedIn
-                    </button>
-                    <button className="cv-import-menu__item" onClick={handleImportCV}>
-                      <span>📄</span> From existing CV
-                    </button>
-                  </div>
-                )}
-              </div>
-              <button
-                className="cv-btn cv-btn--ghost cv-btn--sm"
-                onClick={() => setShowLibrary(true)}
-                title="Browse content library"
-              >
-                📚 Library
-              </button>
-              <button
-                className="cv-btn cv-btn--ghost cv-btn--sm"
-                onClick={() => setShowCoverLetter(true)}
-                title="Generate a cover letter"
-              >
-                ✉️ Cover
-              </button>
-            </div>
-          </div>
-          {/* Usage indicator */}
-          <div className="cv-usage-bar">
-            <span className="cv-usage-bar__label">
-              PDF exports: {used}/{limit} today
-            </span>
-            <div className="cv-usage-bar__track">
-              <div
-                className="cv-usage-bar__fill"
-                style={{ width: `${Math.min((used / (limit ?? 1)) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        </div>
+        <CVTopBar
+          resumes={resumes}
+          activeCV={activeCV}
+          onSwitch={(id) => {
+            switchCV(id);
+            setBlobUrl(null);
+          }}
+          onCreateNew={(title) => {
+            createCV(title);
+            setBlobUrl(null);
+            setToast({ message: 'Created new resume. You can rename it anytime.', type: 'info' });
+          }}
+          onDuplicate={(id) => {
+            const dup = duplicateCV(id);
+            setBlobUrl(null);
+            if (dup) {
+              setToast({ message: `Duplicated as "${dup.title}"`, type: 'info' });
+            }
+          }}
+          onRename={renameCV}
+          onDelete={(id) => {
+            deleteCV(id);
+            setBlobUrl(null);
+            setToast({ message: 'Resume deleted', type: 'info' });
+          }}
+          onRestartGuide={() => setHasCompletedWizard(false)}
+          useStepEditor={useStepEditor}
+          setUseStepEditor={setUseStepEditor}
+          onImportLinkedIn={handleImportLinkedIn}
+          onImportCV={handleImportCV}
+          onOpenLibrary={() => setShowLibrary(true)}
+          onOpenCoverLetter={() => setShowCoverLetter(true)}
+          used={used}
+          limit={limit}
+        />
 
         <div className="cv-sidebar__scroll">
           {useStepEditor ? (
@@ -497,7 +257,7 @@ export default function CVTool() {
             {isPreviewShrunk ? '↗ Expand preview' : '↙ Shrink preview'}
           </button>
         </div>
-        <PDFPreview blobUrl={blobUrl} />
+        <CVPdfViewer blobUrl={blobUrl} />
       </div>
 
       {/* ---- Upgrade Modal ---- */}

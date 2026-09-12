@@ -149,6 +149,38 @@ auth.post('/register', async (c) => {
   }
 })
 
+function schedulePasswordRehash(
+  db: D1Database,
+  executionCtx: { waitUntil: (promise: Promise<any>) => void } | undefined,
+  userId: string,
+  currentHash: string,
+  plainPassword: string
+) {
+  const upgrade = (async () => {
+    const upgradedHash = await hashPassword(plainPassword)
+    await db.prepare(
+      'UPDATE users SET password_hash = ?, version = version + 1 WHERE id = ? AND password_hash = ?'
+    ).bind(upgradedHash, userId, currentHash).run()
+  })().catch((err) => {
+    console.error('Password rehash failed during login', err)
+  })
+  try {
+    executionCtx?.waitUntil(upgrade)
+  } catch {
+    // No execution context (e.g. tests) — the upgrade already runs detached.
+  }
+}
+
+async function createUserSession(db: D1Database, userId: string, jwtSecret: string): Promise<string> {
+  const signed = await signToken(userId, jwtSecret)
+  const tokenHash = await sha256Hex(signed.token)
+  await db
+    .prepare('INSERT OR REPLACE INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
+    .bind(tokenHash, userId, signed.expiresAt)
+    .run()
+  return signed.token
+}
+
 // ─── POST /login ──────────────────────────────────────────────────
 auth.post('/login', async (c) => {
   const body = await c.req.json().catch(() => null)
@@ -206,35 +238,12 @@ auth.post('/login', async (c) => {
   }
 
   if (needsPasswordRehash(user.password_hash)) {
-    const currentHash = user.password_hash
-    const userId = user.id
-    // Rehashing is a background upgrade, never a reason to fail a valid login.
-    const upgrade = (async () => {
-      const upgradedHash = await hashPassword(password)
-      // Do not restore an old password if it was changed while this login was
-      // deriving the stronger hash.
-      await c.env.DB.prepare(
-        'UPDATE users SET password_hash = ?, version = version + 1 WHERE id = ? AND password_hash = ?'
-      ).bind(upgradedHash, userId, currentHash).run()
-    })().catch((err) => {
-      console.error('Password rehash failed during login', err)
-    })
-    try {
-      c.executionCtx.waitUntil(upgrade)
-    } catch {
-      // No execution context (e.g. tests) — the upgrade already runs detached.
-    }
+    schedulePasswordRehash(c.env.DB, c.executionCtx, user.id, user.password_hash, password)
   }
 
   let token: string
   try {
-    const signed = await signToken(user.id, c.env.JWT_SECRET)
-    token = signed.token
-    const tokenHash = await sha256Hex(token)
-    await c.env.DB
-      .prepare('INSERT OR REPLACE INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)')
-      .bind(tokenHash, user.id, signed.expiresAt)
-      .run()
+    token = await createUserSession(c.env.DB, user.id, c.env.JWT_SECRET)
   } catch (err) {
     console.error('Session creation failed during login', err)
     return c.json({ error: 'Login failed' }, 500)

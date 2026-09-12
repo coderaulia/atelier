@@ -21,26 +21,26 @@ const ImgOrSlot = ({ src, label = "Drop image · 4:5 recommended", style, object
 /* ============================================== */
 const V_HotTake = ({ data, brand }) => {
   const fullText = `${data.body || "You need to "} ${data.italic || "finish one"} ${data.tail || " of the seven tabs already open."}`;
-  const bodySize = getDynamicFontSize(fullText, 160, 40, 76);
+  const bodySize = getDynamicFontSize(fullText, 148, 40, 68, 888);
   return (
-    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
         <VLabel text={data.kicker || "Hot Take"} />
         <Paperclip />
       </div>
-      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", alignItems: "center" }}>
         <div>
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 48, color: "var(--vc-red)", marginBottom: 24 }}>
             {data.lead || "You don't need another tool."}
           </div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: bodySize, lineHeight: 0.96, color: "var(--vc-ink)", letterSpacing: "-0.02em" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: bodySize, lineHeight: 1.02, color: "var(--vc-ink)", letterSpacing: "-0.02em" }}>
             {data.body || "You need to "}
             <em style={{ color: "var(--vc-red)" }}>{data.italic || "finish one"}</em>
             {data.tail || " of the seven tabs already open."}
           </div>
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexShrink: 0 }}>
         <Asterisk size={88} />
         <div style={{ textAlign: "right" }}>
           <Wordmark brand={brand} />
@@ -59,11 +59,11 @@ const V_HotTake = ({ data, brand }) => {
 const V_TopList = ({ data, brand }) => {
   const items = (data.items || "Listen before you build.\nWrite the email first.\nDocument as you go.\nPrice the outcome.\nShip in daylight.").split("\n").filter(Boolean).slice(0, 6);
   return (
-    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "2px solid var(--vc-ink)", paddingBottom: 28 }}>
+    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "2px solid var(--vc-ink)", paddingBottom: 28, flexShrink: 0 }}>
         <div>
           <VLabel text={data.kicker || "Field Notes"} />
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 96, lineHeight: 0.98, marginTop: 18, letterSpacing: "-0.025em" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 96, lineHeight: 1.02, marginTop: 18, letterSpacing: "-0.025em" }}>
             {data.title || "Top "}{items.length}{" "}
             <Underscribble>{data.titleAccent || "rules"}</Underscribble>
           </div>
@@ -72,10 +72,10 @@ const V_TopList = ({ data, brand }) => {
           </div>
         </div>
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 0 }}>
         {items.map((it, i) => (
           <div key={i} style={{ display: "flex", gap: 32, padding: "26px 0", borderBottom: i < items.length - 1 ? "1px solid rgba(14,14,14,0.18)" : "0", alignItems: "baseline" }}>
-            <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 72, color: "var(--vc-red)", width: 78, lineHeight: 1 }}>
+            <span style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 72, color: "var(--vc-red)", width: 78, lineHeight: 1, flexShrink: 0 }}>
               {String(i + 1).padStart(2, "0")}
             </span>
             <span style={{ fontFamily: "var(--font-helvetica)", fontWeight: 500, fontSize: 44, lineHeight: 1.18, letterSpacing: "-0.005em" }}>
@@ -84,7 +84,9 @@ const V_TopList = ({ data, brand }) => {
           </div>
         ))}
       </div>
-      <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
+      <div style={{ flexShrink: 0 }}>
+        <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
+      </div>
     </div>
   );
 };
@@ -98,23 +100,23 @@ const V_Question = ({ data, brand }) => {
   const qSize = getDynamicFontSize(qText, 156, 22, 76);
   const accSize = getDynamicFontSize(accText, 168, 18, 80);
   return (
-    <div {...VFRAME} style={{ background: "var(--vc-blue)", color: "#fff", padding: 96, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div {...VFRAME} style={{ background: "var(--vc-blue)", color: "#fff", padding: 96, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
         <VLabel text={data.kicker || "Question of the Week"} color="#fff" style={{ opacity: 0.85 }} />
         <CrescentMark color="#fff" size={72} />
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 400, fontSize: qSize, lineHeight: 1, letterSpacing: "-0.025em" }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 400, fontSize: qSize, lineHeight: 1.05, letterSpacing: "-0.025em" }}>
           {qText}
         </div>
-        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: accSize, lineHeight: 0.98, letterSpacing: "-0.025em", marginTop: 4 }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: accSize, lineHeight: 1.02, letterSpacing: "-0.025em", marginTop: 4 }}>
           {accText}
         </div>
         <div style={{ marginTop: 56, fontFamily: "var(--font-helvetica)", fontSize: 36, lineHeight: 1.4, maxWidth: 820, opacity: 0.85 }}>
           {renderSocialMd(data.answer || "The difference is not how good you are. It's whether someone is paying you to be that good before next Tuesday.")}
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexShrink: 0 }}>
         <Asterisk size={84} color="#fff" />
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.85 }}>
           {data.ctaText || "Reply your answer →"}
@@ -131,16 +133,16 @@ const V_StatVertical = ({ data, brand }) => {
   const stat = String(data.stat || "73%");
   const statSize = getDynamicFontSize(stat, 520, 3, 240);
   return (
-    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
         <VLabel text={data.kicker || "By the Numbers"} />
         <Chevron color="var(--vc-ink)" />
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
         <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 64, color: "var(--vc-mute)", marginBottom: 14 }}>
           {data.italicLead || "An uncomfortable truth"}
         </div>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: statSize, lineHeight: 0.86, color: "var(--vc-red)", letterSpacing: "-0.055em", whiteSpace: "nowrap", maxWidth: "100%" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: statSize, lineHeight: 0.88, color: "var(--vc-red)", letterSpacing: "-0.055em", whiteSpace: "nowrap", maxWidth: "100%" }}>
           {stat}
         </div>
         <div style={{ marginTop: 48, fontFamily: "var(--font-helvetica)", fontSize: 52, lineHeight: 1.15, color: "var(--vc-ink)", maxWidth: 880, letterSpacing: "-0.005em" }}>
@@ -150,7 +152,9 @@ const V_StatVertical = ({ data, brand }) => {
           {data.source || "Survey of 1,200 — 2026"}
         </div>
       </div>
-      <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
+      <div style={{ flexShrink: 0 }}>
+        <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
+      </div>
     </div>
   );
 };
@@ -161,12 +165,12 @@ const V_StatVertical = ({ data, brand }) => {
 const V_ThreadsPost = ({ data, brand }) => {
   const initials = (brand.fullName || brand.studioName || "MA").split(" ").map(s => s[0]).join("").slice(0, 2).toUpperCase();
   return (
-    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
         <VLabel text={data.kicker || "From the Feed"} />
         <Paperclip />
       </div>
-      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", alignItems: "center" }}>
         <div style={{ background: "#fff", borderRadius: 32, padding: 64, border: "1px solid rgba(14,14,14,0.12)", boxShadow: "0 16px 48px -16px rgba(0,0,0,0.18)", width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
             {(brand.logoAvatar || brand.logo) && brand.logoEnabled !== false
@@ -207,7 +211,9 @@ const V_ThreadsPost = ({ data, brand }) => {
           </div>
         </div>
       </div>
-      <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
+      <div style={{ flexShrink: 0 }}>
+        <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
+      </div>
     </div>
   );
 };
@@ -224,19 +230,19 @@ const V_Tutorial = ({ data, brand }) => {
   const cta = data.ctaText || "Watch full";
   const ctaBtnSize = getDynamicFontSize(cta, 20, 16, 13);
   return (
-    <div {...VFRAME} style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div {...VFRAME} style={{ background: "var(--vc-ink)", color: "var(--vc-cream)", padding: 96, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
         <VLabel text={data.kicker || "Tutorial"} color="var(--vc-cream)" style={{ opacity: 0.8 }} />
         <span style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "10px 22px", border: "1.5px solid var(--vc-lime)", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--vc-lime)" }}>
           <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "var(--vc-lime)" }}></span>
           {data.duration || "60 sec"}
         </span>
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 26, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>
           {data.prefix || "How to"}
         </div>
-        <div style={{ marginTop: 8, fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: whatSize, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
+        <div style={{ marginTop: 8, fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: whatSize, lineHeight: 1.02, letterSpacing: "-0.025em" }}>
           {whatText}
           <br />
           <em style={{ fontFamily: "var(--font-display)", color: "var(--vc-lime)" }}>{whatItalic}</em>
@@ -254,7 +260,7 @@ const V_Tutorial = ({ data, brand }) => {
           ))}
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexShrink: 0 }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "var(--vc-lime)", color: "var(--vc-ink)", padding: "20px 32px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: ctaBtnSize, letterSpacing: "0.12em", textTransform: "uppercase" }}>
           {cta} <span>→</span>
         </span>
@@ -294,7 +300,7 @@ const V_PortfolioCover = ({ data, brand }) => (
           {data.year || "2026"}
         </span>
       </div>
-      <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 108, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
+      <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(data.client || "Atlas & Bell", 108, 18, 64), lineHeight: 1.04, letterSpacing: "-0.025em", overflowWrap: "break-word", wordBreak: "normal" }}>
         {data.client || "Atlas & Bell"}
       </div>
       <div style={{ marginTop: 10, fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 56, color: "var(--vc-cream)", opacity: 0.7, lineHeight: 1.1 }}>
@@ -367,21 +373,21 @@ const V_CaseStudy = ({ data, brand }) => (
 /* 9. POV — narrative scene                         */
 /* ============================================== */
 const V_POV = ({ data, brand }) => (
-  <div {...VFRAME} style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 96, display: "flex", flexDirection: "column" }}>
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
+  <div {...VFRAME} style={{ background: "var(--vc-lime)", color: "var(--vc-ink)", padding: 96, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
       <span style={{ fontFamily: "var(--font-mono)", fontSize: 24, letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 700 }}>
         {data.kicker || "POV:"}
       </span>
       <Asterisk size={72} color="var(--vc-ink)" />
     </div>
-    <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 132, lineHeight: 1, letterSpacing: "-0.02em" }}>
+    <div style={{ flex: 1, minHeight: 0, display: "flex", alignItems: "center" }}>
+      <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 132, lineHeight: 1.05, letterSpacing: "-0.02em" }}>
         {data.scene || "It's Friday at 4pm. The invoice clears. You "}
         <span style={{ fontFamily: "var(--font-helvetica)", fontStyle: "normal", fontWeight: 700, color: "var(--vc-red)" }}>{data.action || "close the laptop"}</span>
         {data.tail || " and start the weekend."}
       </div>
     </div>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexShrink: 0 }}>
       <span style={{ fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.14em", textTransform: "uppercase" }}>
         {data.endTag || "— the dream"}
       </span>
@@ -396,20 +402,22 @@ const V_POV = ({ data, brand }) => (
 const V_Schedule = ({ data, brand }) => {
   const items = (data.items || "MON — Client calls + check-ins\nTUE — Deep work block 1\nWED — Deep work block 2\nTHU — Reviews + revisions\nFRI — Ship + invoice\nSAT — Read + walk\nSUN — Plan the week").split("\n").filter(Boolean);
   return (
-    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <VLabel text={data.kicker || "Weekly Schedule"} />
-        <Paperclip />
-      </div>
-      <div style={{ marginTop: 18, borderBottom: "2px solid var(--vc-ink)", paddingBottom: 28 }}>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 116, lineHeight: 0.96, letterSpacing: "-0.025em" }}>
-          {data.title || "How I run a"}
+    <div {...VFRAME} style={{ background: "var(--vc-cream)", padding: 80, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ flexShrink: 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <VLabel text={data.kicker || "Weekly Schedule"} />
+          <Paperclip />
         </div>
-        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 128, lineHeight: 0.96, color: "var(--vc-red)", letterSpacing: "-0.025em" }}>
-          {data.titleItalic || "calm week."}
+        <div style={{ marginTop: 18, borderBottom: "2px solid var(--vc-ink)", paddingBottom: 28 }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 116, lineHeight: 1.02, letterSpacing: "-0.025em" }}>
+            {data.title || "How I run a"}
+          </div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 128, lineHeight: 1.02, color: "var(--vc-red)", letterSpacing: "-0.025em" }}>
+            {data.titleItalic || "calm week."}
+          </div>
         </div>
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         {items.map((it, i) => {
           const [day, ...rest] = it.split("—");
           const body = rest.join("—").trim();
@@ -425,7 +433,9 @@ const V_Schedule = ({ data, brand }) => {
           );
         })}
       </div>
-      <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
+      <div style={{ flexShrink: 0 }}>
+        <VFooter brand={brand} borderColor="rgba(14,14,14,0.2)" />
+      </div>
     </div>
   );
 };
@@ -455,7 +465,7 @@ const V_CaseStudyCarousel = ({ data, brand }) => {
     const { bg, fg, border } = palette[i];
     return (
       <div key={i} {...VFRAME} style={{ background: bg, color: fg, padding: 0, display: "flex", flexDirection: "column" }}>
-        <div style={{ padding: "44px 80px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${border}` }}>
+        <div style={{ padding: "44px 80px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${border}`, flexShrink: 0 }}>
           <VLabel text={`${s.num} / 03 · ${s.label}`} color={fg} />
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.55 }}>
             {data.projectName || "Case Study"}
@@ -466,7 +476,7 @@ const V_CaseStudyCarousel = ({ data, brand }) => {
             <div style={{ flex: "0 0 660px", overflow: "hidden", position: "relative", background: "#111" }}>
               <img src={s.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
-            <div style={{ flex: 1, padding: "52px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div style={{ flex: 1, minHeight: 0, padding: "52px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.5, marginBottom: 20 }}>
                   {data.clientName || "Client"}
@@ -475,12 +485,14 @@ const V_CaseStudyCarousel = ({ data, brand }) => {
                   {renderSocialMd(s.content)}
                 </div>
               </div>
-              <VFooter brand={brand} color={fg} borderColor={border} />
+              <div style={{ flexShrink: 0, marginTop: 24 }}>
+                <VFooter brand={brand} color={fg} borderColor={border} />
+              </div>
             </div>
           </>
         ) : (
           <>
-            <div style={{ flex: 1, padding: "64px 80px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div style={{ flex: 1, minHeight: 0, padding: "64px 80px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 20, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.45, marginBottom: 36 }}>
                 {data.clientName || "Client"}
               </div>
@@ -488,7 +500,7 @@ const V_CaseStudyCarousel = ({ data, brand }) => {
                 {renderSocialMd(s.content)}
               </div>
             </div>
-            <div style={{ padding: "0 80px 64px" }}>
+            <div style={{ padding: "0 80px 64px", flexShrink: 0 }}>
               <VFooter brand={brand} color={fg} borderColor={border} />
             </div>
           </>
@@ -508,19 +520,19 @@ const V_StoryCarousel = ({ data, brand }) => {
 
   const coverSlide = (
     <div {...VFRAME} key="cover" style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
         <VLabel text={data.kicker || "Case Study"} color={c.fg} />
         <Asterisk size={64} color={c.accent} />
       </div>
-      <div>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 24 }}>
           {data.clientName || "Atlas & Bell"} · {data.year || "2026"}
         </div>
-        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(data.coverHeadline || "How we doubled client close-rate in 60 days", 120, 36, 68), lineHeight: 1.02, letterSpacing: "-0.02em" }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(data.coverHeadline || "How we doubled client close-rate in 60 days", 120, 36, 68), lineHeight: 1.04, letterSpacing: "-0.02em" }}>
           {data.coverHeadline || "How we doubled client close-rate in 60 days"}
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1.5px solid ${c.borderColor}`, paddingTop: 32 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1.5px solid ${c.borderColor}`, paddingTop: 32, flexShrink: 0 }}>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.12em", textTransform: "uppercase" }}>
           Swipe to read →
         </span>
@@ -538,40 +550,44 @@ const V_StoryCarousel = ({ data, brand }) => {
 
     return (
       <div {...VFRAME} key={`body-${i}`} style={{ background: slideBg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <VLabel num={i + 1} text={label} color={c.fg} />
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, color: c.muted }}>
             [ {String(i + 2).padStart(2, "0")} / {String(total).padStart(2, "0")} ]
           </span>
         </div>
-        <div>
+        <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: getDynamicFontSize(body, 92, 45, 54), lineHeight: 1.08, letterSpacing: "-0.015em" }}>
             {renderSocialMd(body)}
           </div>
         </div>
-        <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+        <div style={{ flexShrink: 0 }}>
+          <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+        </div>
       </div>
     );
   });
 
   const outroSlide = (
     <div {...VFRAME} key="outro" style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
         <VLabel text="Summary & CTA" color={c.fg} />
         <Paperclip color={c.fg} />
       </div>
-      <div>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", color: c.accent, fontWeight: 700, marginBottom: 16 }}>
           {data.metric || "+240% Growth"}
         </div>
-        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 80, lineHeight: 1.04, letterSpacing: "-0.015em", marginBottom: 36 }}>
+        <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 80, lineHeight: 1.06, letterSpacing: "-0.015em", marginBottom: 36 }}>
           {data.outcome || "Ready to transform your client proposals?"}
         </div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: c.btnBg, color: c.btnFg, padding: "24px 40px", borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>
           {data.ctaText || "Work with us →"}
         </div>
       </div>
-      <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+      <div style={{ flexShrink: 0 }}>
+        <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+      </div>
     </div>
   );
 
@@ -588,19 +604,19 @@ const V_TipsCarousel = ({ data, brand }) => {
 
   const coverSlide = (
     <div {...VFRAME} key="cover" style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
         <VLabel text={data.kicker || "Framework"} color={c.fg} />
         <Asterisk size={64} color={c.accent} />
       </div>
-      <div>
-        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(data.title || "5 Rules for High-Converting Proposals", 110, 36, 64), lineHeight: 1.0, letterSpacing: "-0.025em" }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(data.title || "5 Rules for High-Converting Proposals", 110, 36, 64), lineHeight: 1.04, letterSpacing: "-0.025em" }}>
           {data.title || "5 Rules for High-Converting Proposals"}
         </div>
         <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 44, color: c.muted, marginTop: 24 }}>
           {data.subtitle || "Field-tested principles that win."}
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1.5px solid ${c.borderColor}`, paddingTop: 32 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1.5px solid ${c.borderColor}`, paddingTop: 32, flexShrink: 0 }}>
         <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, letterSpacing: "0.12em", textTransform: "uppercase" }}>
           Swipe to start →
         </span>
@@ -616,7 +632,7 @@ const V_TipsCarousel = ({ data, brand }) => {
 
     return (
       <div {...VFRAME} key={`tip-${i}`} style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <div style={{ display: "inline-flex", padding: "8px 20px", background: c.tagBg, color: c.tagFg, borderRadius: 999, fontFamily: "var(--font-mono)", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, border: `1px solid ${c.cardBorder}` }}>
             Rule {i + 1} of {tips.length}
           </div>
@@ -624,8 +640,8 @@ const V_TipsCarousel = ({ data, brand }) => {
             [ {String(i + 2).padStart(2, "0")} / {String(total).padStart(2, "0")} ]
           </span>
         </div>
-        <div>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(tipTitle, 76, 26, 44), lineHeight: 1.06, letterSpacing: "-0.02em", marginBottom: 24 }}>
+        <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: getDynamicFontSize(tipTitle, 76, 26, 44), lineHeight: 1.08, letterSpacing: "-0.02em", marginBottom: 24 }}>
             {renderSocialMd(tipTitle)}
           </div>
           {tipBody && (
@@ -634,7 +650,9 @@ const V_TipsCarousel = ({ data, brand }) => {
             </div>
           )}
         </div>
-        <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+        <div style={{ flexShrink: 0 }}>
+          <VFooter brand={brand} color={c.fg} borderColor={c.borderColor} />
+        </div>
       </div>
     );
   });
@@ -654,7 +672,7 @@ const V_ThreadCarousel = ({ data, brand }) => {
     return (
       <div {...VFRAME} key={`thread-${i}`} style={{ background: c.bg, color: c.fg, padding: "96px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         {/* Author Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1.5px solid ${c.cardBorder}`, paddingBottom: 28 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1.5px solid ${c.cardBorder}`, paddingBottom: 28, flexShrink: 0 }}>
           <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
             <div style={{ width: 64, height: 64, borderRadius: "50%", background: c.accent, color: "#fff", display: "grid", placeItems: "center", fontFamily: "var(--font-helvetica)", fontWeight: 700, fontSize: 24 }}>
               {((data.authorName || brand.studioName || "S")[0]).toUpperCase()}
@@ -674,14 +692,14 @@ const V_ThreadCarousel = ({ data, brand }) => {
         </div>
 
         {/* Post Content */}
-        <div style={{ padding: "40px 0" }}>
-          <div style={{ fontFamily: "var(--font-helvetica)", fontSize: getDynamicFontSize(post.trim(), 56, 120, 36), lineHeight: 1.3, letterSpacing: "-0.01em", whiteSpace: "pre-line" }}>
+        <div style={{ flex: 1, minHeight: 0, padding: "40px 0", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div style={{ fontFamily: "var(--font-helvetica)", fontSize: getDynamicFontSize(post.trim(), 56, 120, 36), lineHeight: 1.3, letterSpacing: "-0.01em", whiteSpace: "pre-line", overflowWrap: "break-word", wordBreak: "normal" }}>
             {renderSocialMd(post.trim())}
           </div>
         </div>
 
         {/* Engagement Strip */}
-        <div style={{ borderTop: `1.5px solid ${c.cardBorder}`, paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ borderTop: `1.5px solid ${c.cardBorder}`, paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <div style={{ display: "flex", gap: 28, fontFamily: "var(--font-mono)", fontSize: 16, color: c.muted }}>
             <span>💬 {data.replies || "142"}</span>
             <span>🔁 {data.reposts || "68"}</span>

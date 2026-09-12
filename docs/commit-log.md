@@ -1,5 +1,29 @@
 # Commit Log
 
+## 2026-09-12 — Codebase audit and modularization of oversized monoliths
+
+- **API Client Modularization**: Decomposed monolithic `src/lib/api.ts` (1,021 lines) into domain-focused submodules under `src/lib/api/` (`client.ts`, `types.ts`, `auth.ts`, `usage.ts`, `billing.ts`, `documents.ts`, `cv-ai.ts`, `bug-reports.ts`, `social.ts`, `admin.ts`) with a clean re-export barrel preserving 100% backward compatibility.
+- **Template Splitting & Strict Typing**:
+  - Split `src/modules/social/social-templates.tsx` (2,826 lines) into modular submodules under `src/modules/social/templates/` (`single.tsx`, `carousel.tsx`, `cta.tsx`, `news.tsx`, `photo.tsx`, `pricing.tsx`, `socialProof.tsx`, and `registry.tsx`) with reusable SVG shapes in `decorations.tsx`. Removed `@ts-nocheck` and enabled full TypeScript verification.
+  - Split `src/modules/cv/templates.tsx` (1,174 lines) into individual `@react-pdf/renderer` template components under `src/modules/cv/templates/` (`ClassicTemplate.tsx`, `ModernTemplate.tsx`, `MinimalTemplate.tsx`, `AtsOptimizedTemplate.tsx`, `ExecutiveTemplate.tsx`, `CreativeTemplate.tsx`) with shared PDF primitives in `shared.tsx`.
+  - Split `src/modules/documents/doc-templates.tsx` (1,167 lines) into individual document components under `src/modules/documents/templates/`.
+- **Large Page & Component Decomposition**:
+  - Split `src/pages/Account.tsx` (524 lines) into dedicated tab components under `src/pages/Account/tabs/` (`ProfileTab`, `SubscriptionTab`, `UsageTab`, `SecurityTab`, `SupportTab`).
+  - Split `src/pages/Landing.tsx` (1,013 lines) into modular components under `src/pages/Landing/components/` (`Hero`, `ToolsGrid`, `TryItEmbed`, `TemplateGallery`, `UseCases`, `LandingPricing`, `Newsletter`).
+  - Decomposed `src/modules/documents/DocumentTool.tsx` (915 lines → 270 lines) by extracting `useBulkCSV`, `useDocumentExport`, `DocumentTopBar`, `DocumentPreviewBar`, and `DocumentCanvas`.
+  - Decomposed `src/modules/cv/CVTool.tsx` (552 lines → 240 lines) by extracting `renderTemplate`, `TemplatePicker`, `CVPdfViewer`, `CVTopBar`, `CVLeftRail`, and `useCVPdfPreview`.
+- **Reusable Pipeline Hooks**:
+  - Extracted shared `useLocalStorage<T>` hook into `src/hooks/useLocalStorage.ts`.
+  - Created reusable drag-and-drop file upload hook in `src/hooks/useFileDrop.ts`.
+- **Backend Handler Modularization & Invariant Preservation**:
+  - Refactored `api/src/routes/billing.ts` Midtrans webhook handler into discrete sub-handlers (`processPackCheckout`, `processSubscriptionCheckout`, `processFailedPayment`) while preserving the critical `processing_token` invariant.
+  - Refactored `api/src/auth/routes.ts` `/login` handler into `createUserSession` and `schedulePasswordRehash` while strictly maintaining `UPDATE users SET password_hash = ?, version = version + 1 WHERE id = ? AND password_hash = ?`.
+- **Verification**:
+  - `tsc -b` and `tsc --noEmit` pass with 0 errors across frontend and backend.
+  - `npm run test:concurrency` passes 3/3.
+  - `npm run test:performance` passes 3/3.
+  - `npm run build` succeeds completely in ~10.4s.
+
 ## 2026-09-12 — High-fidelity social JPG/PNG export & font embedding
 
 - Added `font-embed.ts` utility to extract and convert web fonts (`Instrument Serif`, `JetBrains Mono`, `Manrope`, `Source Serif 4`) into base64 data URIs inside `@font-face` rules for `html-to-image`'s `fontEmbedCSS`.

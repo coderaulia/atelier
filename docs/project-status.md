@@ -11,6 +11,7 @@
 - Cloudflare D1 schema and migrations through `014_documents.sql`.
 - Client-side document, PDF, image, OCR, CV, and social processing.
 - Shared tool registry at `src/lib/tools.tsx` generates public and app routes.
+- Modularized architecture: domain-specific API clients in `src/lib/api/`, decoupled template suites (`cv/templates/`, `social/templates/`, `documents/templates/`), tabbed account structure, componentized landing page, and composable document and CV tool pipelines (`useBulkCSV`, `useDocumentExport`, `useCVPdfPreview`, `useFileDrop`).
 - Responsive app shell, marketing wrapper, dashboard, account, legal pages, and manual.
 
 ## Stage 2 — Tools ✅

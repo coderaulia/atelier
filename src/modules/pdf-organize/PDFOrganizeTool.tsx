@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { PDFDocument, degrees } from 'pdf-lib'
 import { usePlan } from '@/hooks/usePlan'
+import { useToolLimit } from '@/hooks/useToolLimit'
 import { validatePDF } from '@/lib/fileValidation'
 import { getFriendlyErrorMessage } from '@/lib/errorHandler'
 import UpgradeModal from '@/components/UpgradeModal'
@@ -32,6 +33,7 @@ function download(blob: Blob, filename: string) {
 
 export default function PDFOrganizeTool() {
   const { isPro } = usePlan()
+  const { canUse, used, limit, increment } = useToolLimit('pdf-organize')
   const [file, setFile] = useState<File | null>(null)
   const [pages, setPages] = useState<PageItem[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -126,22 +128,34 @@ export default function PDFOrganizeTool() {
 
   const exportPdf = useCallback(async () => {
     if (!pages.length || !file) return
+    if (!canUse) return setShowUpgrade(true)
     setExporting(true)
     try {
+      const ok = await increment()
+      if (!ok) {
+        setShowUpgrade(true)
+        return
+      }
       const bytes = await buildPdf(pages)
-      download(new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' }), `${file.name.replace(/\.pdf$/i, '')}-organized.pdf`)
+      download(new Blob([bytes as BlobPart], { type: 'application/pdf' }), `${file.name.replace(/\.pdf$/i, '')}-organized.pdf`)
       setToast({ message: 'Organized PDF is ready.', type: 'success' })
     } catch (error) {
       setToast({ message: getFriendlyErrorMessage(error), type: 'error' })
     } finally { setExporting(false) }
-  }, [buildPdf, file, pages])
+  }, [buildPdf, canUse, file, increment, pages])
 
   const extract = useCallback(async () => {
     if (!isPro) return setShowUpgrade(true)
+    if (!canUse) return setShowUpgrade(true)
     const chosen = pages.filter((page) => selected.has(page.id))
     if (!chosen.length || !file) return
     setExporting(true)
     try {
+      const ok = await increment()
+      if (!ok) {
+        setShowUpgrade(true)
+        return
+      }
       const { default: JSZip } = await import('jszip')
       const zip = new JSZip()
       for (const [position, item] of chosen.entries()) zip.file(`page-${String(position + 1).padStart(2, '0')}.pdf`, await buildPdf([item]))
@@ -149,7 +163,7 @@ export default function PDFOrganizeTool() {
     } catch (error) {
       setToast({ message: getFriendlyErrorMessage(error), type: 'error' })
     } finally { setExporting(false) }
-  }, [buildPdf, file, isPro, pages, selected])
+  }, [buildPdf, canUse, file, increment, isPro, pages, selected])
 
   const clear = () => {
     setFile(null); setPages([]); setSelected(new Set())
@@ -162,7 +176,10 @@ export default function PDFOrganizeTool() {
       {!file && <button className="pdforganize-upload" onClick={() => inputRef.current?.click()} disabled={loading}><b>PDF</b><strong>{loading ? `Preparing ${progress}%` : 'Choose a PDF'}</strong><small>Up to {pageLimit} pages</small></button>}
       <input ref={inputRef} type="file" accept="application/pdf,.pdf" hidden onChange={(event) => loadFile(event.target.files?.[0] ?? null)} />
       {file && <div className="pdforganize-controls">
-        <div className="pdforganize-file"><strong>{file.name}</strong><span>{pages.length} pages, {selected.size} selected</span></div>
+        <div className="pdforganize-file">
+          <strong>{file.name}</strong>
+          <span>{pages.length} pages, {selected.size} selected · {used}/{limit === null ? '∞' : limit} today</span>
+        </div>
         <div className="pdforganize-actions"><button onClick={() => rotate(-90)} disabled={!selected.size || exporting}>Rotate left</button><button onClick={() => rotate(90)} disabled={!selected.size || exporting}>Rotate right</button><button onClick={remove} disabled={!selected.size || exporting}>Remove selected</button></div>
         <button className="pdforganize-export" onClick={exportPdf} disabled={!pages.length || exporting}>{exporting ? 'Preparing...' : 'Export PDF'}</button>
         <button className="pdforganize-extract" onClick={extract} disabled={!selected.size || exporting}>Extract selected {isPro ? '' : '(Pro)'}</button>

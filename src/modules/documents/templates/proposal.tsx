@@ -95,5 +95,77 @@ function ProposalEditorial({ data, brand }) {
   );
 }
 
+function ProposalMinimal({ data, brand }) {
+  return (
+    <div className="doc t-minimal">
+      <div className="t-head">
+        <div>
+          <div className="t-doctype">Project Proposal</div>
+          <div className="t-sub">{data.title || "Untitled Proposal"}</div>
+          <div className="t-num">PROPOSAL // {data.refNo || "PROP-001"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta">{brand.fullName}<br/>{brand.email}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Client</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Author</dt><dd>{brand.fullName || brand.studioName}</dd></div>
+        <div className="t-meta-block"><dt>Date</dt><dd>{fmt.date(data.date)}</dd></div>
+        <div className="t-meta-block"><dt>Ref</dt><dd>{data.refNo || "—"}</dd></div>
+      </dl>
+      <h2>1. Executive Summary</h2><DocBody md={data.summary} />
+      <h2>2. Understanding &amp; Objectives</h2><DocBody md={data.understanding} />
+      <h2>3. Proposed Approach</h2><DocBody md={data.approach} />
+      <h2>4. Deliverables</h2><DocBody md={data.deliverables} />
+      <h2>5. Timeline &amp; Phases</h2><DocBody md={data.timeline} />
+      <h2>6. Investment Structure</h2><DocBody md={data.investment} />
+      <h2>7. Studio Background</h2><DocBody md={data.about} />
+      <div className="t-foot">
+        <span>{brand.studioName}</span>
+        <span>Proposal · {data.refNo || "—"}</span>
+        <span>{fmt.date(data.date)}</span>
+      </div>
+    </div>
+  );
+}
 
-export { ProposalClassic, ProposalModern, ProposalEditorial };
+function ProposalExecutive({ data, brand }) {
+  return (
+    <div className="doc t-executive">
+      <div className="t-head">
+        <div className="t-head-left">
+          <div className="t-doctype">Project Proposal</div>
+          <div className="t-sub">{data.title || "Strategic Commercial Proposal"}</div>
+          <div className="t-num">STRICTLY CONFIDENTIAL · REF: {data.refNo || "PROP-001"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}<br/>{brand.email}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Client Entity</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Lead Agency</dt><dd>{brand.studioName || brand.fullName}</dd></div>
+        <div className="t-meta-block"><dt>Date of Presentation</dt><dd>{fmt.date(data.date)}</dd></div>
+        <div className="t-meta-block"><dt>Proposal ID</dt><dd>{data.refNo || "—"}</dd></div>
+      </dl>
+      <h2>Section 1: Executive Brief &amp; Strategic Context</h2><DocBody md={data.summary} />
+      <h2>Section 2: Problem Statement &amp; Requirements</h2><DocBody md={data.understanding} />
+      <h2>Section 3: Strategic Methodology &amp; Execution</h2><DocBody md={data.approach} />
+      <h2>Section 4: Comprehensive Deliverables Matrix</h2><DocBody md={data.deliverables} />
+      <h2>Section 5: Project Schedule &amp; Milestones</h2><DocBody md={data.timeline} />
+      <h2>Section 6: Commercial Investment &amp; Fee Schedule</h2><DocBody md={data.investment} />
+      <h2>Section 7: Credentials &amp; Case Studies</h2><DocBody md={data.about} />
+      <div className="t-foot">
+        <span>Confidential Proposal · All Rights Reserved</span>
+        <span>{brand.studioName}</span>
+        <span>Valid for 30 Days</span>
+      </div>
+    </div>
+  );
+}
+
+export { ProposalClassic, ProposalModern, ProposalEditorial, ProposalMinimal, ProposalExecutive };
+

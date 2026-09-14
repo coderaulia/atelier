@@ -271,9 +271,8 @@ export default function PDFToImageTool() {
         const pageRender = pages.find((p) => p.pageNum === pageNum);
         if (!pageRender) continue;
 
-        // Memory guard: read one page into blob, release canvas immediately after
+        // Read page into blob for zip packaging
         const blob = await canvasToBlob(pageRender.canvas, format === 'png' ? 'image/png' : 'image/jpeg', quality);
-        releaseCanvas(pageRender.canvas);
 
         const filename = `page-${String(pageNum).padStart(3, '0')}.${format}`;
         zipFile.file(filename, blob);

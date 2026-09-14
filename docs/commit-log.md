@@ -1,5 +1,17 @@
 # Commit Log
 
+## 2026-09-14 — Minimal and Executive template variants for Document Generator
+
+- **Expanded Variant System**: Added `minimal` and `executive` design variants across all 9 document generator types (`agreement`, `invoice`, `proposal`, `prd`, `retainer`, `receipt`, `onboarding`, `scopeguard`, `handover`), expanding total styles from 3 to 5 (`classic`, `modern`, `editorial`, `minimal`, `executive`).
+- **Modern Minimal Styling**: Swiss modernist aesthetic with high information density, hairline rules, monospace accents (`.t-minimal`).
+- **Executive Styling**: Corporate prestige aesthetic with dark header/accent bars, authoritative typographic hierarchy, and formal structured tables (`.t-executive`).
+- **Template Components & Registry**:
+  - Implemented and exported `Minimal` and `Executive` components for all 9 document types under `src/modules/documents/templates/`.
+  - Registered both variants in `src/modules/documents/templates/registry.ts` and updated `VARIANTS` list in `DocumentTool.tsx`.
+  - Seamlessly available in the Editor variant pill switcher and Bulk CSV export dropdown.
+- **Verification**:
+  - Full TypeScript validation (`tsc --noEmit`) and Vite production build (`npm run build`) passing with 0 errors.
+
 ## 2026-09-14 — Fix carousel template component imports in social template registry
 
 - **Carousel Component Import Alignment**: Corrected named imports in `src/modules/social/templates/registry.tsx` from `V_Framework, V_Story, V_TipsCarousel, V_MistakesMade, V_MiniGuide` to `T_Framework, T_Story, T_Tips, T_Mistakes, T_MiniGuide` matching actual exports from `carousel.tsx`.

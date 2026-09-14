@@ -132,4 +132,99 @@ function HandoverEditorial({ data, brand }) {
   );
 }
 
-export { HandoverClassic, HandoverModern, HandoverEditorial };
+function HandoverMinimal({ data, brand }) {
+  const deliverables = parseLines(data.deliverablesList);
+  const nextSteps = parseLines(data.nextStepsForClient);
+  return (
+    <div className="doc t-minimal">
+      <div className="t-head">
+        <div>
+          <div className="t-doctype">Project Handover</div>
+          <div className="t-sub">{data.projectName || "Project"} · {data.clientName || "Client"}</div>
+          <div className="t-num">HANDOVER: {fmt.date(data.handoverDate)} · SIGNOFF: {data.studioSignOffName || brand.fullName || "—"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta">{brand.studioAddress}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Project Scope</dt><dd>{data.projectName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Client Entity</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Handover Date</dt><dd>{fmt.date(data.handoverDate)}</dd></div>
+        <div className="t-meta-block"><dt>Sign-off Lead</dt><dd>{data.studioSignOffName || brand.fullName || "—"}</dd></div>
+      </dl>
+      <h2>1. Final Deliverables Manifest</h2>
+      <div style={{ marginBottom: 20 }}>
+        {deliverables.length ? deliverables.map((d, i) => <CheckRow key={i} text={d} />) : <p style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", color: "var(--paper-muted)" }}>No deliverables registered.</p>}
+      </div>
+      <h2>2. Production Storage &amp; Asset Repository</h2>
+      <DocBody md={data.fileLocations} />
+      <h2>3. Transferred Credentials &amp; Access Controls</h2>
+      <DocBody md={data.credentialsHandedOver} />
+      <h2>4. Post-Handover Client Action Items</h2>
+      <div style={{ marginBottom: 20 }}>
+        {nextSteps.length ? nextSteps.map((s, i) => <CheckRow key={i} text={s} />) : <p style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", color: "var(--paper-muted)" }}>No post-handover steps registered.</p>}
+      </div>
+      <div className="t-sign-area">
+        <div className="t-sign">DELIVERED &amp; RELEASED:<br/><strong>{data.studioSignOffName || brand.fullName || "—"}</strong><br/>{brand.studioName}</div>
+        <div className="t-sign">RECEIVED &amp; ACCEPTED:<br/><strong>{data.clientName || "—"}</strong></div>
+      </div>
+      <div className="t-foot">
+        <span>{brand.studioName}</span>
+        <span>Project Handover Manifest</span>
+        <span>{fmt.date(data.handoverDate)}</span>
+      </div>
+    </div>
+  );
+}
+
+function HandoverExecutive({ data, brand }) {
+  const deliverables = parseLines(data.deliverablesList);
+  const nextSteps = parseLines(data.nextStepsForClient);
+  return (
+    <div className="doc t-executive">
+      <div className="t-head">
+        <div className="t-head-left">
+          <div className="t-doctype">Project Handover</div>
+          <div className="t-sub">Formal Deliverables Transfer &amp; Release Certificate</div>
+          <div className="t-num">ENGAGEMENT: {data.projectName || "Project"} · RELEASE: {fmt.date(data.handoverDate)}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}<br/>{brand.email}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Initiative</dt><dd>{data.projectName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Receiving Party</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Effective Handover</dt><dd>{fmt.date(data.handoverDate)}</dd></div>
+        <div className="t-meta-block"><dt>Lead Sign-off</dt><dd>{data.studioSignOffName || brand.fullName || "—"}</dd></div>
+      </dl>
+      <h2>Section 1: Verified Deliverables Sign-off</h2>
+      <div style={{ marginBottom: 24 }}>
+        {deliverables.length ? deliverables.map((d, i) => <CheckRow key={i} text={d} />) : <p style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", color: "var(--paper-muted)" }}>No deliverables registered.</p>}
+      </div>
+      <h2>Section 2: Repository Locations &amp; Asset Vaults</h2>
+      <DocBody md={data.fileLocations} />
+      <h2>Section 3: Privileged Accounts &amp; Access Transition</h2>
+      <DocBody md={data.credentialsHandedOver} />
+      <h2>Section 4: Next Operational Steps &amp; Continuity</h2>
+      <div style={{ marginBottom: 24 }}>
+        {nextSteps.length ? nextSteps.map((s, i) => <CheckRow key={i} text={s} />) : <p style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", color: "var(--paper-muted)" }}>No operational steps registered.</p>}
+      </div>
+      <div className="t-sign-area">
+        <div className="t-sign">{data.studioSignOffName || brand.fullName || "—"}<br/>Authorized Officer, {brand.studioName}</div>
+        <div className="t-sign">{data.clientName || "—"}<br/>Acknowledged Client Executive</div>
+      </div>
+      <div className="t-foot">
+        <span>Formal Deliverables Release Document</span>
+        <span>{brand.studioName}</span>
+        <span>Certificate of Acceptance</span>
+      </div>
+    </div>
+  );
+}
+
+export { HandoverClassic, HandoverModern, HandoverEditorial, HandoverMinimal, HandoverExecutive };
+

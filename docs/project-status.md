@@ -18,7 +18,7 @@
 
 The registry currently defines **19 tools**:
 
-- Document Generator
+- Document Generator (5 variants: Classic, Modern, Editorial, Minimal, Executive across all 9 document types)
 - Social Generator (with high-fidelity 1:1 isolated sandbox export and inlined base64 font embedding)
 - CV Builder
 - PDF to Image, Merge, Compress, Organize, Split, Watermark, Markdown, Word, PowerPoint, and Edit PDF

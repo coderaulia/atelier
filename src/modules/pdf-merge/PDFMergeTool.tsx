@@ -157,7 +157,7 @@ export default function PDFMergeTool() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i].file;
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await PDFDoc.load(arrayBuffer);
+        const pdf = await PDFDoc.load(arrayBuffer, { ignoreEncryption: true });
         const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
         
         pages.forEach((page: any) => mergedPdf.addPage(page));

@@ -126,5 +126,91 @@ function RetainerEditorial({ data, brand }) {
   );
 }
 
+function RetainerMinimal({ data, brand }) {
+  return (
+    <div className="doc t-minimal">
+      <div className="t-head">
+        <div>
+          <div className="t-doctype">Retainer Agreement</div>
+          <div className="t-sub">{fmt.money(data.monthlyFee, data.currency)} / MONTHLY RETAINER</div>
+          <div className="t-num">START: {fmt.date(data.startDate)} · TERM: {data.contractDuration || "12 Months"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta">{brand.studioAddress}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Studio</dt><dd>{data.studioName || brand.studioName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Client</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Monthly Fee</dt><dd style={{ color: "var(--paper-ink)", fontWeight: 700 }}>{fmt.money(data.monthlyFee, data.currency)}</dd></div>
+        <div className="t-meta-block"><dt>Due Day</dt><dd>{data.paymentDueDay || "1st of month"}</dd></div>
+      </dl>
+      <h2>1. Included Scope of Work</h2>
+      <DocBody md={data.scope} />
+      <h2>2. Revision Allocations</h2>
+      <p style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", lineHeight: 1.6 }}>{data.revisionLimit || "Standard revision cycle applies."}</p>
+      <h2>3. Recurring Payment Terms</h2>
+      <p style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", lineHeight: 1.6 }}>
+        The monthly fee of <strong>{fmt.money(data.monthlyFee, data.currency)}</strong> is payable on the {data.paymentDueDay || "1st"} of each month. Invoices carry Net 7 payment terms.
+      </p>
+      <h2>4. Jurisdiction &amp; Governing Law</h2>
+      <p style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", lineHeight: 1.6 }}>Governed under the laws of {data.governingLaw || "applicable jurisdiction"}.</p>
+      <div className="t-sign-area">
+        <div className="t-sign">ACCEPTED FOR STUDIO:<br/><strong>{brand.fullName || "—"}</strong><br/>{brand.studioName}</div>
+        <div className="t-sign">ACCEPTED FOR CLIENT:<br/><strong>{data.clientName || "—"}</strong></div>
+      </div>
+      <div className="t-foot">
+        <span>{brand.studioName}</span>
+        <span>Monthly Retainer Agreement</span>
+        <span>{fmt.date(data.startDate)}</span>
+      </div>
+    </div>
+  );
+}
 
-export { RetainerClassic, RetainerModern, RetainerEditorial };
+function RetainerExecutive({ data, brand }) {
+  return (
+    <div className="doc t-executive">
+      <div className="t-head">
+        <div className="t-head-left">
+          <div className="t-doctype">Retainer Agreement</div>
+          <div className="t-sub">Executive Ongoing Advisory &amp; Creative Services Agreement</div>
+          <div className="t-num">FEE: {fmt.money(data.monthlyFee, data.currency)} / MO · COMMENCEMENT: {fmt.date(data.startDate)}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}<br/>{brand.email}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Service Provider</dt><dd>{data.studioName || brand.studioName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Corporate Client</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Retainer Amount</dt><dd style={{ color: "var(--accent)", fontSize: "12pt", fontWeight: 700 }}>{fmt.money(data.monthlyFee, data.currency)}</dd></div>
+        <div className="t-meta-block"><dt>Engagement Period</dt><dd>{data.contractDuration || "12 Months Ongoing"}</dd></div>
+      </dl>
+      <h2>Section 1: Retained Scope of Services</h2>
+      <DocBody md={data.scope} />
+      <h2>Section 2: Service Level &amp; Revision Boundaries</h2>
+      <p style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", lineHeight: 1.65 }}>{data.revisionLimit || "Standard service terms apply per statement of work."}</p>
+      <h2>Section 3: Recurring Compensation &amp; Invoicing</h2>
+      <p style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", lineHeight: 1.65 }}>
+        A recurring monthly retainer fee of <strong>{fmt.money(data.monthlyFee, data.currency)}</strong> will be invoiced on the {data.paymentDueDay || "1st"} of each calendar month. Payments are due upon receipt or Net 14.
+      </p>
+      <h2>Section 4: Governing Law &amp; Legal Venue</h2>
+      <p style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", lineHeight: 1.65 }}>This agreement shall be constructed and enforced in accordance with the laws of {data.governingLaw || "the governing jurisdiction"}.</p>
+      <div className="t-sign-area">
+        <div className="t-sign">{brand.fullName || "—"}<br/>Authorized Signature, {brand.studioName}</div>
+        <div className="t-sign">{data.clientName || "—"}<br/>Authorized Client Officer</div>
+      </div>
+      <div className="t-foot">
+        <span>Binding Corporate Retainer Agreement</span>
+        <span>{brand.studioName}</span>
+        <span>Confidential</span>
+      </div>
+    </div>
+  );
+}
+
+export { RetainerClassic, RetainerModern, RetainerEditorial, RetainerMinimal, RetainerExecutive };
+

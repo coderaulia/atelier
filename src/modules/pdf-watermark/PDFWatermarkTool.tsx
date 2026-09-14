@@ -63,12 +63,17 @@ export default function PDFWatermarkTool() {
   const [progress, setProgress] = useState(0)
 
   // Watermark configurations
+  const [watermarkType, setWatermarkType] = useState<'text' | 'image'>('text')
   const [watermarkText, setWatermarkText] = useState('Confidential')
+  const [watermarkImage, setWatermarkImage] = useState<File | null>(null)
+  const [watermarkImagePreview, setWatermarkImagePreview] = useState<string>('')
+  const [imageScale, setImageScale] = useState(0.4)
   const [fontSize, setFontSize] = useState(36)
   const [opacity, setOpacity] = useState(0.3)
   const [rotation, setRotation] = useState(-45)
   const [textColor, setTextColor] = useState('#ff0000')
   const [position, setPosition] = useState<'center' | 'tile' | 'top-right' | 'bottom-left'>('center')
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'warning' | 'success' } | null>(null)
@@ -128,6 +133,21 @@ export default function PDFWatermarkTool() {
       }
       const pdfLib = await loadPdfLib()
       const sourceDoc = await pdfLib.PDFDocument.load(await file.arrayBuffer())
+
+      let embeddedImg: any = null
+      let imgDims = { width: 0, height: 0 }
+      if (watermarkType === 'image') {
+        if (!watermarkImage) {
+          setToast({ message: 'Upload an image watermark first.', type: 'error' })
+          setProcessing(false)
+          return
+        }
+        const imgBuffer = await watermarkImage.arrayBuffer()
+        const isJpg = /jpe?g/i.test(watermarkImage.type) || /\.jpe?g$/i.test(watermarkImage.name)
+        embeddedImg = isJpg ? await sourceDoc.embedJpg(imgBuffer) : await sourceDoc.embedPng(imgBuffer)
+        imgDims = embeddedImg.scale(imageScale)
+      }
+
       const font = await sourceDoc.embedFont(pdfLib.StandardFonts.Helvetica)
       const color = hexToRgb(textColor)
       const pdfColor = pdfLib.rgb(color.r, color.g, color.b)
@@ -137,40 +157,79 @@ export default function PDFWatermarkTool() {
         const page = sourceDoc.getPage(i)
         const { width, height } = page.getSize()
 
-        const drawOpts = {
-          x: width / 2,
-          y: height / 2,
-          size: fontSize,
-          font,
-          color: pdfColor,
-          opacity,
-          rotate: pdfLib.degrees(rotation),
-        }
+        if (watermarkType === 'image' && embeddedImg) {
+          const imgWidth = imgDims.width
+          const imgHeight = imgDims.height
+          const imgOpts = {
+            width: imgWidth,
+            height: imgHeight,
+            opacity,
+            rotate: pdfLib.degrees(rotation),
+          }
 
-        if (position === 'center') {
-          const textWidth = font.widthOfTextAtSize(watermarkText, fontSize)
-          drawOpts.x = (width - textWidth) / 2
-          drawOpts.y = height / 2
-          page.drawText(watermarkText, drawOpts)
-        } else if (position === 'top-right') {
-          const textWidth = font.widthOfTextAtSize(watermarkText, fontSize)
-          drawOpts.x = width - textWidth - 40
-          drawOpts.y = height - fontSize - 40
-          page.drawText(watermarkText, drawOpts)
-        } else if (position === 'bottom-left') {
-          drawOpts.x = 40
-          drawOpts.y = 40
-          page.drawText(watermarkText, drawOpts)
-        } else if (position === 'tile') {
-          const stepX = 200
-          const stepY = 200
-          for (let x = 50; x < width; x += stepX) {
-            for (let y = 50; y < height; y += stepY) {
-              page.drawText(watermarkText, {
-                ...drawOpts,
-                x,
-                y,
-              })
+          if (position === 'center') {
+            page.drawImage(embeddedImg, {
+              ...imgOpts,
+              x: (width - imgWidth) / 2,
+              y: (height - imgHeight) / 2,
+            })
+          } else if (position === 'top-right') {
+            page.drawImage(embeddedImg, {
+              ...imgOpts,
+              x: width - imgWidth - 40,
+              y: height - imgHeight - 40,
+            })
+          } else if (position === 'bottom-left') {
+            page.drawImage(embeddedImg, {
+              ...imgOpts,
+              x: 40,
+              y: 40,
+            })
+          } else if (position === 'tile') {
+            const stepX = Math.max(imgWidth + 60, 160)
+            const stepY = Math.max(imgHeight + 60, 160)
+            for (let x = 40; x < width; x += stepX) {
+              for (let y = 40; y < height; y += stepY) {
+                page.drawImage(embeddedImg, { ...imgOpts, x, y })
+              }
+            }
+          }
+        } else {
+          const drawOpts = {
+            x: width / 2,
+            y: height / 2,
+            size: fontSize,
+            font,
+            color: pdfColor,
+            opacity,
+            rotate: pdfLib.degrees(rotation),
+          }
+
+          if (position === 'center') {
+            const textWidth = font.widthOfTextAtSize(watermarkText, fontSize)
+            drawOpts.x = (width - textWidth) / 2
+            drawOpts.y = height / 2
+            page.drawText(watermarkText, drawOpts)
+          } else if (position === 'top-right') {
+            const textWidth = font.widthOfTextAtSize(watermarkText, fontSize)
+            drawOpts.x = width - textWidth - 40
+            drawOpts.y = height - fontSize - 40
+            page.drawText(watermarkText, drawOpts)
+          } else if (position === 'bottom-left') {
+            drawOpts.x = 40
+            drawOpts.y = 40
+            page.drawText(watermarkText, drawOpts)
+          } else if (position === 'tile') {
+            const stepX = 200
+            const stepY = 200
+            for (let x = 50; x < width; x += stepX) {
+              for (let y = 50; y < height; y += stepY) {
+                page.drawText(watermarkText, {
+                  ...drawOpts,
+                  x,
+                  y,
+                })
+              }
             }
           }
         }
@@ -178,7 +237,7 @@ export default function PDFWatermarkTool() {
       }
 
       const bytes = await sourceDoc.save()
-      download(new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' }), `${file.name.replace(/\.pdf$/i, '')}-watermarked.pdf`)
+      download(new Blob([bytes], { type: 'application/pdf' }), `${file.name.replace(/\.pdf$/i, '')}-watermarked.pdf`)
       setToast({ message: 'Watermark added successfully.', type: 'success' })
     } catch (error) {
       setToast({ message: getFriendlyErrorMessage(error), type: 'error' })
@@ -219,15 +278,84 @@ export default function PDFWatermarkTool() {
             </div>
             <div className="pdfwatermark-settings">
               <div style={{fontSize: '12px', color: '#94a3b8', marginBottom: '4px'}}>{usageText}</div>
-              <div className="pdfwatermark-field">
-                <label>Watermark Text</label>
-                <input type="text" value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} />
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+                <button
+                  type="button"
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 4,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    border: '1px solid var(--shell-rule, #3c4756)',
+                    background: watermarkType === 'text' ? 'var(--shell-accent, #6bc4a2)' : 'transparent',
+                    color: watermarkType === 'text' ? '#10151d' : 'var(--shell-text, #f8fafc)',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setWatermarkType('text')}
+                >
+                  Text
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 4,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    border: '1px solid var(--shell-rule, #3c4756)',
+                    background: watermarkType === 'image' ? 'var(--shell-accent, #6bc4a2)' : 'transparent',
+                    color: watermarkType === 'image' ? '#10151d' : 'var(--shell-text, #f8fafc)',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setWatermarkType('image')}
+                >
+                  Image / Stamp
+                </button>
               </div>
-              <div className="pdfwatermark-field">
-                <label>Font Size</label>
-                <input type="range" min="12" max="72" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} />
-                <span>{fontSize}px</span>
-              </div>
+
+              {watermarkType === 'text' ? (
+                <>
+                  <div className="pdfwatermark-field">
+                    <label>Watermark Text</label>
+                    <input type="text" value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} />
+                  </div>
+                  <div className="pdfwatermark-field">
+                    <label>Font Size</label>
+                    <input type="range" min="12" max="72" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} />
+                    <span>{fontSize}px</span>
+                  </div>
+                  <div className="pdfwatermark-field">
+                    <label>Text Color</label>
+                    <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="pdfwatermark-field">
+                    <label>Watermark Image (PNG / JPG)</label>
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg"
+                      style={{ fontSize: 12 }}
+                      onChange={(e) => {
+                        const img = e.target.files?.[0]
+                        if (img) {
+                          setWatermarkImage(img)
+                          setWatermarkImagePreview(URL.createObjectURL(img))
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="pdfwatermark-field">
+                    <label>Scale</label>
+                    <input type="range" min="0.1" max="1.0" step="0.05" value={imageScale} onChange={(e) => setImageScale(Number(e.target.value))} />
+                    <span>{Math.round(imageScale * 100)}%</span>
+                  </div>
+                </>
+              )}
+
               <div className="pdfwatermark-field">
                 <label>Opacity</label>
                 <input type="range" min="0.1" max="1.0" step="0.1" value={opacity} onChange={(e) => setOpacity(Number(e.target.value))} />
@@ -237,10 +365,6 @@ export default function PDFWatermarkTool() {
                 <label>Rotation (deg)</label>
                 <input type="range" min="-90" max="90" value={rotation} onChange={(e) => setRotation(Number(e.target.value))} />
                 <span>{rotation}°</span>
-              </div>
-              <div className="pdfwatermark-field">
-                <label>Text Color</label>
-                <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
               </div>
               <div className="pdfwatermark-field">
                 <label>Position</label>
@@ -285,78 +409,158 @@ export default function PDFWatermarkTool() {
                     overflow: 'hidden',
                   }}
                 >
-                  {position === 'center' && (
-                    <span
-                      style={{
-                        color: textColor,
-                        fontSize: `${fontSize * 0.8}px`,
-                        opacity: opacity,
-                        transform: `rotate(${rotation}deg)`,
-                        fontWeight: 'bold',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {watermarkText}
-                    </span>
-                  )}
-                  {position === 'top-right' && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: '20px',
-                        right: '20px',
-                        color: textColor,
-                        fontSize: `${fontSize * 0.8}px`,
-                        opacity: opacity,
-                        transform: `rotate(${rotation}deg)`,
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {watermarkText}
-                    </span>
-                  )}
-                  {position === 'bottom-left' && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        bottom: '20px',
-                        left: '20px',
-                        color: textColor,
-                        fontSize: `${fontSize * 0.8}px`,
-                        opacity: opacity,
-                        transform: `rotate(${rotation}deg)`,
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {watermarkText}
-                    </span>
-                  )}
-                  {position === 'tile' && (
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(4, 1fr)',
-                        gap: '40px',
-                        width: '120%',
-                        height: '120%',
-                        transform: `rotate(${rotation}deg)`,
-                        opacity: opacity,
-                      }}
-                    >
-                      {Array.from({ length: 16 }).map((_, idx) => (
+                  {watermarkType === 'image' && watermarkImagePreview ? (
+                    <>
+                      {position === 'center' && (
+                        <img
+                          src={watermarkImagePreview}
+                          alt="Watermark"
+                          style={{
+                            maxWidth: `${imageScale * 80}%`,
+                            maxHeight: `${imageScale * 80}%`,
+                            opacity,
+                            transform: `rotate(${rotation}deg)`,
+                            objectFit: 'contain',
+                          }}
+                        />
+                      )}
+                      {position === 'top-right' && (
+                        <img
+                          src={watermarkImagePreview}
+                          alt="Watermark"
+                          style={{
+                            position: 'absolute',
+                            top: '20px',
+                            right: '20px',
+                            maxWidth: `${imageScale * 50}%`,
+                            maxHeight: `${imageScale * 50}%`,
+                            opacity,
+                            transform: `rotate(${rotation}deg)`,
+                            objectFit: 'contain',
+                          }}
+                        />
+                      )}
+                      {position === 'bottom-left' && (
+                        <img
+                          src={watermarkImagePreview}
+                          alt="Watermark"
+                          style={{
+                            position: 'absolute',
+                            bottom: '20px',
+                            left: '20px',
+                            maxWidth: `${imageScale * 50}%`,
+                            maxHeight: `${imageScale * 50}%`,
+                            opacity,
+                            transform: `rotate(${rotation}deg)`,
+                            objectFit: 'contain',
+                          }}
+                        />
+                      )}
+                      {position === 'tile' && (
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gap: '30px',
+                            width: '120%',
+                            height: '120%',
+                            transform: `rotate(${rotation}deg)`,
+                            opacity,
+                            alignItems: 'center',
+                            justifyItems: 'center',
+                          }}
+                        >
+                          {Array.from({ length: 9 }).map((_, idx) => (
+                            <img
+                              key={idx}
+                              src={watermarkImagePreview}
+                              alt="Watermark"
+                              style={{
+                                maxWidth: `${imageScale * 60}%`,
+                                maxHeight: `${imageScale * 60}%`,
+                                objectFit: 'contain',
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {position === 'center' && (
                         <span
-                          key={idx}
                           style={{
                             color: textColor,
-                            fontSize: `${fontSize * 0.6}px`,
+                            fontSize: `${fontSize * 0.8}px`,
+                            opacity: opacity,
+                            transform: `rotate(${rotation}deg)`,
                             fontWeight: 'bold',
                             whiteSpace: 'nowrap',
                           }}
                         >
                           {watermarkText}
                         </span>
-                      ))}
-                    </div>
+                      )}
+                      {position === 'top-right' && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '20px',
+                            right: '20px',
+                            color: textColor,
+                            fontSize: `${fontSize * 0.8}px`,
+                            opacity: opacity,
+                            transform: `rotate(${rotation}deg)`,
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {watermarkText}
+                        </span>
+                      )}
+                      {position === 'bottom-left' && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            bottom: '20px',
+                            left: '20px',
+                            color: textColor,
+                            fontSize: `${fontSize * 0.8}px`,
+                            opacity: opacity,
+                            transform: `rotate(${rotation}deg)`,
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {watermarkText}
+                        </span>
+                      )}
+                      {position === 'tile' && (
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(4, 1fr)',
+                            gap: '40px',
+                            width: '120%',
+                            height: '120%',
+                            transform: `rotate(${rotation}deg)`,
+                            opacity: opacity,
+                          }}
+                        >
+                          {Array.from({ length: 16 }).map((_, idx) => (
+                            <span
+                              key={idx}
+                              style={{
+                                color: textColor,
+                                fontSize: `${fontSize * 0.6}px`,
+                                fontWeight: 'bold',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {watermarkText}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

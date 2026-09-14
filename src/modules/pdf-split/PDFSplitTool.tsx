@@ -175,7 +175,7 @@ export default function PDFSplitTool() {
         const copied = await output.copyPages(sourceDoc, groups[0])
         copied.forEach((p: any) => output.addPage(p))
         const bytes = await output.save()
-        download(new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' }), `${file.name.replace(/\.pdf$/i, '')}-split.pdf`)
+        download(new Blob([bytes], { type: 'application/pdf' }), `${file.name.replace(/\.pdf$/i, '')}-split.pdf`)
         setToast({ message: 'PDF split successfully.', type: 'success' })
       } else {
         const zipLib = await loadJSZip()

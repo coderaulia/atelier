@@ -154,5 +154,91 @@ function AgreementEditorial({ data, brand }) {
   );
 }
 
+function AgreementMinimal({ data, brand }) {
+  return (
+    <div className="doc t-minimal">
+      <div className="t-head">
+        <div>
+          <div className="t-doctype">Services Agreement</div>
+          <div className="t-sub">{data.title || "Engagement Agreement"}</div>
+          <div className="t-num">REF // {data.refNo || "AG-0001"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta">{brand.studioAddress}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Provider</dt><dd>{brand.studioName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Client</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Date</dt><dd>{fmt.date(data.date)}</dd></div>
+        <div className="t-meta-block"><dt>Ref</dt><dd>{data.refNo || "—"}</dd></div>
+      </dl>
+      <h2>1. Scope of Work</h2>
+      <DocBody md={data.scope} />
+      <h2>2. Deliverables</h2>
+      <DocBody md={data.deliverables} />
+      <h2>3. Compensation</h2>
+      <DocBody md={data.compensation} />
+      <h2>4. Timeline</h2>
+      <DocBody md={data.timeline} />
+      <h2>5. Terms &amp; Conditions</h2>
+      <DocBody md={data.legal} />
+      <div className="t-sign-area">
+        <div className="t-sign">ACCEPTED &amp; AGREED:<br/><strong>{data.signatoryName || brand.fullName || "—"}</strong><br/>{brand.studioName}</div>
+        <div className="t-sign">ACCEPTED &amp; AGREED:<br/><strong>{data.clientSignatory || "—"}</strong><br/>{data.clientName}</div>
+      </div>
+      <div className="t-foot">
+        <span>{brand.studioName}</span>
+        <span>Services Agreement · {data.refNo || "—"}</span>
+        <span>{fmt.date(data.date)}</span>
+      </div>
+    </div>
+  );
+}
 
-export { AgreementClassic, AgreementModern, AgreementEditorial };
+function AgreementExecutive({ data, brand }) {
+  return (
+    <div className="doc t-executive">
+      <div className="t-head">
+        <div className="t-head-left">
+          <div className="t-doctype">Services Agreement</div>
+          <div className="t-sub">{data.title || "Master Professional Services Engagement"}</div>
+          <div className="t-num">CONFIDENTIAL · REF: {data.refNo || "AG-0001"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}<br/>{brand.email}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Service Provider</dt><dd>{brand.studioName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Client Party</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Effective Date</dt><dd>{fmt.date(data.date)}</dd></div>
+        <div className="t-meta-block"><dt>Document Ref</dt><dd>{data.refNo || "—"}</dd></div>
+      </dl>
+      <h2>Section 1: Scope of Engagement</h2>
+      <DocBody md={data.scope} />
+      <h2>Section 2: Key Deliverables</h2>
+      <DocBody md={data.deliverables} />
+      <h2>Section 3: Financial Considerations &amp; Fees</h2>
+      <DocBody md={data.compensation} />
+      <h2>Section 4: Milestones &amp; Project Schedule</h2>
+      <DocBody md={data.timeline} />
+      <h2>Section 5: General Legal Provisions</h2>
+      <DocBody md={data.legal} />
+      <div className="t-sign-area">
+        <div className="t-sign">{data.signatoryName || brand.fullName || "—"}<br/>Authorized Representative, {brand.studioName}</div>
+        <div className="t-sign">{data.clientSignatory || "—"}<br/>Authorized Representative, {data.clientName}</div>
+      </div>
+      <div className="t-foot">
+        <span>Official Services Agreement</span>
+        <span>{brand.studioName}</span>
+        <span>Page 1 of 1</span>
+      </div>
+    </div>
+  );
+}
+
+export { AgreementClassic, AgreementModern, AgreementEditorial, AgreementMinimal, AgreementExecutive };
+

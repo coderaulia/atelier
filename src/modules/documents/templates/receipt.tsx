@@ -116,5 +116,107 @@ function ReceiptEditorial({ data, brand }) {
   );
 }
 
+function ReceiptMinimal({ data, brand }) {
+  return (
+    <div className="doc t-minimal">
+      <div className="t-head">
+        <div>
+          <div className="t-doctype">Payment Receipt</div>
+          <div className="t-sub">TRANSACTION VOUCHER // {data.receiptNo || "REC-0001"}</div>
+          <div className="t-num">DATE: {fmt.date(data.paymentDate)} · {fmt.money(data.amount, data.currency)} PAID</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta">{brand.studioAddress}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Paid By</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Received By</dt><dd>{brand.studioName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Date Paid</dt><dd>{fmt.date(data.paymentDate)}</dd></div>
+        <div className="t-meta-block"><dt>Payment Channel</dt><dd>{data.paymentMethod || "Direct Transfer"}</dd></div>
+      </dl>
+      <h2>Payment Specifics</h2>
+      <table className="inv-table">
+        <thead>
+          <tr>
+            <th style={{ width: "70%" }}>Description of Remittance</th>
+            <th style={{ textAlign: "right" }}>Amount Settled</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{data.itemDescription || "Professional Services Rendered"}</td>
+            <td style={{ textAlign: "right", fontWeight: 700 }}>{fmt.money(data.amount, data.currency)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="inv-totals">
+        <div className="inv-totals-row inv-totals-row--final">
+          <span>Total Received</span>
+          <span style={{ textAlign: "right" }}>{fmt.money(data.amount, data.currency)}</span>
+        </div>
+      </div>
+      {data.notes && (<><h2>Reference Notes</h2><DocBody md={data.notes} /></>)}
+      <div className="t-foot">
+        <span>Payment Acknowledged in Full</span>
+        <span>{brand.studioName}</span>
+        <span>{data.receiptNo || "—"}</span>
+      </div>
+    </div>
+  );
+}
 
-export { ReceiptClassic, ReceiptModern, ReceiptEditorial };
+function ReceiptExecutive({ data, brand }) {
+  return (
+    <div className="doc t-executive">
+      <div className="t-head">
+        <div className="t-head-left">
+          <div className="t-doctype">Payment Receipt</div>
+          <div className="t-sub">Official Remittance Confirmation &amp; Proof of Payment</div>
+          <div className="t-num">RECEIPT REF: {data.receiptNo || "REC-0001"} · STATUS: SETTLED IN FULL</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}<br/>{brand.email}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Remitted By</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Beneficiary</dt><dd>{brand.studioName || brand.fullName}</dd></div>
+        <div className="t-meta-block"><dt>Settlement Date</dt><dd>{fmt.date(data.paymentDate)}</dd></div>
+        <div className="t-meta-block"><dt>Total Amount Received</dt><dd style={{ color: "var(--accent)", fontSize: "12pt", fontWeight: 700 }}>{fmt.money(data.amount, data.currency)}</dd></div>
+      </dl>
+      <h2>Remittance Verification</h2>
+      <table className="inv-table">
+        <thead>
+          <tr>
+            <th style={{ width: "70%" }}>Particulars &amp; Settlement Description</th>
+            <th style={{ textAlign: "right" }}>Confirmed Credit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{data.itemDescription || "Commercial invoice settlement in full"}</td>
+            <td style={{ textAlign: "right", fontWeight: 700, fontFamily: "var(--font-serif)", fontSize: "11pt" }}>{fmt.money(data.amount, data.currency)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="inv-totals">
+        <div className="inv-totals-row inv-totals-row--final">
+          <span>Confirmed Balance Credited</span>
+          <span style={{ textAlign: "right" }}>{fmt.money(data.amount, data.currency)}</span>
+        </div>
+      </div>
+      {data.notes && (<><h2>Transaction Annotations</h2><DocBody md={data.notes} /></>)}
+      <div className="t-foot">
+        <span>Formal Remittance Voucher</span>
+        <span>{brand.studioName}</span>
+        <span>Fully Cleared Funds</span>
+      </div>
+    </div>
+  );
+}
+
+export { ReceiptClassic, ReceiptModern, ReceiptEditorial, ReceiptMinimal, ReceiptExecutive };
+

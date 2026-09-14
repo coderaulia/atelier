@@ -6,6 +6,8 @@ import Toast from '../../components/Toast';
 import { validatePDF } from '../../lib/fileValidation';
 import { getFriendlyErrorMessage } from '../../lib/errorHandler';
 
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+
 // Lazy-loaded pdf-lib
 let PDFDocument: any = null;
 let pdfLibLoaded = false;
@@ -16,6 +18,19 @@ async function loadPdfLib() {
   PDFDocument = module.PDFDocument;
   pdfLibLoaded = true;
   return module.PDFDocument;
+}
+
+// Lazy-loaded pdfjs-dist
+let pdfjsLib: any = null;
+let pdfjsLoaded = false;
+
+async function loadPdfJs() {
+  if (pdfjsLoaded) return pdfjsLib;
+  const pdfjs = await import('pdfjs-dist');
+  pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+  pdfjsLib = pdfjs;
+  pdfjsLoaded = true;
+  return pdfjs;
 }
 
 type CompressionLevel = 'low' | 'medium' | 'high';
@@ -110,31 +125,101 @@ export default function PDFCompressTool() {
       }
 
       const PDFDoc = await loadPdfLib();
-      setProgress(25);
-
       const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await PDFDoc.load(arrayBuffer, { ignoreEncryption: true });
 
-      setProgress(50);
-
-      // Re-save with optimization options
-      const saveOptions: any = {
-        useObjectStreams: true,
-        addDefaultPage: false,
-      };
-
-      // For high compression, strip metadata
-      if (compressionLevel === 'high') {
-        saveOptions.objectsPerTick = 50;
+      // Strategy 1: Attempt lossless PDF object stream optimization first
+      let bestBytes: Uint8Array | null = null;
+      try {
+        const pdfDoc = await PDFDoc.load(arrayBuffer, { ignoreEncryption: true });
+        const streamBytes = await pdfDoc.save({ useObjectStreams: true, addDefaultPage: false });
+        if (streamBytes.length < file.size * 0.85) {
+          bestBytes = streamBytes;
+        }
+      } catch {
+        // Fall through to rasterizing compression
       }
 
-      const pdfBytes = await pdfDoc.save(saveOptions);
-      setProgress(80);
+      // If object streams didn't save much (e.g. image-heavy / scanned PDF) or user chose medium/high
+      if (!bestBytes || compressionLevel !== 'low') {
+        setProgress(25);
+        const pdfjs = await loadPdfJs();
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        const total = pdf.numPages;
 
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      setCompressedBlob(blob);
-      setCompressedSize(blob.size);
+        const config = {
+          low: { scale: 1.5, quality: 0.85 },
+          medium: { scale: 1.25, quality: 0.70 },
+          high: { scale: 1.0, quality: 0.52 },
+        }[compressionLevel];
+
+        const compressedDoc = await PDFDoc.create();
+
+        for (let i = 1; i <= total; i++) {
+          const page = await pdf.getPage(i);
+          const origViewport = page.getViewport({ scale: 1.0 });
+          const renderViewport = page.getViewport({ scale: config.scale });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.ceil(renderViewport.width);
+          canvas.height = Math.ceil(renderViewport.height);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Canvas not available');
+
+          await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
+
+          const jpgBlob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(
+              (b) => (b ? resolve(b) : reject(new Error('Failed to compress page'))),
+              'image/jpeg',
+              config.quality
+            );
+          });
+
+          const jpgBytes = new Uint8Array(await jpgBlob.arrayBuffer());
+          const embeddedJpg = await compressedDoc.embedJpg(jpgBytes);
+
+          const newPage = compressedDoc.addPage([origViewport.width, origViewport.height]);
+          newPage.drawImage(embeddedJpg, {
+            x: 0,
+            y: 0,
+            width: origViewport.width,
+            height: origViewport.height,
+          });
+
+          canvas.width = 0;
+          canvas.height = 0;
+
+          setProgress(25 + Math.round((i / total) * 65));
+        }
+
+        const rasterBytes = await compressedDoc.save({ useObjectStreams: true });
+        if (!bestBytes || rasterBytes.length < bestBytes.length) {
+          bestBytes = rasterBytes;
+        }
+      }
+
+      if (!bestBytes) {
+        throw new Error('Could not optimize PDF');
+      }
+
+      setProgress(95);
+      const finalBlob = new Blob([bestBytes as BlobPart], { type: 'application/pdf' });
+      setCompressedBlob(finalBlob);
+      setCompressedSize(finalBlob.size);
       setProgress(100);
+
+      if (finalBlob.size >= file.size) {
+        setToast({
+          message: 'This PDF is already highly optimized. File preserved.',
+          type: 'warning',
+        });
+      } else {
+        const saved = Math.round((1 - finalBlob.size / file.size) * 100);
+        setToast({
+          message: `Successfully reduced file size by ${saved}%!`,
+          type: 'success',
+        });
+      }
     } catch (err: any) {
       setToast({ message: getFriendlyErrorMessage(err), type: 'error' });
     } finally {

@@ -798,6 +798,348 @@ input, textarea, select { font-family: inherit; color: inherit; }
   color: var(--paper-muted);
 }
 
+/* ----- MINIMAL: Swiss modernist, high information density, hairline rules ----- */
+.t-minimal .t-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid var(--paper-ink);
+  margin-bottom: 24px;
+}
+.t-minimal .t-doctype {
+  font-family: var(--font-sans);
+  font-size: 26pt;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--paper-ink);
+}
+.t-minimal .t-sub {
+  font-family: var(--font-mono);
+  font-size: 8.5pt;
+  color: var(--paper-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.t-minimal .t-num {
+  font-family: var(--font-mono);
+  font-size: 9pt;
+  color: var(--paper-muted);
+  margin-top: 6px;
+  letter-spacing: 0.05em;
+}
+.t-minimal .t-head-right {
+  text-align: right;
+  font-size: 9.5pt;
+}
+.t-minimal .t-from {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11pt;
+  letter-spacing: -0.01em;
+}
+.t-minimal .t-from-meta {
+  color: var(--paper-muted);
+  font-size: 8.5pt;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+.t-minimal .t-meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.025);
+  border-radius: 4px;
+  margin-bottom: 24px;
+  font-size: 9.5pt;
+}
+.t-minimal .t-meta-block dt {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--paper-muted);
+  margin-bottom: 4px;
+}
+.t-minimal .t-meta-block dd {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 9.5pt;
+  line-height: 1.4;
+}
+.t-minimal h2 {
+  font-family: var(--font-sans);
+  font-size: 10.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 22px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--paper-rule);
+  color: var(--paper-ink);
+}
+.t-minimal h3 {
+  font-family: var(--font-mono);
+  font-size: 8.5pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 12px 0 4px;
+  color: var(--paper-muted);
+}
+.t-minimal .doc-body p {
+  font-family: var(--font-sans);
+  font-size: 9.5pt;
+  line-height: 1.6;
+  color: var(--paper-ink);
+}
+.t-minimal .doc-body li {
+  font-family: var(--font-sans);
+  font-size: 9.5pt;
+  line-height: 1.55;
+}
+.t-minimal .t-foot {
+  margin-top: 36px;
+  padding-top: 14px;
+  border-top: 1px solid var(--paper-rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  letter-spacing: 0.08em;
+  color: var(--paper-muted);
+  text-transform: uppercase;
+}
+.t-minimal .t-sign-area {
+  margin-top: 36px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.t-minimal .t-sign {
+  padding-top: 16px;
+  border-top: 1px solid var(--paper-ink);
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  color: var(--paper-muted);
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+}
+.t-minimal .inv-table th {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-muted);
+  border-bottom: 1.5px solid var(--paper-ink);
+  padding: 8px 10px;
+}
+.t-minimal .inv-table td {
+  padding: 10px;
+  font-size: 9.5pt;
+  font-family: var(--font-sans);
+  border-bottom: 1px solid var(--paper-rule);
+}
+.t-minimal .inv-totals {
+  border: 1px solid var(--paper-rule);
+  padding: 12px 16px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.015);
+}
+.t-minimal .inv-totals-row--final {
+  border-top: 1.5px solid var(--paper-ink);
+  color: var(--paper-ink);
+}
+
+/* ----- EXECUTIVE: corporate prestige, accent bar, authoritative hierarchy ----- */
+.t-executive {
+  border-top: 5px solid var(--accent);
+  padding-top: 24px;
+}
+.t-executive .t-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--paper-rule);
+}
+.t-executive .t-head-left {
+  max-width: 55%;
+}
+.t-executive .t-doctype {
+  font-family: var(--font-serif);
+  font-size: 32pt;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--paper-ink);
+  margin-bottom: 4px;
+}
+.t-executive .t-sub {
+  font-family: var(--font-sans);
+  font-size: 10pt;
+  color: var(--paper-muted);
+  font-weight: 500;
+}
+.t-executive .t-num {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 8.5pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+.t-executive .t-head-right {
+  text-align: right;
+}
+.t-executive .t-from {
+  font-family: var(--font-serif);
+  font-size: 13pt;
+  font-weight: 700;
+  color: var(--paper-ink);
+}
+.t-executive .t-from-meta {
+  color: var(--paper-muted);
+  font-size: 9pt;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+.t-executive .t-meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--paper-rule);
+  border-left: 4px solid var(--accent);
+  background: rgba(0, 0, 0, 0.015);
+  margin-bottom: 28px;
+  border-radius: 2px;
+}
+.t-executive .t-meta-block dt {
+  font-family: var(--font-sans);
+  font-size: 7.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--paper-muted);
+  margin-bottom: 4px;
+}
+.t-executive .t-meta-block dd {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 10.5pt;
+  line-height: 1.4;
+}
+.t-executive h2 {
+  font-family: var(--font-serif);
+  font-size: 12.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-left: 3.5px solid var(--accent);
+  padding: 4px 0 4px 10px;
+  background: rgba(0, 0, 0, 0.02);
+  margin: 26px 0 12px;
+  color: var(--paper-ink);
+}
+.t-executive h3 {
+  font-family: var(--font-sans);
+  font-size: 10pt;
+  font-weight: 700;
+  margin: 14px 0 6px;
+  color: var(--paper-ink);
+}
+.t-executive .doc-body p {
+  font-family: var(--font-serif);
+  font-size: 10.5pt;
+  line-height: 1.65;
+}
+.t-executive .doc-body li {
+  font-family: var(--font-serif);
+  font-size: 10.5pt;
+  line-height: 1.6;
+}
+.t-executive .t-foot {
+  margin-top: 44px;
+  padding-top: 16px;
+  border-top: 2px solid var(--paper-rule);
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-sans);
+  font-size: 8.5pt;
+  color: var(--paper-muted);
+}
+.t-executive .t-sign-area {
+  margin-top: 36px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+.t-executive .t-sign {
+  padding-top: 40px;
+  border-top: 1.5px solid var(--paper-ink);
+  font-family: var(--font-serif);
+  font-size: 9.5pt;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.t-executive .t-sign::before {
+  content: 'AUTHORIZATION';
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 7pt;
+  letter-spacing: 0.12em;
+  color: var(--paper-muted);
+  margin-top: -32px;
+  margin-bottom: 20px;
+}
+.t-executive .inv-table th {
+  background: rgba(0, 0, 0, 0.035);
+  font-family: var(--font-sans);
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--paper-ink);
+  border-bottom: 1.5px solid var(--paper-ink);
+  padding: 8px 12px;
+}
+.t-executive .inv-table td {
+  padding: 10px 12px;
+  font-size: 10pt;
+  font-family: var(--font-serif);
+  border-bottom: 1px solid var(--paper-rule);
+}
+.t-executive .inv-totals {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--paper-rule);
+  border-top: 2.5px solid var(--accent);
+  padding: 14px 18px;
+  border-radius: 2px;
+}
+.t-executive .inv-totals-row--final {
+  border-top: 2px solid var(--paper-ink);
+  border-bottom: 3px double var(--paper-ink);
+  color: var(--accent);
+  padding-bottom: 8px;
+}
+.t-executive .prd-stat {
+  border-top: 3px solid var(--accent);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 2px;
+}
+
 /* invoice-specific extras */
 .inv-table { margin-top: 8px; }
 .inv-totals {

@@ -83,6 +83,8 @@ const VARIANTS = [
   { id: "classic",   name: "Classic" },
   { id: "modern",    name: "Modern" },
   { id: "editorial", name: "Editorial" },
+  { id: "minimal",   name: "Minimal" },
+  { id: "executive", name: "Executive" },
 ];
 
 const GLOBAL_METADATA_SYNC_KEY = "dg.globalMetadataFingerprint.v1";

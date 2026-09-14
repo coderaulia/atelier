@@ -93,6 +93,75 @@ function PRDEditorial({ data, brand }) {
   );
 }
 
-/* ---------- Shared helpers for new templates ---------- */
+function PRDMinimal({ data, brand }) {
+  return (
+    <div className="doc t-minimal">
+      <div className="t-head">
+        <div>
+          <div className="t-doctype">{data.title || "Untitled PRD"}</div>
+          <div className="t-sub">{data.tagline || "Product Requirements Document"}</div>
+          <div className="t-num">STATUS: {data.status || "Draft"} · TARGET: {data.release || "—"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from">{data.author || brand.fullName}</div>
+          <div className="t-from-meta">Updated: {fmt.date(data.date)}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Author</dt><dd>{data.author || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Lifecycle Status</dt><dd>{data.status || "Draft"}</dd></div>
+        <div className="t-meta-block"><dt>Target Release</dt><dd>{data.release || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Last Revised</dt><dd>{fmt.date(data.date)}</dd></div>
+      </dl>
+      <h2>1. Problem Statement</h2><DocBody md={data.problem} />
+      <h2>2. Goals &amp; Non-Goals</h2><DocBody md={data.goals} />
+      <h2>3. User Stories</h2><DocBody md={data.stories} />
+      <h2>4. Proposed Technical Solution</h2><DocBody md={data.solution} />
+      <h2>5. Metrics &amp; Observability</h2><DocBody md={data.metrics} />
+      <h2>6. Known Risks &amp; Dependencies</h2><DocBody md={data.risks} />
+      <div className="t-foot">
+        <span>PRD · {data.title || "Untitled"}</span>
+        <span>Version {data.status || "Draft"}</span>
+        <span>{fmt.date(data.date)}</span>
+      </div>
+    </div>
+  );
+}
 
-export { PRDClassic, PRDModern, PRDEditorial };
+function PRDExecutive({ data, brand }) {
+  return (
+    <div className="doc t-executive">
+      <div className="t-head">
+        <div className="t-head-left">
+          <div className="t-doctype">{data.title || "Product Requirements"}</div>
+          <div className="t-sub">{data.tagline || "Executive Product Specification"}</div>
+          <div className="t-num">RELEASE SPEC: {data.release || "v1.0"} · STATUS: {data.status || "Draft"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from">{data.author || brand.fullName}</div>
+          <div className="t-from-meta">Lead Architect / PM<br/>Revision: {fmt.date(data.date)}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Product Lead</dt><dd>{data.author || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Approval Status</dt><dd>{data.status || "Draft"}</dd></div>
+        <div className="t-meta-block"><dt>Ship Target</dt><dd>{data.release || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Effective Date</dt><dd>{fmt.date(data.date)}</dd></div>
+      </dl>
+      <h2>Section 1: Problem Definition &amp; Business Opportunity</h2><DocBody md={data.problem} />
+      <h2>Section 2: Strategic Objectives &amp; Scope Boundary</h2><DocBody md={data.goals} />
+      <h2>Section 3: Core User Personas &amp; Workflows</h2><DocBody md={data.stories} />
+      <h2>Section 4: Architectural Solution &amp; Scope</h2><DocBody md={data.solution} />
+      <h2>Section 5: KPI Targets &amp; Telemetry Success Metrics</h2><DocBody md={data.metrics} />
+      <h2>Section 6: Risk Matrix &amp; Technical Contingencies</h2><DocBody md={data.risks} />
+      <div className="t-foot">
+        <span>Executive Product Specification</span>
+        <span>Product Team Sign-off</span>
+        <span>{fmt.date(data.date)}</span>
+      </div>
+    </div>
+  );
+}
+
+export { PRDClassic, PRDModern, PRDEditorial, PRDMinimal, PRDExecutive };
+

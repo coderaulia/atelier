@@ -83,7 +83,18 @@ export default function PDFPowerPointTool() {
           const context = canvas.getContext('2d')
           if (!context) throw new Error('Could not render this PDF page.')
           await page.render({ canvasContext: context, viewport }).promise
-          slide.addImage({ data: canvas.toDataURL('image/jpeg', 0.92), x: 0, y: 0, w: 13.333, h: 7.5 })
+          const slideW = 13.333
+          const slideH = 7.5
+          const pageAspect = viewport.width / viewport.height
+          let imgW = slideH * pageAspect
+          let imgH = slideH
+          if (imgW > slideW) {
+            imgW = slideW
+            imgH = slideW / pageAspect
+          }
+          const imgX = (slideW - imgW) / 2
+          const imgY = (slideH - imgH) / 2
+          slide.addImage({ data: canvas.toDataURL('image/jpeg', 0.92), x: imgX, y: imgY, w: imgW, h: imgH })
           releaseCanvas(canvas)
         } else {
           const content = await page.getTextContent()

@@ -208,13 +208,19 @@ export default function PDFEditTool() {
           if (overlay.type === 'text') page.drawText(overlay.text, { x: width * overlay.x / 100, y: height * (1 - overlay.y / 100) - overlay.size, size: overlay.size, maxWidth: width * (1 - overlay.x / 100), font, color: hexToRgb(overlay.color) })
           else if (overlay.type === 'cover') page.drawRectangle({ x: width * overlay.x / 100, y: height * (1 - overlay.y / 100) - height * overlay.height / 100, width: width * overlay.width / 100, height: height * overlay.height / 100, color: rgb(0, 0, 0) })
           else {
-            const signature = await output.embedPng(await (await fetch(overlay.data)).arrayBuffer())
+            const base64Data = overlay.data.split(',')[1] || overlay.data
+            const binaryString = atob(base64Data)
+            const sigBytes = new Uint8Array(binaryString.length)
+            for (let b = 0; b < binaryString.length; b++) {
+              sigBytes[b] = binaryString.charCodeAt(b)
+            }
+            const signature = await output.embedPng(sigBytes)
             page.drawImage(signature, { x: width * overlay.x / 100, y: height * (1 - overlay.y / 100) - height * overlay.height / 100, width: width * overlay.width / 100, height: height * overlay.height / 100 })
           }
         }
       }
       const outputBytes = new Uint8Array(await output.save())
-      const url = URL.createObjectURL(new Blob([outputBytes.buffer], { type: 'application/pdf' }))
+      const url = URL.createObjectURL(new Blob([outputBytes], { type: 'application/pdf' }))
       const link = document.createElement('a'); link.href = url; link.download = `${file.name.replace(/\.pdf$/i, '')}-edited.pdf`; link.click()
       window.setTimeout(() => URL.revokeObjectURL(url), 5000)
     } catch (error) { setToast({ message: getFriendlyErrorMessage(error), type: 'error' }) }

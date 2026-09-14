@@ -121,5 +121,95 @@ function OnboardingEditorial({ data, brand }) {
   );
 }
 
+function OnboardingMinimal({ data, brand }) {
+  const deliverables = parseLines(data.deliverables);
+  const assets = parseLines(data.assetsNeeded);
+  return (
+    <div className="doc t-minimal">
+      <div className="t-head">
+        <div>
+          <div className="t-doctype">Client Onboarding</div>
+          <div className="t-sub">{data.projectName || "Project"} · {data.clientName || "Client"}</div>
+          <div className="t-num">START: {fmt.date(data.startDate)} · LEAD: {data.pointOfContact || "—"}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta">{brand.studioAddress}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Client Entity</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Project Scope</dt><dd>{data.projectName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Kickoff Date</dt><dd>{fmt.date(data.startDate)}</dd></div>
+        <div className="t-meta-block"><dt>Lead Contact</dt><dd>{data.pointOfContact || "—"}</dd></div>
+      </dl>
+      <h2>1. Project Deliverables Matrix</h2>
+      <div style={{ marginBottom: 20 }}>
+        {deliverables.length ? deliverables.map((d, i) => <CheckRow key={i} text={d} />) : <p style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", color: "var(--paper-muted)" }}>No deliverables listed.</p>}
+      </div>
+      <h2>2. Required Assets &amp; Client Access</h2>
+      <div style={{ marginBottom: 20 }}>
+        {assets.length ? assets.map((a, i) => <CheckRow key={i} text={a} />) : <p style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", color: "var(--paper-muted)" }}>No prerequisites listed.</p>}
+      </div>
+      <h2>3. Communication Protocols</h2>
+      <dl className="t-meta" style={{ marginBottom: 0 }}>
+        <div className="t-meta-block"><dt>Primary Channel</dt><dd>{data.communicationChannel || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Standing Cadence</dt><dd>{data.meetingSchedule || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Key Contact</dt><dd>{data.pointOfContact || "—"}</dd></div>
+      </dl>
+      <div className="t-foot">
+        <span>{brand.studioName}</span>
+        <span>Client Onboarding Guide</span>
+        <span>{fmt.date(data.startDate)}</span>
+      </div>
+    </div>
+  );
+}
 
-export { OnboardingClassic, OnboardingModern, OnboardingEditorial };
+function OnboardingExecutive({ data, brand }) {
+  const deliverables = parseLines(data.deliverables);
+  const assets = parseLines(data.assetsNeeded);
+  return (
+    <div className="doc t-executive">
+      <div className="t-head">
+        <div className="t-head-left">
+          <div className="t-doctype">Client Onboarding</div>
+          <div className="t-sub">Executive Kickoff &amp; Partnership Governance Guide</div>
+          <div className="t-num">ENGAGEMENT: {data.projectName || "Project"} · LAUNCH: {fmt.date(data.startDate)}</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}<br/>{brand.email}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Client Partner</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Initiative</dt><dd>{data.projectName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Commencement Date</dt><dd>{fmt.date(data.startDate)}</dd></div>
+        <div className="t-meta-block"><dt>Executive Sponsor</dt><dd>{data.pointOfContact || "—"}</dd></div>
+      </dl>
+      <h2>Section 1: Contracted Deliverables &amp; Outcomes</h2>
+      <div style={{ marginBottom: 24 }}>
+        {deliverables.length ? deliverables.map((d, i) => <CheckRow key={i} text={d} />) : <p style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", color: "var(--paper-muted)" }}>No deliverables registered.</p>}
+      </div>
+      <h2>Section 2: Client Prerequisites &amp; Technical Assets</h2>
+      <div style={{ marginBottom: 24 }}>
+        {assets.length ? assets.map((a, i) => <CheckRow key={i} text={a} />) : <p style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", color: "var(--paper-muted)" }}>No required assets registered.</p>}
+      </div>
+      <h2>Section 3: Stakeholder Governance &amp; Cadence</h2>
+      <dl className="t-meta" style={{ marginBottom: 0 }}>
+        <div className="t-meta-block"><dt>Communication Medium</dt><dd>{data.communicationChannel || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Review Schedule</dt><dd>{data.meetingSchedule || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Direct Escalation</dt><dd>{data.pointOfContact || brand.fullName || "—"}</dd></div>
+      </dl>
+      <div className="t-foot">
+        <span>Strategic Client Onboarding Charter</span>
+        <span>{brand.studioName}</span>
+        <span>Confidential</span>
+      </div>
+    </div>
+  );
+}
+
+export { OnboardingClassic, OnboardingModern, OnboardingEditorial, OnboardingMinimal, OnboardingExecutive };
+

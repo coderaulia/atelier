@@ -113,5 +113,89 @@ function ScopeGuardEditorial({ data, brand }) {
   );
 }
 
+function ScopeGuardMinimal({ data, brand }) {
+  const outItems = parseLines(data.whatIsOutOfScope);
+  return (
+    <div className="doc t-minimal">
+      <div className="t-head">
+        <div>
+          <div className="t-doctype">Revision Policy</div>
+          <div className="t-sub">{data.projectName || "Project Scope"} · {data.clientName || "Client"}</div>
+          <div className="t-num">{data.includedRevisions || "2"} INCLUDED ROUNDS · {fmt.money(data.additionalRevisionRate, data.currency)} / ADD'L ROUND</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta">{brand.studioAddress}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Initiative</dt><dd>{data.projectName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Client</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Base Rounds</dt><dd style={{ color: "var(--paper-ink)", fontWeight: 700 }}>{data.includedRevisions || "2"} rounds</dd></div>
+        <div className="t-meta-block"><dt>Overage Rate</dt><dd style={{ color: "var(--paper-ink)", fontWeight: 700 }}>{fmt.money(data.additionalRevisionRate, data.currency)} / round</dd></div>
+      </dl>
+      <h2>1. Permitted Revision Definition</h2>
+      <DocBody md={data.whatIsRevision} />
+      <h2>2. Explicitly Out of Scope</h2>
+      {outItems.length ? (
+        <ul style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", lineHeight: 1.6, paddingLeft: "1.4em", margin: "8px 0 16px" }}>
+          {outItems.map((item, i) => <li key={i} style={{ marginBottom: 6 }}>{item}</li>)}
+        </ul>
+      ) : <DocBody md={data.whatIsOutOfScope} />}
+      <h2>3. Change Requests &amp; Overage Billing</h2>
+      <p style={{ fontFamily: "var(--font-sans)", fontSize: "9.5pt", lineHeight: 1.6 }}>
+        Revisions exceeding {data.includedRevisions || "2"} rounds incur a change-order surcharge of <strong>{fmt.money(data.additionalRevisionRate, data.currency)}</strong> per round.
+      </p>
+      <div className="t-foot">
+        <span>{brand.studioName}</span>
+        <span>Scope Guard Agreement</span>
+        <span>{data.projectName || "—"}</span>
+      </div>
+    </div>
+  );
+}
 
-export { ScopeGuardClassic, ScopeGuardModern, ScopeGuardEditorial };
+function ScopeGuardExecutive({ data, brand }) {
+  const outItems = parseLines(data.whatIsOutOfScope);
+  return (
+    <div className="doc t-executive">
+      <div className="t-head">
+        <div className="t-head-left">
+          <div className="t-doctype">Revision Policy</div>
+          <div className="t-sub">Scope Governance &amp; Change Request Policy Framework</div>
+          <div className="t-num">PROJECT: {data.projectName || "Project"} · REVISION CAP: {data.includedRevisions || "2"} ROUNDS</div>
+        </div>
+        <div className="t-head-right">
+          <div className="t-from"><BrandMark brand={brand} /></div>
+          <div className="t-from-meta" style={{ whiteSpace: "pre-line" }}>{brand.studioAddress}<br/>{brand.email}</div>
+        </div>
+      </div>
+      <dl className="t-meta">
+        <div className="t-meta-block"><dt>Project Engagement</dt><dd>{data.projectName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Client Entity</dt><dd>{data.clientName || "—"}</dd></div>
+        <div className="t-meta-block"><dt>Allocated Revision Rounds</dt><dd style={{ color: "var(--accent)", fontSize: "11.5pt", fontWeight: 700 }}>{data.includedRevisions || "2"} Rounds</dd></div>
+        <div className="t-meta-block"><dt>Additional Round Surcharge</dt><dd style={{ color: "var(--accent)", fontSize: "11.5pt", fontWeight: 700 }}>{fmt.money(data.additionalRevisionRate, data.currency)}</dd></div>
+      </dl>
+      <h2>Section 1: Standard Revision Classification</h2>
+      <DocBody md={data.whatIsRevision} />
+      <h2>Section 2: Material Scope Exceptions &amp; Exclusions</h2>
+      {outItems.length ? (
+        <ul style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", lineHeight: 1.65, paddingLeft: "1.4em", margin: "10px 0 20px" }}>
+          {outItems.map((item, i) => <li key={i} style={{ marginBottom: 6 }}>{item}</li>)}
+        </ul>
+      ) : <DocBody md={data.whatIsOutOfScope} />}
+      <h2>Section 3: Formal Change Order Process &amp; Billing</h2>
+      <p style={{ fontFamily: "var(--font-serif)", fontSize: "10.5pt", lineHeight: 1.65 }}>
+        Modifications beyond the agreed {data.includedRevisions || "2"} rounds require a formal change request and will be billed at {fmt.money(data.additionalRevisionRate, data.currency)} per round, payable prior to commencement of subsequent revisions.
+      </p>
+      <div className="t-foot">
+        <span>Formal Scope Governance Policy</span>
+        <span>{brand.studioName}</span>
+        <span>Strict Enforcement</span>
+      </div>
+    </div>
+  );
+}
+
+export { ScopeGuardClassic, ScopeGuardModern, ScopeGuardEditorial, ScopeGuardMinimal, ScopeGuardExecutive };
+

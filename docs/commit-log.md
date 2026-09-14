@@ -1,5 +1,11 @@
 # Commit Log
 
+## 2026-09-14 — Fix carousel template component imports in social template registry
+
+- **Carousel Component Import Alignment**: Corrected named imports in `src/modules/social/templates/registry.tsx` from `V_Framework, V_Story, V_TipsCarousel, V_MistakesMade, V_MiniGuide` to `T_Framework, T_Story, T_Tips, T_Mistakes, T_MiniGuide` matching actual exports from `carousel.tsx`.
+- **Runtime Error Resolution**: Resolved runtime `ReferenceError: T_Framework is not defined` when initializing social carousel slides in `SocialTool` and document tool views.
+- **Verification**: Verified zero TypeScript compilation errors with `npm run build` and successful execution of concurrency (`npm run test:concurrency`) and performance (`npm run test:performance`) regression test suites.
+
 ## 2026-09-12 — Codebase audit and modularization of oversized monoliths
 
 - **API Client Modularization**: Decomposed monolithic `src/lib/api.ts` (1,021 lines) into domain-focused submodules under `src/lib/api/` (`client.ts`, `types.ts`, `auth.ts`, `usage.ts`, `billing.ts`, `documents.ts`, `cv-ai.ts`, `bug-reports.ts`, `social.ts`, `admin.ts`) with a clean re-export barrel preserving 100% backward compatibility.

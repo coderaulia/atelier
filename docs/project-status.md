@@ -86,7 +86,7 @@ Remaining work is operational rather than a planned feature build:
 - Run API flow tests, browser payment/email tests, mobile processing tests, and SEO checks.
 - Configure external uptime/error monitoring if required by the operator.
 
-Frontend build and backend typecheck pass after the latest account and usage-history changes. Production browser verification remains required after Hostinger's GitHub auto-deployment.
+Frontend build and backend typecheck pass after fixing social carousel template registry component imports. Production browser verification remains required after Hostinger's GitHub auto-deployment.
 
 ## Intentional launch boundaries
 

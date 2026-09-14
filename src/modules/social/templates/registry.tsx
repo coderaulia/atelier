@@ -2,7 +2,7 @@
 import React from 'react';
 import { THEME_OPTIONS } from '../decorations';
 import { T_Quote, T_Stat, T_Announce, T_Steps, T_BeforeAfter, T_Manifesto, T_Checklist, T_Opinion, T_Pillars } from './single';
-import { V_Framework, V_Story, V_TipsCarousel, V_MistakesMade, V_MiniGuide } from './carousel';
+import { T_Framework, T_Story, T_Tips, T_Mistakes, T_MiniGuide } from './carousel';
 import { T_Booking, T_LinkBio, T_Launch, T_Waitlist, T_LeadMagnet, T_DMKeyword } from './cta';
 import { T_BreakingPost, T_WeeklyDigest, T_NewsHero, T_NewsSplit, T_NewsInterview } from './news';
 import { T_PhotoPost, T_WorkShowcase, T_Team1, T_Team2, T_Team3, T_Team4 } from './photo';
